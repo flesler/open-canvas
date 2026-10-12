@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "paths": {
-      "cursor/canvas": ["./node_modules/@thisismydesign/cursor-canvas-web"]
+      "cursor/canvas": ["./node_modules/@thisismydesign/cursor-canvas-web"],
+      "@open-canvas/user-canvas": ["./example/pushflow.canvas.tsx"]
     }
   },
   "include": ["host", "example", "types", "scripts"]
