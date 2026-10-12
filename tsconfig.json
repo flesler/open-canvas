@@ -14,5 +14,5 @@
       "cursor/canvas": ["./node_modules/@thisismydesign/cursor-canvas-web"]
     }
   },
-  "include": ["host", "canvases", "scripts"]
+  "include": ["host", "example", "types", "scripts"]
 }

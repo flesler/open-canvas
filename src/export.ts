@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { emitCursorCanvas } from "./emit-cursor.js"
 import { canvasStem, parseFormats, titleCaseFromStem } from "./util.js"
 
 const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
@@ -37,37 +38,21 @@ export function runExport(opts: ExportOptions): void {
   const needsHtml = formats.some((f) => f === "html" || f === "png" || f === "pdf" || f === "jpg")
   const needsPng = formats.some((f) => f === "png" || f === "pdf" || f === "jpg")
 
-  let dataPath = opts.data ? path.resolve(opts.data) : undefined
-  if (!dataPath) {
-    const guesses = [
-      path.join(canvasDir, "data", `${stem}.json`),
-      path.join(canvasDir, `${stem}.json`),
-      path.join(pkgRoot, "data", `${stem}.json`),
-    ]
-    dataPath = guesses.find((p) => fs.existsSync(p))
-  }
-  if (!dataPath || !fs.existsSync(dataPath)) {
-    throw new Error(`--data required (canvas uses report prop); file not found`)
-  }
-
   fs.mkdirSync(outDir, { recursive: true })
 
   const hostDir = path.join(pkgRoot, "host")
   const entryPath = path.join(hostDir, "entry.tsx")
-  const canvasImport = canvasPath.replace(/\\/g, "/")
-  const dataImport = dataPath.replace(/\\/g, "/")
 
   const entry = `import "@mantine/charts/styles.css"
 import "@mantine/core/styles.css"
 import { Box } from "@mantine/core"
 import { mountCanvas } from "@thisismydesign/cursor-canvas-web/runtime"
-import Canvas from "${canvasImport}"
-import report from "${dataImport}"
+import Canvas from "@open-canvas/user-canvas"
 
 mountCanvas(
   "root",
   <Box component="main" p={24} pb={32} mih="100vh">
-    <Canvas report={report} />
+    <Canvas />
   </Box>,
   { defaultColorScheme: "${theme}" },
 )
@@ -95,11 +80,18 @@ mountCanvas(
 `
   fs.writeFileSync(path.join(hostDir, "index.html"), indexHtml)
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     OPEN_CANVAS_STEM: stem,
     OPEN_CANVAS_OUT_DIR: outDir,
     OPEN_CANVAS_THEME: theme,
+    OPEN_CANVAS_CANVAS_PATH: canvasPath,
+  }
+
+  if (formats.includes("cursor")) {
+    const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)
+    emitCursorCanvas(canvasPath, cursorOut)
+    console.log(`→ ${cursorOut}`)
   }
 
   if (needsHtml) {
@@ -122,10 +114,6 @@ mountCanvas(
   if (formats.includes("jpg")) {
     runScript("render-jpg.ts", env)
   }
-  if (formats.includes("cursor")) {
-    console.error("format cursor: not implemented yet")
-    process.exit(1)
-  }
 
   for (const f of formats) {
     if (f === "html") {
@@ -140,6 +128,10 @@ mountCanvas(
     if (f === "jpg") {
       console.log(`→ ${path.join(outDir, `${stem}.jpg`)}`)
     }
+  }
+
+  if (opts.data) {
+    console.warn("--data is ignored when the canvas imports ./data/* directly")
   }
 }
 

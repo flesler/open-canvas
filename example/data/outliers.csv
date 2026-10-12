@@ -1,0 +1,9 @@
+app,stack,total,peak_rss,files_pack
+app-aurora-7f3,node-20,47m 27s,4.6 GB,892k
+app-mint-2c1,dockerfile,38m 12s,3.9 GB,1.1M
+app-orbit-9aa,python-3.12,31m 44s,3.2 GB,214k
+app-harbor-4d8,ruby-3.3,28m 06s,2.8 GB,156k
+app-crest-1b0,go-1.22,24m 51s,2.4 GB,98k
+app-lumen-6e2,node-20,22m 33s,3.1 GB,402k
+app-pine-8c4,dockerfile,21m 18s,2.9 GB,678k
+app-drift-3f7,python-3.12,19m 57s,2.6 GB,187k

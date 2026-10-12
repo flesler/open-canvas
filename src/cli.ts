@@ -8,7 +8,7 @@ function usage(): void {
 
 Export flags:
   --canvas <path>   required (*.canvas.tsx)
-  --data <path>     JSON for report prop (default: <pkg>/data/<stem>.json if present)
+  --data <path>     legacy; ignored when canvas imports ./data/*
   --out <dir>       default: ./out next to canvas file
   --title <text>    default: title case of canvas stem
   --theme light|dark   default: light

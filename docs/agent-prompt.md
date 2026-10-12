@@ -2,19 +2,15 @@
 
 Repo: **open-canvas** ([github.com/flesler/open-canvas](https://github.com/flesler/open-canvas)).
 
-## Edit
+## Edit (example layout)
 
-- `data/<scenario>.json` — KPIs, series, table rows
-- `canvases/<scenario>.canvas.tsx` — layout; import **only** `cursor/canvas`; accept `report` prop (host passes JSON)
+- `example/pushflow.canvas.tsx` — `cursor/canvas` + `import … from './data/*.{json,csv,tsv}'`
+- `example/data/` — `report.json`, `daily.tsv`, `outliers.csv`
 
 ## Ship
 
 ```bash
-open-canvas --canvas canvases/<scenario>.canvas.tsx --data data/<scenario>.json
+open-canvas --canvas example/pushflow.canvas.tsx --formats html,png,pdf,cursor
 ```
 
-Outputs: `canvases/out/<scenario>.{html,png,pdf}` (default `--out ./out` next to canvas).
-
-## Pushflow example
-
-`data/pushflow-build-olap.json` + `canvases/pushflow-build-olap.canvas.tsx`.
+Outputs: `example/out/pushflow.{html,png,pdf,canvas.tsx}`.

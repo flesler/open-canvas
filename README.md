@@ -1,46 +1,31 @@
 # open-canvas
 
-Export [Cursor canvas](https://cursor.com) `.canvas.tsx` files to HTML, PNG, PDF, and (planned) IDE-ready `.canvas.tsx`.
+Export [Cursor canvas](https://cursor.com) `.canvas.tsx` files to HTML, PNG, PDF, and IDE-ready `.canvas.tsx` (`--formats cursor`).
 
-Built on [@thisismydesign/cursor-canvas-web](https://github.com/thisismydesign/cursor-canvas-web).
+Authoring superset: `cursor/canvas` plus `import … from './data/*.{json,csv,tsv}'` ([`@rollup/plugin-dsv`](https://github.com/rollup/plugins/tree/master/packages/dsv)). Cursor emit inlines data with [`ts-morph`](https://github.com/dsherret/ts-morph) + the same `d3-dsv` loaders.
 
 ## Install
 
 ```bash
-npm install -g open-canvas
-# or from clone:
-npm install && npm run build:cli && npm link
+npm install && npm run build:cli
+npm link   # optional global `open-canvas`
 ```
+
+## Example
+
+```bash
+open-canvas --canvas example/pushflow.canvas.tsx --formats html,png,pdf,cursor
+```
+
+Outputs under `example/out/` (`pushflow.html`, `.png`, `.pdf`, `.canvas.tsx` for `cp` into Cursor `canvases/`).
 
 ## Usage
 
-`export` is the default subcommand — flags only:
-
 ```bash
-open-canvas \
-  --canvas canvases/pushflow-build-olap.canvas.tsx \
-  --data data/pushflow-build-olap.json \
-  --formats html,png,pdf \
-  --theme light
+open-canvas --canvas path/to/report.canvas.tsx [--out ./out] [--theme light|dark] [--formats html,png,pdf,jpg,cursor]
 ```
 
-Explicit subcommand:
-
-```bash
-open-canvas export --canvas …
-```
-
-Outputs go to `./out` next to the canvas file: `out/<stem>.html`, `.png`, `.pdf`.
-
-See [docs/spec.md](docs/spec.md).
-
-## Example (this repo)
-
-```bash
-npm install
-npm run build:cli
-node bin/open-canvas.js --canvas canvases/pushflow-build-olap.canvas.tsx --data data/pushflow-build-olap.json
-```
+`export` is optional (default subcommand). See [docs/spec.md](docs/spec.md).
 
 ## License
 

@@ -5,4 +5,5 @@ dist/
 *.log
 host/entry.tsx
 host/index.html
-canvases/out/
+example/out/
+**/out/_build/

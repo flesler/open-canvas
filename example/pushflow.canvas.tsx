@@ -1,45 +1,46 @@
 import {
-    BarChart,
-    Callout,
-    Card,
-    CardBody,
-    CardHeader,
-    Grid,
-    H1,
-    LineChart,
-    Stack,
-    Stat,
-    Table,
-    Text,
-    useHostTheme,
-    type ChartSeries,
+  BarChart,
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  Grid,
+  H1,
+  LineChart,
+  Stack,
+  Stat,
+  Table,
+  Text,
+  useHostTheme,
+  type ChartSeries,
 } from "cursor/canvas"
+import daily from "./data/daily.tsv"
+import outlierRows from "./data/outliers.csv"
+import report from "./data/report.json"
 
-export type PushflowReport = {
-  meta: {
-    title: string;
-    periodStart: string;
-    periodEnd: string;
-    deployCount: number;
-  };
-  kpis: { label: string; value: string; hint?: string }[];
-  durationByPhase: { rows: { phase: string; p50: number; p90: number }[] };
-  dailyTrend: { date: string; deploys: number; totalDurationP90Sec: number }[];
-  phaseRssMb: { rows: { phase: string; p90: number }[] };
-  outliers: { headers: string[]; rows: string[][] };
-};
+const outlierHeaders = ["App", "Stack", "Total", "Peak RSS", "Files@pack"]
+const outliers = {
+  headers: outlierHeaders,
+  rows: outlierRows.map((r) => [
+    r.app,
+    r.stack,
+    r.total,
+    r.peak_rss,
+    r.files_pack,
+  ]),
+}
 
-export default function PushflowBuildOlapCanvas({ report }: { report: PushflowReport }) {
-  const theme = useHostTheme();
-  const { meta, kpis, durationByPhase, dailyTrend, phaseRssMb, outliers } = report;
-  const cap = { color: theme.text.tertiary, fontSize: 12 };
+export default function PushflowCanvas() {
+  const theme = useHostTheme()
+  const { meta, kpis, durationByPhase, phaseRssMb } = report
+  const cap = { color: theme.text.tertiary, fontSize: 12 }
 
-  const phases = durationByPhase.rows.map((r) => r.phase);
+  const phases = durationByPhase.rows.map((r) => r.phase)
   const durationSeries: ChartSeries[] = [
     { name: "p50", data: durationByPhase.rows.map((r) => r.p50), tone: "info" },
     { name: "p90", data: durationByPhase.rows.map((r) => r.p90), tone: "warning" },
-  ];
-  const dayLabels = dailyTrend.map((d) => d.date.slice(5));
+  ]
+  const dayLabels = daily.map((d) => d.date.slice(5))
 
   return (
     <Stack gap={20}>
@@ -94,7 +95,13 @@ export default function PushflowBuildOlapCanvas({ report }: { report: PushflowRe
           <CardBody>
             <LineChart
               categories={dayLabels}
-              series={[{ name: "p90", data: dailyTrend.map((d) => d.totalDurationP90Sec), tone: "info" }]}
+              series={[
+                {
+                  name: "p90",
+                  data: daily.map((d) => Number(d.totalDurationP90Sec)),
+                  tone: "info",
+                },
+              ]}
               height={220}
               valueSuffix="s"
             />
@@ -105,7 +112,9 @@ export default function PushflowBuildOlapCanvas({ report }: { report: PushflowRe
           <CardBody>
             <BarChart
               categories={dayLabels}
-              series={[{ name: "deploys", data: dailyTrend.map((d) => d.deploys), tone: "neutral" }]}
+              series={[
+                { name: "deploys", data: daily.map((d) => Number(d.deploys)), tone: "neutral" },
+              ]}
               height={220}
             />
           </CardBody>
@@ -124,5 +133,5 @@ export default function PushflowBuildOlapCanvas({ report }: { report: PushflowRe
         </CardBody>
       </Card>
     </Stack>
-  );
+  )
 }
