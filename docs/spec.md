@@ -17,7 +17,7 @@ example/
 ## Authoring (superset)
 
 - `cursor/canvas` components only, plus **relative** data imports.
-- CSV/TSV: [`@rollup/plugin-dsv`](https://github.com/rollup/plugins/tree/master/packages/dsv) (same `d3-dsv` as Rollup ecosystem).
+- CSV/TSV: [`@rollup/plugin-dsv`](https://github.com/rollup/plugins/tree/master/packages/dsv).
 - JSON: Vite native.
 
 ## CLI
@@ -37,10 +37,8 @@ open-canvas --canvas example/pushflow.canvas.tsx --formats html,png,pdf,cursor
 
 ### `--formats cursor`
 
-Writes `{out}/{stem}.canvas.tsx` with data imports inlined as `const` ( [`ts-morph`](https://github.com/dsherret/ts-morph) AST + shared `loadDataFile` / `d3-dsv` ). Only `cursor/canvas` imports remain.
+Writes `{out}/{stem}.canvas.tsx` with data imports inlined (`ts-morph` + `d3-dsv`). Only `cursor/canvas` imports remain.
 
-Build uses alias `@open-canvas/user-canvas` — no absolute paths in generated `host/entry.tsx`.
+### `skill [path]`
 
-## `inject`
-
-Optional in-place `const DATA =` replace — not required when using data imports + `cursor` format.
+Prints `src/SKILL.md` or writes `path/SKILL.md` (directory) / `path` (file).

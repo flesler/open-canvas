@@ -42,6 +42,7 @@
     "dist",
     "host",
     "scripts",
+    "src/SKILL.md",
     "vite.config.ts",
     "tsconfig.cli.json"
   ]

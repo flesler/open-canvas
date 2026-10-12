@@ -9,7 +9,6 @@ const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 export type ExportOptions = {
   canvas?: string
-  data?: string
   out?: string
   title?: string
   theme?: "light" | "dark"
@@ -130,9 +129,6 @@ mountCanvas(
     }
   }
 
-  if (opts.data) {
-    console.warn("--data is ignored when the canvas imports ./data/* directly")
-  }
 }
 
 function runScript(name: string, env: NodeJS.ProcessEnv): void {

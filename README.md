@@ -1,14 +1,14 @@
 # open-canvas
 
-Export [Cursor canvas](https://cursor.com) `.canvas.tsx` files to HTML, PNG, PDF, and IDE-ready `.canvas.tsx` (`--formats cursor`).
+Export [Cursor canvas](https://cursor.com) `.canvas.tsx` to HTML, PNG, PDF, and IDE-ready `.canvas.tsx` (`--formats cursor`).
 
-Authoring superset: `cursor/canvas` plus `import … from './data/*.{json,csv,tsv}'` ([`@rollup/plugin-dsv`](https://github.com/rollup/plugins/tree/master/packages/dsv)). Cursor emit inlines data with [`ts-morph`](https://github.com/dsherret/ts-morph) + the same `d3-dsv` loaders.
+**Agents:** install the skill — `open-canvas skill ~/.cursor/skills/open-canvas` — then read `SKILL.md` (links Cursor’s native `/canvas` skill + repo overrides).
 
 ## Install
 
 ```bash
 npm install && npm run build:cli
-npm link   # optional global `open-canvas`
+npm link   # optional: global `open-canvas`
 ```
 
 ## Example
@@ -17,15 +17,18 @@ npm link   # optional global `open-canvas`
 open-canvas --canvas example/pushflow.canvas.tsx --formats html,png,pdf,cursor
 ```
 
-Outputs under `example/out/` (`pushflow.html`, `.png`, `.pdf`, `.canvas.tsx` for `cp` into Cursor `canvases/`).
+Outputs in `example/out/`. Authoring uses `cursor/canvas` plus `import … from './data/*.{json,csv,tsv}'` (see `example/`).
 
-## Usage
+## CLI
 
-```bash
-open-canvas --canvas path/to/report.canvas.tsx [--out ./out] [--theme light|dark] [--formats html,png,pdf,jpg,cursor]
-```
+| Command | Description |
+|---------|-------------|
+| `open-canvas --canvas …` | Export (default; `export` subcommand optional) |
+| `open-canvas skill [path]` | Print or install agent `SKILL.md` |
 
-`export` is optional (default subcommand). See [docs/spec.md](docs/spec.md).
+Flags: `--out` (default `./out` beside canvas), `--theme light|dark`, `--formats html,png,pdf,jpg,cursor`, `--title`.
+
+Details: [docs/spec.md](docs/spec.md).
 
 ## License
 

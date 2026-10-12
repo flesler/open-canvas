@@ -1,6 +1,6 @@
+import { csvParse, tsvParse } from "d3-dsv"
 import fs from "node:fs"
 import path from "node:path"
-import { csvParse, tsvParse } from "d3-dsv"
 
 export function loadDataFile(filePath: string): unknown {
   const ext = path.extname(filePath).toLowerCase()
