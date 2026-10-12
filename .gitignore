@@ -4,3 +4,5 @@ dist/
 .cache/
 *.log
 host/entry.tsx
+host/index.html
+canvases/out/
