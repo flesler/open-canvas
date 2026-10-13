@@ -2,6 +2,12 @@
 
 Export Cursor-style `.canvas.tsx` dashboards to HTML, PNG, PDF, and IDE-ready canvases.
 
+## Global Installation
+
+```bash
+npm install -g @flesler/open-canvas
+```
+
 ## Before you write UI
 
 Follow Cursor’s native canvas skill end-to-end for **layout, components, design, and plot labeling**:
