@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, parseDataContent, parseFormats, parseJsonl, titleCaseFromStem } from './util.js'
+import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem } from './util.js'
 
 describe('parseJsonl', () => {
 	it('parses one object per line', () => {
@@ -42,6 +42,12 @@ describe('parseFormats', () => {
 
 	it('rejects unknown', () => {
 		expect(() => parseFormats('gif')).toThrow()
+	})
+})
+
+describe('parseSelectors', () => {
+	it('splits commas and repeated flags', () => {
+		expect(parseSelectors(['#a', '.b, .c'])).toEqual(['#a', '.b', '.c'])
 	})
 })
 

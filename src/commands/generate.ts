@@ -4,7 +4,7 @@ import path from 'node:path'
 import { pathInPkg, pkgRoot, viteCliPath } from '../pkg.js'
 import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
-import { canvasStem, emitCursorCanvas, parseFormats, titleCaseFromStem } from '../util.js'
+import { canvasStem, emitCursorCanvas, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
 
 export type GenerateOptions = {
 	canvas: string;
@@ -14,7 +14,8 @@ export type GenerateOptions = {
 	formats?: string;
 	viewportWidth?: number;
 	viewportHeight?: number;
-	renderOptions?: string
+	renderOptions?: string;
+	selectors?: string | string[]
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
@@ -39,6 +40,9 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	const needsRender = formats.some(
 		f => f === 'png' || f === 'pdf' || f === 'jpg',
 	)
+	const selectors = parseSelectors(opts.selectors)
+	const needsBrowser =
+		needsRender || (Boolean(selectors) && formats.includes('html'))
 
 	fs.mkdirSync(outDir, { recursive: true })
 
@@ -57,7 +61,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		viewportHeight: opts.viewportHeight,
 		renderOptions: opts.renderOptions,
 	})
-	const renderCtx = { outDir, stem, options }
+	const renderCtx = { outDir, stem, options, selectors }
 
 	if (formats.includes('cursor')) {
 		const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)
@@ -86,14 +90,15 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		}
 
 		if (viteExit === null || viteExit === 0) {
-			if (needsRender) {
+			if (needsBrowser) {
 				await render(renderCtx, {
 					png: formats.includes('png'),
 					pdf: formats.includes('pdf'),
 					jpg: formats.includes('jpg'),
+					html: Boolean(selectors) && formats.includes('html'),
 				})
 			}
-			if (formats.includes('html') && fs.existsSync(stagedHtml)) {
+			if (formats.includes('html') && !selectors && fs.existsSync(stagedHtml)) {
 				fs.renameSync(stagedHtml, deliveredHtml)
 			}
 		}

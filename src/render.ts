@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
-import { createRequire } from 'node:module'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import type { Page } from 'playwright'
 import { pkgRoot } from './pkg.js'
@@ -39,20 +39,22 @@ function ensureChromium(): void {
 export type RenderContext = {
 	outDir: string;
 	stem: string;
-	options: RenderOptions
+	options: RenderOptions;
+	selectors?: string[]
 }
 
 export type RenderFormats = {
 	png?: boolean;
 	pdf?: boolean;
-	jpg?: boolean
+	jpg?: boolean;
+	html?: boolean
 }
 
 export async function render(
 	ctx: RenderContext,
 	formats: RenderFormats,
 ): Promise<void> {
-	if (!formats.png && !formats.pdf && !formats.jpg) {
+	if (!formats.png && !formats.pdf && !formats.jpg && !formats.html) {
 		return
 	}
 	const html = htmlPath(ctx)
@@ -76,15 +78,25 @@ export async function render(
 		if (errors.length) {
 			throw new Error(errors.join('\n'))
 		}
+		if (ctx.selectors?.length) {
+			await isolateSelectors(page, ctx.selectors)
+		}
+		if (formats.html) {
+			const out = path.join(ctx.outDir, `${ctx.stem}.html`)
+			fs.writeFileSync(out, await page.content(), 'utf8')
+		}
+		const shot = ctx.selectors?.length
+			? { ...ctx.options.screenshot, fullPage: true }
+			: ctx.options.screenshot
 		if (formats.png) {
 			await page.screenshot({
-				...ctx.options.screenshot,
+				...shot,
 				path: path.join(ctx.outDir, `${ctx.stem}.png`),
 			})
 		}
 		if (formats.jpg) {
 			await page.screenshot({
-				...ctx.options.screenshot,
+				...shot,
 				path: path.join(ctx.outDir, `${ctx.stem}.jpg`),
 				type: 'jpeg',
 				quality: ctx.options.screenshot.quality ?? 90,
@@ -119,4 +131,54 @@ async function writePdf(
 
 function htmlPath(ctx: RenderContext): string {
 	return path.join(ctx.outDir, '_build', 'index.html')
+}
+
+export async function isolateSelectors(
+	page: Page,
+	selectors: string[],
+): Promise<void> {
+	const found = await page.evaluate((sels) => {
+		const seen = new Set<Element>()
+		const nodes: HTMLElement[] = []
+		for (const sel of sels) {
+			for (const el of document.querySelectorAll(sel)) {
+				if (el instanceof HTMLElement && !seen.has(el)) {
+					seen.add(el)
+					nodes.push(el)
+				}
+			}
+		}
+		if (nodes.length === 0) {
+			return false
+		}
+		nodes.sort((a, b) => {
+			const pos = a.compareDocumentPosition(b)
+			if (pos & Node.DOCUMENT_POSITION_FOLLOWING) {
+				return -1
+			}
+			if (pos & Node.DOCUMENT_POSITION_PRECEDING) {
+				return 1
+			}
+			return 0
+		})
+		for (const node of nodes) {
+			node.remove()
+		}
+		const root = document.createElement('div')
+		root.style.display = 'flex'
+		root.style.flexDirection = 'column'
+		root.style.gap = '16px'
+		for (const node of nodes) {
+			root.appendChild(node)
+		}
+		document.body.replaceChildren(root)
+		document.body.style.margin = '0'
+		document.body.style.padding = '16px'
+		document.body.style.boxSizing = 'border-box'
+		document.documentElement.style.height = 'auto'
+		return true
+	}, selectors)
+	if (!found) {
+		throw new Error(`selector not matched: ${selectors.join(', ')}`)
+	}
 }

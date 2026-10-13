@@ -84,6 +84,20 @@ export function parseFormats(raw: string): OutputFormat[] {
 	return list as OutputFormat[]
 }
 
+export function parseSelectors(
+	raw?: string | string[],
+): string[] | undefined {
+	if (!raw) {
+		return undefined
+	}
+	const parts = Array.isArray(raw) ? raw : [raw]
+	const selectors = parts
+		.flatMap(p => p.split(','))
+		.map(s => s.trim())
+		.filter(Boolean)
+	return selectors.length > 0 ? selectors : undefined
+}
+
 export function emitCursorCanvas(canvasPath: string, outPath: string): void {
 	const absCanvas = path.resolve(canvasPath)
 	const canvasDir = path.dirname(absCanvas)

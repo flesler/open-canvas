@@ -155,16 +155,20 @@ const DAG = computeDAGLayout({
 
 function Section({
 	title,
+	id,
 	children,
 }: {
 	title: string;
+	id?: string;
 	children: StackProps['children']
 }) {
 	return (
-		<Stack gap={10}>
-			<H2>{title}</H2>
-			{children}
-		</Stack>
+		<div id={id}>
+			<Stack gap={10}>
+				<H2>{title}</H2>
+				{children}
+			</Stack>
+		</div>
 	)
 }
 
@@ -352,7 +356,7 @@ export default function ShowcaseCanvas() {
 			</Grid>
 
 			{/* Charts, tables & context --------------------------------------- */}
-			<Section title="Charts, tables & context">
+			<Section id="section-charts" title="Charts, tables & context">
 				<Stack gap={12}>
 					<Row gap={8} wrap>
 						{(['charts', 'table', 'context'] as const).map(key => (

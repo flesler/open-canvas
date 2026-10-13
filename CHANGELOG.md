@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.2.0]
+#### 2026-10-13
+
+##### Added
+- `generate --selector` (repeatable / comma-separated): isolate matched nodes for `html`, `png`, `pdf`, `jpg` via `querySelectorAll` (head preserved).
+
+##### Changed
+- Showcase `Section` supports `id` for export targets; visual verify script uses `#section-charts`.
+
 ## [1.1.3]
 #### 2026-10-13
 

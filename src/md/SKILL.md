@@ -40,6 +40,9 @@ Use `.map()` in JSX; no fetch or extra npm deps in the canvas file.
 |`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
 |`--width` / `--height`|Render viewport (default `1280`×`900`)|
 |`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf` — [API](https://playwright.dev/docs/api/class-page)|
+|`--selector`|CSS selector(s), repeat or comma-separated; each uses `querySelectorAll`; keeps `<head>`, replaces `<body>` with matches in document order|
+
+No auto `id`s — add `id`, `class`, or `data-*` on export targets (e.g. `id="section-charts"` or `class="export-section"`).
 
 ```bash
 open-canvas generate path/to/report.canvas.tsx

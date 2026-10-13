@@ -49,6 +49,12 @@ program
 		'--render-options <file|json>',
 		'Playwright options JSON (launch / page / screenshot / pdf) — https://playwright.dev/docs/api/class-page',
 	)
+	.option(
+		'--selector <css>',
+		'export matched nodes only (repeatable; comma-separated ok; querySelectorAll per selector)',
+		(value: string, previous: string[]) => previous.concat([value]),
+		[],
+	)
 	.action(async (canvas: string, opts) => {
 		try {
 			await runGenerate({
@@ -60,6 +66,7 @@ program
 				viewportWidth: opts.width,
 				viewportHeight: opts.height,
 				renderOptions: opts.renderOptions,
+				selectors: opts.selector,
 			})
 		} catch (e) {
 			console.error(e instanceof Error ? e.message : e)
