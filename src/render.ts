@@ -48,13 +48,18 @@ export type RenderFormats = {
 	jpg?: boolean
 }
 
-export async function render(ctx: RenderContext, formats: RenderFormats): Promise<void> {
+export async function render(
+	ctx: RenderContext,
+	formats: RenderFormats,
+): Promise<void> {
 	if (!formats.png && !formats.pdf && !formats.jpg) {
 		return
 	}
 	const html = htmlPath(ctx)
 	if (!fs.existsSync(html)) {
-		throw new Error(`HTML artifact missing: ${html} (run generate with html, png, pdf, or jpg)`)
+		throw new Error(
+			`HTML artifact missing: ${html} (run generate with html, png, pdf, or jpg)`,
+		)
 	}
 	ensureChromium()
 	const { chromium } = await import('playwright')
@@ -93,9 +98,15 @@ export async function render(ctx: RenderContext, formats: RenderFormats): Promis
 	}
 }
 
-async function writePdf(page: Page, ctx: RenderContext, outPath: string): Promise<void> {
+async function writePdf(
+	page: Page,
+	ctx: RenderContext,
+	outPath: string,
+): Promise<void> {
 	const widthPx = ctx.options.page.viewport.width
-	const height = await page.evaluate(() => document.documentElement.scrollHeight)
+	const height = await page.evaluate(
+		() => document.documentElement.scrollHeight,
+	)
 	const pdf = { ...ctx.options.pdf }
 	if (!pdf.width) {
 		pdf.width = `${widthPx}px`
@@ -107,5 +118,5 @@ async function writePdf(page: Page, ctx: RenderContext, outPath: string): Promis
 }
 
 function htmlPath(ctx: RenderContext): string {
-	return path.join(ctx.outDir, `${ctx.stem}.html`)
+	return path.join(ctx.outDir, '_build', 'index.html')
 }

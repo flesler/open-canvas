@@ -33,8 +33,12 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	}
 
 	const formats = parseFormats(opts.formats ?? 'html,png,pdf')
-	const needsHtml = formats.some(f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg')
-	const needsRender = formats.some(f => f === 'png' || f === 'pdf' || f === 'jpg')
+	const needsHtml = formats.some(
+		f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg',
+	)
+	const needsRender = formats.some(
+		f => f === 'png' || f === 'pdf' || f === 'jpg',
+	)
 
 	fs.mkdirSync(outDir, { recursive: true })
 
@@ -61,24 +65,44 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		console.log(`→ ${cursorOut}`)
 	}
 
-	if (needsHtml) {
-		const viteCli = viteCliPath()
-		const vite = spawnSync(process.execPath, [viteCli, 'build', '--config', pathInPkg('vite.config.ts')], {
-			cwd: pkgRoot,
-			stdio: 'inherit',
-			env,
-		})
-		if (vite.status !== 0) {
-			process.exit(vite.status ?? 1)
+	const viteBuildDir = path.join(outDir, '_build')
+	const stagedHtml = path.join(viteBuildDir, 'index.html')
+	const deliveredHtml = path.join(outDir, `${stem}.html`)
+	let viteExit: number | null = null
+
+	try {
+		if (needsHtml) {
+			const viteCli = viteCliPath()
+			const vite = spawnSync(
+				process.execPath,
+				[viteCli, 'build', '--config', pathInPkg('vite.config.ts')],
+				{
+					cwd: pkgRoot,
+					stdio: 'inherit',
+					env,
+				},
+			)
+			viteExit = vite.status ?? 1
 		}
+
+		if (viteExit === null || viteExit === 0) {
+			if (needsRender) {
+				await render(renderCtx, {
+					png: formats.includes('png'),
+					pdf: formats.includes('pdf'),
+					jpg: formats.includes('jpg'),
+				})
+			}
+			if (formats.includes('html') && fs.existsSync(stagedHtml)) {
+				fs.renameSync(stagedHtml, deliveredHtml)
+			}
+		}
+	} finally {
+		fs.rmSync(viteBuildDir, { recursive: true, force: true })
 	}
 
-	if (needsRender) {
-		await render(renderCtx, {
-			png: formats.includes('png'),
-			pdf: formats.includes('pdf'),
-			jpg: formats.includes('jpg'),
-		})
+	if (viteExit !== null && viteExit !== 0) {
+		process.exit(viteExit)
 	}
 
 	for (const f of formats) {
