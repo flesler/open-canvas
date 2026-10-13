@@ -21,7 +21,7 @@ Grid stretch beside a much taller sibling is an **author layout** issue in examp
 
 ## SDK contract
 
-`cursor-canvas-web` `test:contract` checks the **committed** `test/contract/cursor-sdk/` snapshot. It does **not** copy `~/.cursor/skills-cursor/canvas/sdk` on CI or pre-push (Cursor versions differ per machine).
+`cursor-canvas-web` `test:contract` builds the lib and prints missing SDK names. It does **not** fail on a new type or export. `pnpm run test:contract:strict` is the optional full `tsc` check. It does **not** copy `~/.cursor/skills-cursor/canvas/sdk` on CI or pre-push.
 
 - Refresh the snapshot only on purpose: `pnpm run sync:sdk` in the shim repo, review the diff, commit it with the shim changes.
 - Before that bump, `pnpm run check:sdk-live` (no writes). The shim must export every name the live skill has **and** every name the committed snapshot has — a superset, so older and newer Cursor skills both typecheck.

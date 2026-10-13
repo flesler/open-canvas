@@ -3,7 +3,7 @@
  *
  * Single example for verify, smoke, contract, and the README screenshot.
  */
-import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, colorPalette, computeDAGLayout, mergeStyle, useCanvasAction, useCanvasState, useHostTheme, useMemo, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
+import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, colorPalette, computeDAGLayout, mergeStyle, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
 import outlierRows from './data/outliers.csv'
@@ -257,6 +257,12 @@ export default function ShowcaseCanvas() {
 	const [selectedTodo, setSelectedTodo] = useCanvasState('show.todo', '3')
 
 	const theme = useHostTheme()
+	const mounts = useRef(0)
+	const [hookMark, setHookMark] = useState('pending')
+	useEffect(() => {
+		mounts.current += 1
+		setHookMark(`mounted ${mounts.current}`)
+	}, [])
 	const dimmed = useMemo(
 		() =>
 			new Set(
@@ -747,6 +753,36 @@ export default function ShowcaseCanvas() {
 							</Row>
 						))}
 					</Row>
+					<Text size="small" tone="secondary">
+						Category hues (canvases read <Code>theme.category</Code>):
+					</Text>
+					<Row gap={10} wrap>
+						{(
+							[
+								['orange', theme.category.orange],
+								['blue', theme.category.blue],
+								['gray', theme.category.gray],
+							] as const
+						).map(([key, hex]) => (
+							<Row key={key} gap={6}>
+								<span
+									style={{
+										width: 16,
+										height: 16,
+										borderRadius: 4,
+										background: hex,
+										border: `1px solid ${theme.stroke.secondary}`,
+									}}
+								/>
+								<Text size="small" tone="tertiary">
+									category.{key}
+								</Text>
+							</Row>
+						))}
+					</Row>
+					<Text size="small" tone="tertiary">
+						React hooks from <Code>cursor/canvas</Code>: {hookMark}
+					</Text>
 				</Stack>
 				<Row gap={10} wrap>
 					{(['primary', 'secondary', 'tertiary', 'quaternary'] as const).map(
@@ -806,7 +842,7 @@ export default function ShowcaseCanvas() {
 							<CardHeader>Phase duration (p50 vs p90)</CardHeader>
 							<CardBody>
 								<Text style={cap}>Y: seconds</Text>
-								<BarChart categories={phases} series={durationSeries} height={260} valueSuffix="s" />
+								<BarChart categories={phases} series={durationSeries} height={260} valuePrefix="$" valueSuffix="s" />
 							</CardBody>
 						</Card>
 						<Card>
