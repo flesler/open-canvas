@@ -62,7 +62,10 @@ export function viteResolveForCanvas(canvasPath: string) {
 	const cc = cursorCanvasDir()
 	const reactPkg = path.dirname(require.resolve('react/package.json'))
 	const reactDomPkg = path.dirname(require.resolve('react-dom/package.json'))
-	const mantine = (name: string) => path.join(pkgRoot, 'node_modules', name)
+	const mantineCoreStyles = require.resolve('@mantine/core/styles.css')
+	const mantineChartsStyles = require.resolve('@mantine/charts/styles.css')
+	const mantineRoot = (pkg: string) =>
+		path.dirname(path.dirname(require.resolve(pkg)))
 	return {
 		modules: [path.join(pkgRoot, 'node_modules'), 'node_modules'],
 		alias: {
@@ -71,9 +74,11 @@ export function viteResolveForCanvas(canvasPath: string) {
 			'react/jsx-runtime': path.join(reactPkg, 'jsx-runtime.js'),
 			'react-dom/client': path.join(reactDomPkg, 'client.js'),
 			'react/jsx-dev-runtime': path.join(reactPkg, 'jsx-dev-runtime.js'),
-			'@mantine/core': mantine('@mantine/core'),
-			'@mantine/hooks': mantine('@mantine/hooks'),
-			'@mantine/charts': mantine('@mantine/charts'),
+			'@mantine/core': mantineRoot('@mantine/core'),
+			'@mantine/core/styles.css': mantineCoreStyles,
+			'@mantine/hooks': mantineRoot('@mantine/hooks'),
+			'@mantine/charts': mantineRoot('@mantine/charts'),
+			'@mantine/charts/styles.css': mantineChartsStyles,
 			'cursor/canvas': path.join(cc, 'dist', 'cursor-canvas.js'),
 			'@flesler/cursor-canvas-web/runtime': path.join(
 				cc,

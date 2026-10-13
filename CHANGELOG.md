@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.1.0]
+#### 2026-10-13
+
+##### Changed
+- Dependency **`@flesler/cursor-canvas-web@^1.0.0`** (npm fork; SDK contract + Mantine 8).
+- Vite resolve dedupes React/Mantine; `ensureChromium` for headless renders.
+
 ## [1.0.2]
 #### 2026-10-13
 

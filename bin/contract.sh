@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
-# Contract smoke: shim export parity + open-canvas verify on fixture canvases.
+# Contract smoke: shim export parity (fork repo) + open-canvas verify on fixtures.
+# Demo canvas verify is optional cross-check when ../cursor-canvas-web exists;
+# the fork ships that canvas via its own Vite app + GitHub Pages (see deploy.yml).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SHIM_ROOT="${CURSOR_CANVAS_WEB_ROOT:-$ROOT/../cursor-canvas-web}"
-FIXTURES="${CANVAS_CONTRACT_FIXTURES:-$ROOT/example/build-plane.canvas.tsx}"
+DEFAULT_FIXTURES="$ROOT/example/build-plane.canvas.tsx"
+DEMO_CANVAS="$SHIM_ROOT/.cursor/canvases/demo.canvas.tsx"
+if [[ -f "$DEMO_CANVAS" ]]; then
+	DEFAULT_FIXTURES="$DEFAULT_FIXTURES $DEMO_CANVAS"
+fi
+FIXTURES="${CANVAS_CONTRACT_FIXTURES:-$DEFAULT_FIXTURES}"
 
 if [[ -d "$SHIM_ROOT" ]]; then
 	echo "contract: cursor-canvas-web at $SHIM_ROOT"
