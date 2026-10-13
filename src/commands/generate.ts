@@ -1,11 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { renderJpg, renderPdf, renderPng } from '../render.js'
+import { renderRaster } from '../render.js'
 import { canvasStem, emitCursorCanvas, parseFormats, titleCaseFromStem } from '../util.js'
-
-const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
+import { pkgRoot, viteCliPath } from '../vite-bin.js'
 
 export type GenerateOptions = {
 	canvas: string;
@@ -32,17 +30,17 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
 	const formats = parseFormats(opts.formats ?? 'html,png,pdf')
 	const needsHtml = formats.some(f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg')
-	const needsPng = formats.some(f => f === 'png' || f === 'pdf' || f === 'jpg')
+	const needsRaster = formats.some(f => f === 'png' || f === 'pdf' || f === 'jpg')
 
 	fs.mkdirSync(outDir, { recursive: true })
 
 	const env: NodeJS.ProcessEnv = {
 		...process.env,
-		OPEN_CANVAS_STEM: stem,
-		OPEN_CANVAS_OUT_DIR: outDir,
-		OPEN_CANVAS_THEME: theme,
-		OPEN_CANVAS_TITLE: title,
-		OPEN_CANVAS_CANVAS_PATH: canvasPath,
+		OPENCANVAS_STEM: stem,
+		OPENCANVAS_OUT_DIR: outDir,
+		OPENCANVAS_THEME: theme,
+		OPENCANVAS_TITLE: title,
+		OPENCANVAS_CANVAS_PATH: canvasPath,
 	}
 
 	const renderCtx = { outDir, stem, theme }
@@ -54,7 +52,8 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	}
 
 	if (needsHtml) {
-		const vite = spawnSync('npx', ['vite', 'build', '--config', path.join(pkgRoot, 'vite.config.ts')], {
+		const viteCli = viteCliPath(pkgRoot)
+		const vite = spawnSync(process.execPath, [viteCli, 'build', '--config', path.join(pkgRoot, 'vite.config.ts')], {
 			cwd: pkgRoot,
 			stdio: 'inherit',
 			env,
@@ -64,14 +63,12 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		}
 	}
 
-	if (needsPng) {
-		await renderPng(renderCtx)
-	}
-	if (formats.includes('pdf')) {
-		await renderPdf(renderCtx)
-	}
-	if (formats.includes('jpg')) {
-		await renderJpg(renderCtx)
+	if (needsRaster) {
+		await renderRaster(renderCtx, {
+			png: formats.includes('png'),
+			pdf: formats.includes('pdf'),
+			jpg: formats.includes('jpg'),
+		})
 	}
 
 	for (const f of formats) {

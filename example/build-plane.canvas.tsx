@@ -1,21 +1,23 @@
 import {
-  BarChart,
-  Callout,
-  Card,
-  CardBody,
-  CardHeader,
-  Grid,
-  H1,
-  LineChart,
-  Stack,
-  Stat,
-  Table,
-  Text,
-  useHostTheme,
-  type ChartSeries,
+    BarChart,
+    Callout,
+    Card,
+    CardBody,
+    CardHeader,
+    Grid,
+    H1,
+    LineChart,
+    Stack,
+    Stat,
+    Table,
+    Text,
+    useHostTheme,
+    type ChartSeries,
 } from "cursor/canvas"
 import daily from "./data/daily.tsv"
+import deployEvents from "./data/deploy-events.jsonl"
 import outlierRows from "./data/outliers.csv"
+import phaseRssMb from "./data/phase-rss.yaml"
 import report from "./data/report.json"
 
 const outlierHeaders = ["App", "Stack", "Total", "Peak RSS", "Files@pack"]
@@ -30,9 +32,9 @@ const outliers = {
   ]),
 }
 
-export default function PushflowCanvas() {
+export default function BuildPlaneCanvas() {
   const theme = useHostTheme()
-  const { meta, kpis, durationByPhase, phaseRssMb } = report
+  const { meta, kpis, durationByPhase } = report
   const cap = { color: theme.text.tertiary, fontSize: 12 }
 
   const phases = durationByPhase.rows.map((r) => r.phase)
@@ -49,7 +51,9 @@ export default function PushflowCanvas() {
         <Text style={cap}>
           {meta.periodStart} → {meta.periodEnd} · {meta.deployCount.toLocaleString()} deploys
         </Text>
-        <Text style={cap}>Source: Pushflow synthetic OLAP</Text>
+        <Text style={cap}>
+          Source: synthetic build-plane OLAP · {deployEvents.length} tail events (JSONL)
+        </Text>
       </Stack>
 
       <Grid columns={3} gap={12}>
@@ -80,8 +84,8 @@ export default function PushflowCanvas() {
           <CardBody>
             <Text style={cap}>Y: megabytes</Text>
             <BarChart
-              categories={phaseRssMb.rows.map((r) => r.phase)}
-              series={[{ name: "p90", data: phaseRssMb.rows.map((r) => r.p90), tone: "danger" }]}
+              categories={phaseRssMb.rows?.map((r) => r.phase) ?? []}
+              series={[{ name: "p90", data: phaseRssMb.rows?.map((r) => r.p90) ?? [], tone: "danger" }]}
               height={260}
               valueSuffix=" MB"
             />

@@ -1,7 +1,7 @@
-import { csvParse, tsvParse } from 'd3-dsv'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Project } from 'ts-morph'
+import { DATA_FILE_EXT, loadDataFile } from './load-data-file.js'
 
 export function canvasStem(canvasPath: string): string {
 	const base = path.basename(canvasPath)
@@ -51,7 +51,7 @@ export function emitCursorCanvas(canvasPath: string, outPath: string): void {
 			throw new Error(`cursor emit: only relative data imports allowed (got ${spec})`)
 		}
 		const resolved = path.resolve(canvasDir, spec)
-		if (!DATA_EXT.test(resolved)) {
+		if (!DATA_FILE_EXT.test(resolved)) {
 			throw new Error(`cursor emit: not a data file import: ${spec}`)
 		}
 		const binding = imp.getDefaultImport()
@@ -68,21 +68,4 @@ export function emitCursorCanvas(canvasPath: string, outPath: string): void {
 	const out = inlines.length > 0 ? `${inlines.join('\n\n')}\n\n${rest}\n` : `${rest}\n`
 	fs.mkdirSync(path.dirname(outPath), { recursive: true })
 	fs.writeFileSync(outPath, out)
-}
-
-const DATA_EXT = /\.(json|csv|tsv)$/i
-
-function loadDataFile(filePath: string): unknown {
-	const ext = path.extname(filePath).toLowerCase()
-	const raw = fs.readFileSync(filePath, 'utf8')
-	if (ext === '.json') {
-		return JSON.parse(raw)
-	}
-	if (ext === '.csv') {
-		return csvParse(raw)
-	}
-	if (ext === '.tsv') {
-		return tsvParse(raw)
-	}
-	throw new Error(`unsupported data file: ${filePath}`)
 }

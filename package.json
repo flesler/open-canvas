@@ -1,19 +1,20 @@
 {
-  "name": "open-canvas",
+  "name": "opencanvas",
   "version": "1.0.0",
-  "description": "Export Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
+  "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
-  "repository": "github:flesler/open-canvas",
+  "repository": "github:flesler/opencanvas",
   "bin": {
-    "open-canvas": "./dist/cli.js"
+    "opencanvas": "./dist/cli.js"
   },
   "engines": {
     "node": "^24.11.1",
     "npm": "^11.0.0"
   },
   "scripts": {
-    "build:cli": "tsc -p tsconfig.cli.json && node --input-type=module -e \"import fs from 'node:fs'; const p='dist/cli.js'; fs.writeFileSync(p, '#!/usr/bin/env node\\n' + fs.readFileSync(p));\"",
+    "build": "npm run build:cli",
+    "build:cli": "rm -rf dist && tsc -p tsconfig.cli.json && node --input-type=module -e \"import fs from 'node:fs'; const p='dist/cli.js'; fs.writeFileSync(p, '#!/usr/bin/env node\\n' + fs.readFileSync(p));\"",
     "prepublishOnly": "npm run build:cli",
     "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
     "eslint": "eslint --cache --cache-strategy content",
@@ -36,45 +37,46 @@
   "dependencies": {
     "@mantine/charts": "^8.3.1",
     "@mantine/core": "^8.3.1",
-    "@rollup/plugin-dsv": "^3.0.5",
     "@thisismydesign/cursor-canvas-web": "^0.3.0",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
     "commander": "^13.1.0",
     "d3-dsv": "^3.0.1",
-    "pdf-lib": "^1.17.1",
     "playwright": "^1.55.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^2.15.4",
-    "ts-morph": "^25.0.1"
+    "ts-morph": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^7.1.9",
+    "vite-plugin-singlefile": "^2.3.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/d3-dsv": "^3.0.7",
     "@types/node": "^22.10.0",
-    "@types/react": "^19.2.3",
-    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.68.0",
     "@typescript-eslint/parser": "^8.68.0",
-    "@vitejs/plugin-react": "^5.0.4",
     "auto-changelog": "^2.6.0",
     "eslint": "^10.9.1",
     "eslint-plugin-import-newlines": "^2.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
-    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.7.2",
-    "vite": "^7.1.9",
-    "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^4.1.11"
   },
   "files": [
     "dist",
+    "LICENSE",
     "src/shell",
+    "src/types",
     "src/md/SKILL.md",
     "vite.config.ts",
+    "tsconfig.json",
     "tsconfig.cli.json"
   ]
 }

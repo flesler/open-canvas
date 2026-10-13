@@ -1,9 +1,10 @@
 import { Command } from 'commander'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
+import { runVerify } from './commands/verify.js'
 
 const program = new Command()
-	.name('open-canvas')
+	.name('opencanvas')
 	.description('Generate HTML, PNG, PDF, and IDE-ready canvas from .canvas.tsx')
 
 program
@@ -12,6 +13,19 @@ program
 	.argument('[path]', 'directory or file (writes SKILL.md)')
 	.action((path?: string) => {
 		runSkill(path)
+	})
+
+program
+	.command('verify')
+	.description('Typecheck a .canvas.tsx (cursor/canvas + data imports)')
+	.requiredOption('--canvas <path>', 'path to *.canvas.tsx')
+	.action((opts: { canvas: string }) => {
+		try {
+			runVerify(opts.canvas)
+		} catch (e) {
+			console.error(e instanceof Error ? e.message : e)
+			process.exit(1)
+		}
 	})
 
 program

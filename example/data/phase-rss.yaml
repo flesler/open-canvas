@@ -1,0 +1,13 @@
+rows:
+  - phase: clone
+    p90: 680
+  - phase: deps
+    p90: 1843
+  - phase: compile
+    p90: 2104
+  - phase: assets
+    p90: 1320
+  - phase: pack
+    p90: 918
+  - phase: release
+    p90: 520

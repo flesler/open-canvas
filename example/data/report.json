@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Pushflow build plane — 7-day OLAP",
+    "title": "Build plane — 7-day OLAP",
     "periodStart": "2026-10-05",
     "periodEnd": "2026-10-11",
     "deployCount": 4187
@@ -21,16 +21,6 @@
       { "phase": "assets", "p50": 21.3, "p90": 94.2 },
       { "phase": "pack", "p50": 7.8, "p90": 23.6 },
       { "phase": "release", "p50": 5.9, "p90": 13.8 }
-    ]
-  },
-  "phaseRssMb": {
-    "rows": [
-      { "phase": "clone", "p90": 680 },
-      { "phase": "deps", "p90": 1843 },
-      { "phase": "compile", "p90": 2104 },
-      { "phase": "assets", "p90": 1320 },
-      { "phase": "pack", "p90": 918 },
-      { "phase": "release", "p90": 520 }
     ]
   }
 }
