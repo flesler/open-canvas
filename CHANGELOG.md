@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.1.3]
+#### 2026-10-13
+
+##### Changed
+- Showcase exercises newer SDK surface (theme categories, React hooks, chart prefixes).
+- Pairs with **`@flesler/cursor-canvas-web@1.0.2`** (manual SDK contract; chart prop tolerance). Bump `^1.0.2` in `package.json` / lock after shim is on npm.
+
 ## [1.1.2]
 #### 2026-10-13
 
