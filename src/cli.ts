@@ -1,17 +1,12 @@
 import { Command } from 'commander'
-import { createRequire } from 'node:module'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVerify } from './commands/verify.js'
-
-const require = createRequire(path.join(path.dirname(fileURLToPath(import.meta.url)), 'package.json'))
-const { version } = require('../package.json') as { version: string }
+import { cliName, description, version } from './pkg.js'
 
 const program = new Command()
-	.name('open-canvas')
-	.description('Charts, tables, and canvas visuals from .canvas.tsx to HTML, PNG, PDF, and more')
+	.name(cliName)
+	.description(description)
 	.version(version, '-v, --version', 'print version')
 
 program

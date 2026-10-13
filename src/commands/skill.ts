@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { pathInPkg } from '../pkg.js'
+import { pathInPkg } from '../paths.js'
 
 const skillPath = pathInPkg('src', 'md', 'SKILL.md')
 

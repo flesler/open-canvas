@@ -7,9 +7,10 @@ import { viteSingleFile } from "vite-plugin-singlefile"
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 const pkgRequire = createRequire(path.join(configDir, "package.json"));
-const { pkgRoot, viteResolveForCanvas } = pkgRequire(
-  "./dist/pkg.js",
-) as typeof import("./dist/pkg.js");
+const { pkgRoot } = pkgRequire("./dist/pkg.js") as typeof import("./dist/pkg.js");
+const { viteResolveForCanvas } = pkgRequire(
+  "./dist/paths.js",
+) as typeof import("./dist/paths.js");
 const { viteDataModule } = pkgRequire(
   "./dist/util.js",
 ) as typeof import("./dist/util.js");

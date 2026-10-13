@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { pathInPkg } from '../pkg.js'
+import { pathInPkg } from '../paths.js'
 import { runVerify } from './verify.js'
 
 const exampleCanvas = pathInPkg('example', 'showcase.canvas.tsx')

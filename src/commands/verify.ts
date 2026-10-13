@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
-import { pathInPkg, verifyTypeScriptPaths } from '../pkg.js'
+import { pathInPkg, verifyTypeScriptPaths } from '../paths.js'
 
 const ambientTypes = pathInPkg('src', 'types', 'ambient.d.ts')
 

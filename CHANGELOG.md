@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.2.1]
+#### 2026-10-13
+
+##### Added
+- GitHub Pages live showcase (`npm run build:pages`, deploy workflow).
+
+##### Changed
+- User-facing README and npm description (agent-ready visuals, not “export from Cursor”).
+- CLI `name` / `description` / `version` read from `package.json` via `src/pkg.ts`; path helpers in `src/paths.ts`.
+
 ## [1.2.0]
 #### 2026-10-13
 
