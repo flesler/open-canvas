@@ -7,9 +7,11 @@ import { defineConfig, type Plugin } from "vite"
 import { viteSingleFile } from "vite-plugin-singlefile"
 
 const pkgRoot = path.dirname(fileURLToPath(import.meta.url))
-const stem = process.env.OPEN_CANVAS_STEM ?? "review"
+const stem = process.env.OPEN_CANVAS_STEM ?? "index"
 const outDir = process.env.OPEN_CANVAS_OUT_DIR ?? path.join(pkgRoot, "example", "out")
 const canvasPath = process.env.OPEN_CANVAS_CANVAS_PATH
+const theme = process.env.OPEN_CANVAS_THEME === "dark" ? "dark" : "light"
+const title = process.env.OPEN_CANVAS_TITLE ?? "Canvas"
 const viteBuildDir = path.join(outDir, "_build")
 const htmlOut = path.join(outDir, `${stem}.html`)
 
@@ -32,16 +34,32 @@ function flatHtmlArtifact(): Plugin {
   }
 }
 
+function htmlTitle(): Plugin {
+  return {
+    name: "html-title",
+    transformIndexHtml(html) {
+      return html.replace("<title>Canvas</title>", `<title>${escapeHtml(title)}</title>`)
+    },
+  }
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+}
+
 export default defineConfig({
   base: "./",
-  plugins: [react(), dsv(), viteSingleFile(), flatHtmlArtifact()],
+  plugins: [react(), dsv(), htmlTitle(), viteSingleFile(), flatHtmlArtifact()],
+  define: {
+    __OPEN_CANVAS_THEME__: JSON.stringify(theme),
+  },
   resolve: {
     alias: {
       "cursor/canvas": "@thisismydesign/cursor-canvas-web",
       "@open-canvas/user-canvas": canvasPath,
     },
   },
-  root: path.join(pkgRoot, "host"),
+  root: path.join(pkgRoot, "src", "shell"),
   build: {
     outDir: viteBuildDir,
     emptyOutDir: true,

@@ -1,9 +1,6 @@
 node_modules/
-out/
 dist/
 .cache/
 *.log
-host/entry.tsx
-host/index.html
 example/out/
 **/out/_build/

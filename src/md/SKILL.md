@@ -9,15 +9,15 @@ Follow Cursor’s native canvas skill end-to-end for **layout, components, desig
 - Skill file: `~/.cursor/skills-cursor/canvas/SKILL.md`
 - SDK types: `~/.cursor/skills-cursor/canvas/sdk/index.d.ts`
 
-Do **not** duplicate those rules here. This skill only adds what differs when authoring **in a repo** and shipping via **`open-canvas` CLI**.
+Do **not** duplicate those rules here. This skill only adds what differs when authoring **in a repo** and shipping via `open-canvas` CLI.
 
 ## Authoring overrides (repo / export lane)
 
-| Cursor IDE skill | open-canvas authoring |
-|------------------|------------------------|
-| Import only `cursor/canvas` | Also: `import x from './data/*.{json,csv,tsv}'` (relative paths beside the canvas) |
-| Embed all data inline | Data lives in `data/` files; canvas imports them |
-| One file, no helpers | Still one `.canvas.tsx`; data files are separate |
+|Cursor IDE skill|open-canvas authoring|
+|---|---|
+|Import only `cursor/canvas`|Also: `import x from './data/*.{json,csv,tsv}'` (relative paths beside the canvas)|
+|Embed all data inline|Data lives in `data/` files; canvas imports them|
+|One file, no helpers|Still one `.canvas.tsx`; data files are separate|
 
 Example layout:
 
@@ -38,19 +38,19 @@ Map imported data in JSX with `.map()` — no fetch, no extra npm imports in the
 
 ## CLI
 
-Default command is **export** (subcommand optional).
+Default command is **generate** (subcommand optional).
 
 ```bash
 open-canvas --canvas path/to/report.canvas.tsx
-open-canvas export --canvas path/to/report.canvas.tsx
+open-canvas generate --canvas path/to/report.canvas.tsx
 ```
 
-| Flag | Default |
-|------|---------|
-| `--out` | `./out` next to the canvas file |
-| `--title` | Title case of canvas stem |
-| `--theme` | `light` (`light` or `dark` only) |
-| `--formats` | `html,png,pdf` — also `jpg`, `cursor` |
+|Flag|Default|
+|---|---|
+|`--out`|`./out` next to the canvas file|
+|`--title`|Title case of canvas stem|
+|`--theme`|`light` (`light` or `dark` only)|
+|`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
 
 ```bash
 open-canvas --canvas my-report.canvas.tsx --formats html,png,pdf,cursor

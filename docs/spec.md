@@ -22,7 +22,7 @@ example/
 
 ## CLI
 
-Default subcommand: **`export`**.
+Default subcommand: **`generate`**.
 
 ```bash
 open-canvas --canvas example/pushflow.canvas.tsx --formats html,png,pdf,cursor
@@ -41,4 +41,4 @@ Writes `{out}/{stem}.canvas.tsx` with data imports inlined (`ts-morph` + `d3-dsv
 
 ### `skill [path]`
 
-Prints `src/SKILL.md` or writes `path/SKILL.md` (directory) / `path` (file).
+Prints `src/md/SKILL.md` or writes `path/SKILL.md` (directory) / `path` (file).

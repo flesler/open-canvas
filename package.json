@@ -6,23 +6,24 @@
   "license": "MIT",
   "repository": "github:flesler/open-canvas",
   "bin": {
-    "open-canvas": "./bin/open-canvas.js"
+    "open-canvas": "./dist/cli.js"
   },
   "scripts": {
-    "dev": "vite",
-    "build:cli": "tsc -p tsconfig.cli.json",
+    "build:cli": "tsc -p tsconfig.cli.json && node --input-type=module -e \"import fs from 'node:fs'; const p='dist/cli.js'; fs.writeFileSync(p, '#!/usr/bin/env node\\n' + fs.readFileSync(p));\"",
     "prepublishOnly": "npm run build:cli"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.1",
     "@mantine/core": "^8.3.1",
+    "@rollup/plugin-dsv": "^3.0.5",
     "@thisismydesign/cursor-canvas-web": "^0.3.0",
+    "commander": "^13.1.0",
+    "d3-dsv": "^3.0.1",
     "pdf-lib": "^1.17.1",
+    "playwright": "^1.55.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^2.15.4",
-    "@rollup/plugin-dsv": "^3.0.5",
-    "d3-dsv": "^3.0.1",
     "ts-morph": "^25.0.1"
   },
   "devDependencies": {
@@ -31,18 +32,15 @@
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.4",
-    "playwright": "^1.55.1",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.9",
     "vite-plugin-singlefile": "^2.3.0"
   },
   "files": [
-    "bin",
     "dist",
-    "host",
-    "scripts",
-    "src/SKILL.md",
+    "src/shell",
+    "src/md/SKILL.md",
     "vite.config.ts",
     "tsconfig.cli.json"
   ]

@@ -1,78 +1,40 @@
-import { runExport, type ExportOptions } from "./export.js"
-import { runSkill } from "./skill.js"
+import { Command } from "commander"
+import { runGenerate } from "./commands/generate.js"
+import { runSkill } from "./commands/skill.js"
 
-function usage(): void {
-  console.error(`Usage:
-  open-canvas [--canvas <path.canvas.tsx>] [export flags…]
-  open-canvas export --canvas <path.canvas.tsx> [flags…]
-  open-canvas skill [path]   print SKILL.md or write to path/SKILL.md
+const program = new Command()
+  .name("open-canvas")
+  .description("Generate HTML, PNG, PDF, and IDE-ready canvas from .canvas.tsx")
 
-Export flags:
-  --canvas <path>   required (*.canvas.tsx)
-  --out <dir>       default: ./out next to canvas file
-  --title <text>    default: title case of canvas stem
-  --theme light|dark   default: light
-  --formats <list>  default: html,png,pdf  (html,png,pdf,jpg,cursor)
-`)
-}
+program
+  .command("skill")
+  .description("Print or install agent SKILL.md")
+  .argument("[path]", "directory or file (writes SKILL.md)")
+  .action((path?: string) => {
+    runSkill(path)
+  })
 
-function parseExportArgs(argv: string[]): ExportOptions {
-  const opts: ExportOptions = {}
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]
-    const next = argv[i + 1]
-    if (a === "--canvas" && next) {
-      opts.canvas = next
-      i++
-    } else if (a === "--out" && next) {
-      opts.out = next
-      i++
-    } else if (a === "--title" && next) {
-      opts.title = next
-      i++
-    } else if (a === "--theme" && next) {
-      opts.theme = next as "light" | "dark"
-      i++
-    } else if (a === "--formats" && next) {
-      opts.formats = next
-      i++
-    } else if (a === "--help" || a === "-h") {
-      usage()
-      process.exit(0)
-    } else {
-      throw new Error(`unknown argument: ${a}`)
+program
+  .command("generate", { isDefault: true })
+  .description("Build artifacts from a canvas file")
+  .requiredOption("--canvas <path>", "path to *.canvas.tsx")
+  .option("--out <dir>", "output directory (default: ./out next to canvas)", "out")
+  .option("--title <text>", "HTML document title")
+  .option("--theme <mode>", "light or dark", "light")
+  .option("--formats <list>", "comma-separated: html,png,pdf,jpg,cursor", "html,png,pdf")
+  .action(async (opts) => {
+    try {
+      await runGenerate({
+        canvas: opts.canvas,
+        out: opts.out,
+        title: opts.title,
+        theme: opts.theme as "light" | "dark",
+        formats: opts.formats,
+      })
+    } catch (e) {
+      console.error(e instanceof Error ? e.message : e)
+      process.exit(1)
     }
-  }
-  if (!opts.canvas) {
-    usage()
-    throw new Error("--canvas is required")
-  }
-  return opts
-}
+  })
 
-function main(): void {
-  const argv = process.argv.slice(2)
-  if (argv[0] === "skill") {
-    argv.shift()
-    runSkill(argv[0])
-    return
-  }
-
-  let cmd = "export"
-  if (argv[0] === "export") {
-    cmd = argv.shift()!
-  }
-
-  if (cmd !== "export") {
-    throw new Error(`unknown command: ${cmd}`)
-  }
-
-  try {
-    runExport(parseExportArgs(argv))
-  } catch (e) {
-    console.error(e instanceof Error ? e.message : e)
-    process.exit(1)
-  }
-}
-
-main()
+program.parse()
