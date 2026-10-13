@@ -10,7 +10,7 @@ Generate [Cursor canvas](https://cursor.com) `.canvas.tsx` artifacts: HTML, PNG,
 npm install -g @flesler/open-canvas
 ```
 
-From a git checkout: `npm install && npm run build:cli`, then `npm link` or `bin/open-canvas.js`. Sample canvas: [example/](example/) in the repo (not shipped on npm). E2E: `npm run test:smoke`.
+From a git checkout: `npm install && npm run build:cli`, then `npm link` or `bin/open-canvas.js`. Sample canvas: [example/](example/) in the repo (not shipped on npm). E2E: `npm run test:smoke` (local dist + pack); `npm run test:smoke:global` hits `@flesler/open-canvas@latest`; `npm run test:smoke:both` runs all.
 
 **Render formats (png, pdf, jpg):** first run downloads Chromium via Playwright (`npx playwright install chromium` if the browser is missing).
 

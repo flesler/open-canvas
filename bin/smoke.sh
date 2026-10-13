@@ -1,18 +1,51 @@
 #!/usr/bin/env bash
 # End-to-end smoke: canvas outside the package tree + prod install (--omit=dev).
 #
-#   npm run build:cli && npm run test:smoke
+#   npm run build:cli && npm run test:smoke              # local dist + npm pack (default)
+#   npm run test:smoke:global                            # @flesler/open-canvas@latest (global prefix)
+#   bin/smoke.sh --both                                  # all of the above
 #
-# Not part of `npm test` (slower, needs full dist + pack).
+# Not part of `npm test` (slower, needs full dist + pack unless --global only).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CLI=(node "$ROOT/dist/cli.js")
+MODE=pack
 
-if [[ ! -f "$ROOT/dist/cli.js" ]]; then
-	echo "smoke: missing dist/cli.js — run npm run build:cli first" >&2
-	exit 1
-fi
+usage() {
+	cat <<EOF
+Usage: $(basename "$0") [--pack | --global | --both]
+
+  --pack    Local dist/cli.js + npm pack install (default)
+  --global  npm install -g @flesler/open-canvas@latest (isolated prefix)
+  --both    --pack and --global
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--pack)
+			MODE=pack
+			shift
+			;;
+		--global)
+			MODE=global
+			shift
+			;;
+		--both)
+			MODE=both
+			shift
+			;;
+		-h | --help)
+			usage
+			exit 0
+			;;
+		*)
+			echo "smoke: unknown option: $1" >&2
+			usage >&2
+			exit 1
+			;;
+	esac
+done
 
 stage_external() {
 	local dest="$1"
@@ -21,37 +54,90 @@ stage_external() {
 	cp -r "$ROOT/example/data" "$dest/data"
 }
 
-echo "== smoke: verify + generate (canvas in /tmp) =="
-EXTERNAL="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
-stage_external "$EXTERNAL"
-"${CLI[@]}" verify "$EXTERNAL/build-plane.canvas.tsx"
-"${CLI[@]}" generate "$EXTERNAL/build-plane.canvas.tsx" --formats html
-test -f "$EXTERNAL/out/build-plane.html"
-rm -rf "$EXTERNAL"
+run_with_open_canvas() {
+	local label="$1"
+	shift
+	local -a OC=("$@")
 
-echo "== smoke: npm pack + install (--omit=dev) =="
-TARBALL_DIR="$(mktemp -d /tmp/open-canvas-smoke-pack-XXXXXX)"
-npm pack --pack-destination "$TARBALL_DIR" --silent
-TARBALL="$(ls "$TARBALL_DIR"/flesler-open-canvas-*.tgz | head -1)"
+	echo "== smoke ($label): verify + generate (canvas in /tmp) =="
+	local external
+	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
+	stage_external "$external"
+	"${OC[@]}" verify "$external/build-plane.canvas.tsx"
+	"${OC[@]}" generate "$external/build-plane.canvas.tsx" --formats html
+	test -f "$external/out/build-plane.html"
+	rm -rf "$external"
+}
 
-PACK_DIR="$(mktemp -d /tmp/open-canvas-smoke-install-XXXXXX)"
-(
-	cd "$PACK_DIR"
-	npm init -y >/dev/null
-	npm install "$TARBALL" --omit=dev
+run_local_dist() {
+	if [[ ! -f "$ROOT/dist/cli.js" ]]; then
+		echo "smoke: missing dist/cli.js — run npm run build:cli first" >&2
+		exit 1
+	fi
+	run_with_open_canvas "local dist" node "$ROOT/dist/cli.js"
+}
 
-	printf '%s\n' \
-		'import { Stack } from "cursor/canvas"' \
-		'export default function T() { return <Stack /> }' \
-		> smoke.canvas.tsx
-	npx --yes open-canvas verify smoke.canvas.tsx
+run_pack_install() {
+	echo "== smoke: npm pack + install (--omit=dev) =="
+	local tarball_dir tarball pack_dir
+	tarball_dir="$(mktemp -d /tmp/open-canvas-smoke-pack-XXXXXX)"
+	npm pack --pack-destination "$tarball_dir" --silent
+	tarball="$(ls "$tarball_dir"/flesler-open-canvas-*.tgz | head -1)"
 
-	EXT="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
-	stage_external "$EXT"
-	npx --yes open-canvas verify "$EXT/build-plane.canvas.tsx"
-	npx --yes open-canvas generate "$EXT/build-plane.canvas.tsx" --formats html
-	test -f "$EXT/out/build-plane.html"
-)
+	pack_dir="$(mktemp -d /tmp/open-canvas-smoke-install-XXXXXX)"
+	(
+		cd "$pack_dir"
+		npm init -y >/dev/null
+		npm install "$tarball" --omit=dev
 
-rm -rf "$TARBALL_DIR" "$PACK_DIR"
+		printf '%s\n' \
+			'import { Stack } from "cursor/canvas"' \
+			'export default function T() { return <Stack /> }' \
+			> smoke.canvas.tsx
+		npx --yes open-canvas verify smoke.canvas.tsx
+
+		local ext
+		ext="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
+		stage_external "$ext"
+		npx --yes open-canvas verify "$ext/build-plane.canvas.tsx"
+		npx --yes open-canvas generate "$ext/build-plane.canvas.tsx" --formats html
+		test -f "$ext/out/build-plane.html"
+		rm -rf "$ext"
+	)
+
+	rm -rf "$tarball_dir" "$pack_dir"
+}
+
+run_global_latest() {
+	echo "== smoke: npm install -g @flesler/open-canvas@latest (isolated prefix) =="
+	local prefix_dir
+	prefix_dir="$(mktemp -d /tmp/open-canvas-smoke-global-XXXXXX)"
+	npm install -g @flesler/open-canvas@latest --prefix "$prefix_dir" --silent
+
+	local oc="$prefix_dir/bin/open-canvas"
+	if [[ ! -x "$oc" ]]; then
+		echo "smoke: expected global bin at $oc" >&2
+		rm -rf "$prefix_dir"
+		exit 1
+	fi
+
+	run_with_open_canvas "npm @latest" "$oc"
+	rm -rf "$prefix_dir"
+}
+
+case "$MODE" in
+	pack)
+		run_local_dist
+		run_pack_install
+		;;
+	global)
+		run_global_latest
+		;;
+	both)
+		run_local_dist
+		run_pack_install
+		run_global_latest
+		;;
+esac
+
 echo "smoke OK"

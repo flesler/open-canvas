@@ -23,6 +23,8 @@
     "vitest": "VITE_CJS_IGNORE_WARNING=true vitest",
     "test": "npm run test:types && npm run test:unit",
     "test:smoke": "bin/smoke.sh",
+    "test:smoke:global": "bin/smoke.sh --global",
+    "test:smoke:both": "bin/smoke.sh --both",
     "test:unit": "npm run vitest -- run",
     "test:types:cli": "tsc -p tsconfig.cli.json --noEmit",
     "test:types:app": "tsc -p tsconfig.json",
