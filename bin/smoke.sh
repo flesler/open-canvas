@@ -10,6 +10,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE=pack
+SHOWCASE=showcase.canvas.tsx
 
 usage() {
 	cat <<EOF
@@ -50,7 +51,7 @@ done
 stage_external() {
 	local dest="$1"
 	mkdir -p "$dest"
-	cp "$ROOT/example/build-plane.canvas.tsx" "$dest/"
+	cp "$ROOT/example/$SHOWCASE" "$dest/"
 	cp -r "$ROOT/example/data" "$dest/data"
 }
 
@@ -63,9 +64,9 @@ run_with_open_canvas() {
 	local external
 	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
 	stage_external "$external"
-	"${OC[@]}" verify "$external/build-plane.canvas.tsx"
-	"${OC[@]}" generate "$external/build-plane.canvas.tsx" --formats html
-	test -f "$external/out/build-plane.html"
+	"${OC[@]}" verify "$external/$SHOWCASE"
+	"${OC[@]}" generate "$external/$SHOWCASE" --formats html --theme light
+	test -f "$external/out/showcase.html"
 	rm -rf "$external"
 }
 
@@ -99,9 +100,9 @@ run_pack_install() {
 		local ext
 		ext="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
 		stage_external "$ext"
-		npx --yes open-canvas verify "$ext/build-plane.canvas.tsx"
-		npx --yes open-canvas generate "$ext/build-plane.canvas.tsx" --formats html
-		test -f "$ext/out/build-plane.html"
+		npx --yes open-canvas verify "$ext/$SHOWCASE"
+		npx --yes open-canvas generate "$ext/$SHOWCASE" --formats html --theme light
+		test -f "$ext/out/showcase.html"
 		rm -rf "$ext"
 	)
 

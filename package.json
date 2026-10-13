@@ -33,6 +33,7 @@
     "test:unit:verbose": "VERBOSE=1 npm run test:unit",
     "lint:full": "bin/parallel-run.sh test:types:cli test:types:app lint:fix",
     "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
+		"example:screenshot": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme light --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-light.png && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme dark --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-dark.png",
     "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:contract && npm run test:smoke",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"

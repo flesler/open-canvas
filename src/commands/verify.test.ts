@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { pathInPkg } from '../pkg.js'
 import { runVerify } from './verify.js'
 
-const exampleCanvas = pathInPkg('example', 'build-plane.canvas.tsx')
+const exampleCanvas = pathInPkg('example', 'showcase.canvas.tsx')
 
 describe('runVerify', () => {
 	it('accepts the example canvas', () => {

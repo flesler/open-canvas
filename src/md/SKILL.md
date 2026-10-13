@@ -55,4 +55,4 @@ Default `--formats` is `html,png,pdf`. Add `,jpg` or `,cursor` when needed.
 open-canvas skill # print to stdout
 open-canvas skill ~/.cursor/skills/open-canvas
 ```
-Example: `example/build-plane.canvas.tsx`, `example/data/`.
+Example: `example/showcase.canvas.tsx` and `example/data/`.
