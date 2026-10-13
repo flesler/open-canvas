@@ -63,6 +63,44 @@ export function canvasStem(canvasPath: string): string {
 	return base.slice(0, -'.canvas.tsx'.length)
 }
 
+function assertOutputSlug(name: string): string {
+	if (name.includes('/') || name.includes('\\') || name.endsWith('.html')) {
+		throw new Error('--name must be a slug (e.g. index, dark), not a path or .html file')
+	}
+	if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(name)) {
+		throw new Error('--name must be a simple filename slug')
+	}
+	return name
+}
+
+/** Kebab slug from a human title (fallback output basename). */
+export function titleSlug(title: string): string {
+	const s = title
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	return s || 'canvas'
+}
+
+/** Output basename without extension: `--name`, else canvas stem, else title slug. */
+export function outputSlug(input: {
+	name?: string;
+	canvasStem: string;
+	title?: string
+}): string {
+	if (input.name !== undefined && input.name !== '') {
+		return assertOutputSlug(input.name)
+	}
+	if (input.canvasStem) {
+		return input.canvasStem
+	}
+	if (input.title) {
+		return titleSlug(input.title)
+	}
+	return 'canvas'
+}
+
 export function titleCaseFromStem(stem: string): string {
 	return stem
 		.split('-')
@@ -73,9 +111,12 @@ export function titleCaseFromStem(stem: string): string {
 
 export type OutputFormat = 'html' | 'png' | 'pdf' | 'jpg' | 'cursor'
 
-export function parseFormats(raw: string): OutputFormat[] {
+export const DEFAULT_FORMAT_LIST = ['html', 'png', 'pdf']
+export const DEFAULT_FORMATS = DEFAULT_FORMAT_LIST.join(',')
+
+export function parseFormats(raw: string | string[]): OutputFormat[] {
 	const allowed = new Set<OutputFormat>(['html', 'png', 'pdf', 'jpg', 'cursor'])
-	const list = raw.split(',').map(s => s.trim().toLowerCase())
+	const list = (typeof raw === 'string' ? raw.split(',') : raw).map(s => s.trim().toLowerCase())
 	for (const f of list) {
 		if (!allowed.has(f as OutputFormat)) {
 			throw new Error(`unknown format: ${f}`)

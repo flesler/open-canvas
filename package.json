@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Agent-friendly canvas visuals (charts, tables, UI) from .canvas.tsx to HTML, PNG, PDF, JPG, or IDE-ready canvas",
   "type": "module",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "npm run build:cli",
     "build:cli": "tsc -b tsconfig.cli.json --clean && tsc -b tsconfig.cli.json && find dist -name '*.d.ts' -delete",
-		"build:pages": "npm run build:cli && rm -rf site && mkdir -p site && OPEN_CANVAS_STEM=index OPEN_CANVAS_OUT_DIR=site OPEN_CANVAS_CANVAS_PATH=example/showcase.canvas.tsx OPEN_CANVAS_TITLE='Open Canvas — SDK Showcase' OPEN_CANVAS_THEME=light BASE_PATH=/open-canvas/ npx vite build --config vite.config.ts && mv site/_build/index.html site/index.html && rm -rf site/_build",
+    "build:pages": "npm run build:cli && rm -rf site && node dist/cli.js generate example/showcase.canvas.tsx --formats html --out ../site --name index --theme light --title 'Open Canvas — SDK Showcase' && node dist/cli.js generate example/showcase.canvas.tsx --formats html --out ../site --name dark --theme dark --title 'Open Canvas — SDK Showcase (dark)'",
     "prepublishOnly": "npm run build:cli",
     "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
     "eslint": "eslint --cache --cache-strategy content",
@@ -73,7 +73,7 @@
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
     "tsx": "^4.21.0",
-		"type-fest": "^5.4.5",
+    "type-fest": "^5.4.5",
     "vitest": "^4.1.11"
   },
   "files": [

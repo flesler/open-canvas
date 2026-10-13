@@ -2,7 +2,7 @@
 
 **Charts, tables, and structured visuals agents can one-shot** — from a single `.canvas.tsx` file to HTML, PNG, PDF, JPG, or an IDE-ready canvas. Built on Cursor’s `cursor/canvas` component set (same primitives agents already use in Canvas), but **you don’t need the Cursor app** to author or render.
 
-**Live example:** <https://flesler.github.io/open-canvas/>
+**Live example:** [light](https://flesler.github.io/open-canvas/) · [dark](https://flesler.github.io/open-canvas/dark.html)
 
 <p>
   <img src="docs/showcase-light.png" alt="Showcase (light)" width="49%" />
@@ -46,7 +46,8 @@ open-canvas verify path/to/report.canvas.tsx
 | `--out` | `./out` beside the canvas |
 | `--theme` | `light` or `dark` |
 | `--formats` | `html,png,pdf` — also `jpg`, `cursor` |
-| `--width` / `--height` | Viewport `1280`×`900` |
+| `--name` | Output slug without extension (default: canvas stem) |
+| `--width` / `--height` | Playwright viewport (`1280`×`900`); usually omit — exports use full page height |
 | `--selector` | Only matched sections (`id`, class, or `data-*` in your JSX) |
 
 `--formats cursor` emits one `.canvas.tsx` with data inlined (handy for Cursor IDE).

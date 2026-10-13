@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem } from './util.js'
+import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, outputSlug, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem, titleSlug } from './util.js'
 
 describe('parseJsonl', () => {
 	it('parses one object per line', () => {
@@ -32,6 +32,36 @@ describe('canvasStem', () => {
 
 	it('rejects wrong extension', () => {
 		expect(() => canvasStem('x.tsx')).toThrow()
+	})
+})
+
+describe('outputSlug', () => {
+	it('prefers --name', () => {
+		expect(
+			outputSlug({ name: 'index', canvasStem: 'showcase', title: 'X' }),
+		).toBe('index')
+	})
+
+	it('defaults to canvas stem', () => {
+		expect(outputSlug({ canvasStem: 'showcase', title: 'X' })).toBe('showcase')
+	})
+
+	it('falls back to title slug', () => {
+		expect(outputSlug({ canvasStem: '', title: 'Open Canvas — SDK' })).toBe(
+			'open-canvas-sdk',
+		)
+	})
+
+	it('rejects paths in name', () => {
+		expect(() =>
+			outputSlug({ name: 'dark.html', canvasStem: 'a' }),
+		).toThrow()
+	})
+})
+
+describe('titleSlug', () => {
+	it('kebab-cases', () => {
+		expect(titleSlug('My Report')).toBe('my-report')
 	})
 })
 

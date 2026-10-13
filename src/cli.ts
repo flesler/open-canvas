@@ -1,8 +1,9 @@
-import { Command } from 'commander'
+import { Command, Option } from 'commander'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVerify } from './commands/verify.js'
 import { cliName, description, version } from './pkg.js'
+import { DEFAULT_FORMAT_LIST, DEFAULT_FORMATS } from './util.js'
 
 const program = new Command()
 	.name(cliName)
@@ -34,12 +35,22 @@ program
 	.command('generate', { isDefault: true })
 	.description('Build artifacts from a canvas file')
 	.argument('<canvas>', 'path to *.canvas.tsx')
-	.option('--out <dir>', 'output directory (default: ./out next to canvas)', 'out')
+	.option('--out <dir>', 'output directory relative to canvas', 'out')
+	.option('--name <slug>', 'output basename without extension (default: canvas stem, else title slug)')
 	.option('--title <text>', 'HTML document title')
 	.option('--theme <mode>', 'light or dark', 'light')
-	.option('--formats <list>', 'comma-separated: html,png,pdf,jpg,cursor', 'html,png,pdf')
-	.option('--width <px>', 'render viewport width', (v: string) => Number(v))
-	.option('--height <px>', 'render viewport height', (v: string) => Number(v))
+	.addOption(
+		new Option('--formats <list>', 'comma-separated: html,png,pdf,jpg,cursor')
+			.argParser(v => v.split(',').map(s => s.trim()))
+			.default(DEFAULT_FORMAT_LIST, DEFAULT_FORMATS),
+	)
+	.option('--width <px>', 'Playwright viewport width', Number, 1280)
+	.option(
+		'--height <px>',
+		'Playwright viewport height (PDF uses content height; PNG/JPG use fullPage)',
+		Number,
+		900,
+	)
 	.option(
 		'--render-options <file|json>',
 		'Playwright options JSON (launch / page / screenshot / pdf) — https://playwright.dev/docs/api/class-page',
@@ -47,7 +58,7 @@ program
 	.option(
 		'--selector <css>',
 		'export matched nodes only (repeatable; comma-separated ok; querySelectorAll per selector)',
-		(value: string, previous: string[]) => previous.concat([value]),
+		(value, previous: string[]) => [...previous, value],
 		[],
 	)
 	.action(async (canvas: string, opts) => {
@@ -55,6 +66,7 @@ program
 			await runGenerate({
 				canvas,
 				out: opts.out,
+				name: opts.name,
 				title: opts.title,
 				theme: opts.theme as 'light' | 'dark',
 				formats: opts.formats,

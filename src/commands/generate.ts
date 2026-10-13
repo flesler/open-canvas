@@ -5,14 +5,15 @@ import { pathInPkg, viteCliPath } from '../paths.js'
 import { pkgRoot } from '../pkg.js'
 import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
-import { canvasStem, emitCursorCanvas, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
+import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
 
 export type GenerateOptions = {
 	canvas: string;
 	out?: string;
+	name?: string;
 	title?: string;
 	theme?: 'light' | 'dark';
-	formats?: string;
+	formats?: string[];
 	viewportWidth?: number;
 	viewportHeight?: number;
 	renderOptions?: string;
@@ -25,16 +26,21 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		throw new Error(`canvas not found: ${canvasPath}`)
 	}
 
-	const stem = canvasStem(canvasPath)
 	const canvasDir = path.dirname(canvasPath)
+	const fileStem = canvasStem(canvasPath)
+	const title = opts.title ?? titleCaseFromStem(fileStem)
 	const outDir = path.resolve(canvasDir, opts.out ?? 'out')
-	const title = opts.title ?? titleCaseFromStem(stem)
+	const stem = outputSlug({
+		name: opts.name,
+		canvasStem: fileStem,
+		title,
+	})
 	const theme = opts.theme ?? 'light'
 	if (theme !== 'light' && theme !== 'dark') {
 		throw new Error(`--theme must be light or dark (got ${theme})`)
 	}
 
-	const formats = parseFormats(opts.formats ?? 'html,png,pdf')
+	const formats = parseFormats(opts.formats ?? DEFAULT_FORMAT_LIST)
 	const needsHtml = formats.some(
 		f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg',
 	)

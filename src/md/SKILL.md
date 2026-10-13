@@ -35,10 +35,11 @@ Use `.map()` in JSX; no fetch or extra npm deps in the canvas file.
 |Flag|Default|
 |---|---|
 |`--out`|`./out` next to the canvas file|
+|`--name`|Output basename without extension (default: canvas stem, else slug of `--title`; `.html`, `.png`, etc. added per format)|
 |`--title`|Title case of canvas stem|
 |`--theme`|`light` (`light` or `dark` only)|
 |`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
-|`--width` / `--height`|Render viewport (default `1280`×`900`)|
+|`--width` / `--height`|Playwright viewport (default `1280`×`900`). Usually omit both; PNG/JPG capture the full page, PDF height follows content `scrollHeight`. Set a fixed viewport only when you want a specific frame (e.g. README screenshots).|
 |`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf` — [API](https://playwright.dev/docs/api/class-page)|
 |`--selector`|CSS selector(s), repeat or comma-separated; each uses `querySelectorAll`; keeps `<head>`, replaces `<body>` with matches in document order|
 
