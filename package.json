@@ -1,7 +1,7 @@
 {
   "name": "@flesler/open-canvas",
   "version": "1.2.0",
-  "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
+	"description": "Agent-friendly canvas visuals (charts, tables, UI) from .canvas.tsx to HTML, PNG, PDF, JPG, or IDE-ready canvas",
   "type": "module",
   "license": "MIT",
   "repository": "github:flesler/open-canvas",

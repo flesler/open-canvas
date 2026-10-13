@@ -1,6 +1,6 @@
 # open-canvas
 
-Export `.canvas.tsx` to HTML, PNG, PDF, or IDE-ready `.canvas.tsx`. No Cursor app or API required.
+Generate multi-format visuals (HTML, PNG, PDF, JPG, IDE canvas) from `.canvas.tsx` — charts, tables, and `cursor/canvas` UI agents can one-shot. No Cursor app or API required to author or render.
 
 ## Install
 

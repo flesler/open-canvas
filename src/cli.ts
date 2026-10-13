@@ -11,7 +11,7 @@ const { version } = require('../package.json') as { version: string }
 
 const program = new Command()
 	.name('open-canvas')
-	.description('Generate HTML, PNG, PDF, and IDE-ready canvas from .canvas.tsx')
+	.description('Charts, tables, and canvas visuals from .canvas.tsx to HTML, PNG, PDF, and more')
 	.version(version, '-v, --version', 'print version')
 
 program
