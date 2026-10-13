@@ -13,7 +13,7 @@ describe('runVerify', () => {
 	})
 
 	it('rejects a syntax error', () => {
-		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'opencanvas-verify-'))
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-verify-'))
 		const bad = path.join(dir, 'broken.canvas.tsx')
 		fs.writeFileSync(
 			bad,

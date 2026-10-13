@@ -4,7 +4,7 @@ import { runSkill } from './commands/skill.js'
 import { runVerify } from './commands/verify.js'
 
 const program = new Command()
-	.name('opencanvas')
+	.name('open-canvas')
 	.description('Generate HTML, PNG, PDF, and IDE-ready canvas from .canvas.tsx')
 
 program

@@ -73,7 +73,7 @@ describe('formatCursorCanvasEmit', () => {
 
 describe('emitCursorCanvas', () => {
 	it('inlines json and places cursor import first', () => {
-		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'opencanvas-emit-'))
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-emit-'))
 		fs.writeFileSync(path.join(dir, 'nums.json'), '{"n":1}')
 		const canvas = path.join(dir, 'mini.canvas.tsx')
 		fs.writeFileSync(

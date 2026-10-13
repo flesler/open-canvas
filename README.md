@@ -1,16 +1,16 @@
-# opencanvas
+# open-canvas
 
 Generate [Cursor canvas](https://cursor.com) `.canvas.tsx` artifacts: HTML, PNG, PDF, and optional JPG or IDE-ready `.canvas.tsx` (`--formats cursor`).
 
-**Agents:** `opencanvas skill ~/.cursor/skills/opencanvas` — see `src/md/SKILL.md` (links Cursor’s `/canvas` skill + repo overrides).
+**Agents:** `open-canvas skill ~/.cursor/skills/open-canvas` — see `src/md/SKILL.md` (links Cursor’s `/canvas` skill + repo overrides).
 
 ## Install
 
 ```bash
-npm install -g opencanvas
+npm install -g @flesler/open-canvas
 ```
 
-From a git checkout: `npm install && npm run build:cli`, then `npm link` or `bin/opencanvas.js`. Sample canvas: [example/](example/) in the repo (not shipped on npm). E2E: `npm run test:smoke`.
+From a git checkout: `npm install && npm run build:cli`, then `npm link` or `bin/open-canvas.js`. Sample canvas: [example/](example/) in the repo (not shipped on npm). E2E: `npm run test:smoke`.
 
 **Render formats (png, pdf, jpg):** first run downloads Chromium via Playwright (`npx playwright install chromium` if the browser is missing).
 
@@ -19,7 +19,7 @@ From a git checkout: `npm install && npm run build:cli`, then `npm link` or `bin
 ## Example
 
 ```bash
-opencanvas generate path/to/report.canvas.tsx
+open-canvas generate path/to/report.canvas.tsx
 ```
 
 Default `--formats` is `html,png,pdf`. Add `jpg` or `cursor` when needed.
@@ -28,9 +28,9 @@ Default `--formats` is `html,png,pdf`. Add `jpg` or `cursor` when needed.
 
 | Command | Description |
 |---------|-------------|
-| `opencanvas generate <canvas.canvas.tsx>` | Build artifacts (recommended) |
-| `opencanvas verify <canvas.canvas.tsx>` | Typecheck a canvas |
-| `opencanvas skill [path]` | Print or install `SKILL.md` |
+| `open-canvas generate <canvas.canvas.tsx>` | Build artifacts (recommended) |
+| `open-canvas verify <canvas.canvas.tsx>` | Typecheck a canvas |
+| `open-canvas skill [path]` | Print or install `SKILL.md` |
 
 Omitting `generate` runs the same command (default subcommand); prefer the explicit form above.
 

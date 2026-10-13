@@ -40,11 +40,11 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
 	const env: NodeJS.ProcessEnv = {
 		...process.env,
-		OPENCANVAS_STEM: stem,
-		OPENCANVAS_OUT_DIR: outDir,
-		OPENCANVAS_THEME: theme,
-		OPENCANVAS_TITLE: title,
-		OPENCANVAS_CANVAS_PATH: canvasPath,
+		OPEN_CANVAS_STEM: stem,
+		OPEN_CANVAS_OUT_DIR: outDir,
+		OPEN_CANVAS_THEME: theme,
+		OPEN_CANVAS_TITLE: title,
+		OPEN_CANVAS_CANVAS_PATH: canvasPath,
 	}
 
 	const options = resolveRenderOptions({

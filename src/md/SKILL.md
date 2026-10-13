@@ -1,4 +1,4 @@
-# opencanvas
+# open-canvas
 
 Export Cursor-style `.canvas.tsx` dashboards to HTML, PNG, PDF, and IDE-ready canvases.
 
@@ -9,7 +9,7 @@ Follow Cursor’s native canvas skill end-to-end for **layout, components, desig
 - Skill file: `~/.cursor/skills-cursor/canvas/SKILL.md`
 - SDK types: `~/.cursor/skills-cursor/canvas/sdk/index.d.ts`
 
-This skill only adds what differs when authoring via `opencanvas` CLI.
+This skill only adds what differs when authoring via `open-canvas` CLI.
 
 ## Authoring overrides (repo / export lane)
 
@@ -43,7 +43,7 @@ Map imported data in JSX with `.map()` — no fetch, no extra npm imports in the
 |`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf` — [API](https://playwright.dev/docs/api/class-page)|
 
 ```bash
-opencanvas generate path/to/report.canvas.tsx
+open-canvas generate path/to/report.canvas.tsx
 ```
 
 Default `--formats` is `html,png,pdf`. Add `,jpg` or `,cursor` when needed.
@@ -55,7 +55,7 @@ Outputs: `out/<stem>.html`, `.png`, `.pdf` by default; with `cursor` → `out/<s
 ## Install this skill
 
 ```bash
-opencanvas skill # print to stdout
-opencanvas skill ~/.cursor/skills/opencanvas
+open-canvas skill # print to stdout
+open-canvas skill ~/.cursor/skills/open-canvas
 ```
 Reference example in the repo: `example/build-plane.canvas.tsx` + `example/data/`.

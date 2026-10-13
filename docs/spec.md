@@ -1,6 +1,6 @@
-# opencanvas — spec
+# open-canvas — spec
 
-**Repo:** [github.com/flesler/opencanvas](https://github.com/flesler/opencanvas)
+**Repo:** [github.com/flesler/open-canvas](https://github.com/flesler/open-canvas)
 
 ## Layout
 
@@ -23,10 +23,10 @@ example/
 
 ## CLI
 
-Use **`opencanvas generate <canvas>`** (default subcommand if omitted; explicit `generate` is recommended).
+Use **`open-canvas generate <canvas>`** (default subcommand if omitted; explicit `generate` is recommended).
 
 ```bash
-opencanvas generate path/to/report.canvas.tsx
+open-canvas generate path/to/report.canvas.tsx
 ```
 
 Default `--formats`: `html`, `png`, `pdf`. Also supported: `jpg`, `cursor`.
@@ -70,5 +70,5 @@ Playwright loads on first use; Chromium is downloaded on first launch (`npx play
 | `pdf` | [Page.pdf](https://playwright.dev/docs/api/class-page#page-pdf) |
 
 ```bash
-opencanvas generate report.canvas.tsx --formats pdf --render-options '{"pdf":{"format":"A4","landscape":true}}'
+open-canvas generate report.canvas.tsx --formats pdf --render-options '{"pdf":{"format":"A4","landscape":true}}'
 ```

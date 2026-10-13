@@ -59,7 +59,7 @@ export function viteResolveForCanvas(canvasPath: string) {
 			'react/jsx-runtime': require.resolve('react/jsx-runtime'),
 			'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
 			'cursor/canvas': path.join(cc, 'dist', 'cursor-canvas.js'),
-			'@opencanvas/user-canvas': abs,
+			'@open-canvas/user-canvas': abs,
 		},
 		fsAllow: [pkgRoot, path.dirname(abs)],
 	}

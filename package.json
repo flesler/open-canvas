@@ -1,12 +1,12 @@
 {
-  "name": "opencanvas",
+  "name": "@flesler/open-canvas",
   "version": "1.0.0",
   "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
-  "repository": "github:flesler/opencanvas",
+  "repository": "github:flesler/open-canvas",
   "bin": {
-    "opencanvas": "./bin/opencanvas.js"
+    "open-canvas": "./bin/open-canvas.js"
   },
   "engines": {
     "node": "^24.11.1",
@@ -70,7 +70,7 @@
     "vitest": "^4.1.11"
   },
   "files": [
-    "bin/opencanvas.js",
+    "bin/open-canvas.js",
     "dist/**/*.js",
     "LICENSE",
     "src/shell",

@@ -13,8 +13,8 @@ All notable changes to this project will be documented in this file. Dates are d
 - E2E `npm run test:smoke` (external canvas + prod pack install).
 
 ##### Changed
-- Package and CLI name **opencanvas** (npm); repo `flesler/opencanvas`.
-- Positional canvas path (no `--canvas`); bin entry `bin/opencanvas.js`.
+- npm package **`@flesler/open-canvas`**; CLI **`open-canvas`**; repo `flesler/open-canvas`.
+- Positional canvas path (no `--canvas`); bin `bin/open-canvas.js`.
 - PDF via Playwright `page.pdf()`; centralized render options in `render-options.ts`.
 - Vite resolve for canvases outside the package (`src/pkg.ts`).
 - Example canvas: `example/build-plane.canvas.tsx`.

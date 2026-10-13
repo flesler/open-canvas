@@ -1,4 +1,4 @@
-declare const __OPENCANVAS_THEME__: 'light' | 'dark'
+declare const __OPEN_CANVAS_THEME__: 'light' | 'dark'
 
 declare module '*.json' {
 	const data: any
@@ -30,8 +30,8 @@ declare module '*.yml' {
 	export default data
 }
 
-/** Vite alias at build time → path from OPENCANVAS_CANVAS_PATH */
-declare module '@opencanvas/user-canvas' {
+/** Vite alias at build time → path from OPEN_CANVAS_CANVAS_PATH */
+declare module '@open-canvas/user-canvas' {
 	import type { ComponentType } from 'react'
 	const Canvas: ComponentType
 	export default Canvas

@@ -11,16 +11,16 @@ const pkgRequire = createRequire(path.join(configDir, 'package.json'))
 const { pkgRoot, viteResolveForCanvas } = pkgRequire('./dist/pkg.js') as typeof import('./dist/pkg.js')
 const { viteDataModule } = pkgRequire('./dist/util.js') as typeof import('./dist/util.js')
 
-const stem = process.env.OPENCANVAS_STEM ?? 'index'
-const outDir = process.env.OPENCANVAS_OUT_DIR ?? path.join(pkgRoot, 'example', 'out')
-const canvasPath = process.env.OPENCANVAS_CANVAS_PATH
-const theme = process.env.OPENCANVAS_THEME === 'dark' ? 'dark' : 'light'
-const title = process.env.OPENCANVAS_TITLE ?? 'Canvas'
+const stem = process.env.OPEN_CANVAS_STEM ?? 'index'
+const outDir = process.env.OPEN_CANVAS_OUT_DIR ?? path.join(pkgRoot, 'example', 'out')
+const canvasPath = process.env.OPEN_CANVAS_CANVAS_PATH
+const theme = process.env.OPEN_CANVAS_THEME === 'dark' ? 'dark' : 'light'
+const title = process.env.OPEN_CANVAS_TITLE ?? 'Canvas'
 const viteBuildDir = path.join(outDir, '_build')
 const htmlOut = path.join(outDir, `${stem}.html`)
 
 if (!canvasPath) {
-	throw new Error('OPENCANVAS_CANVAS_PATH is required for vite build')
+	throw new Error('OPEN_CANVAS_CANVAS_PATH is required for vite build')
 }
 
 const canvasResolve = viteResolveForCanvas(canvasPath)
@@ -53,9 +53,9 @@ function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
 }
 
-function opencanvasDataImports(): Plugin {
+function openCanvasDataImports(): Plugin {
 	return {
-		name: 'opencanvas-data-imports',
+		name: 'open-canvas-data-imports',
 		transform(src, id) {
 			const mod = viteDataModule(id, src)
 			if (!mod) {
@@ -68,9 +68,9 @@ function opencanvasDataImports(): Plugin {
 
 export default defineConfig({
 	base: './',
-	plugins: [react(), opencanvasDataImports(), htmlTitle(), viteSingleFile(), flatHtmlArtifact()],
+	plugins: [react(), openCanvasDataImports(), htmlTitle(), viteSingleFile(), flatHtmlArtifact()],
 	define: {
-		__OPENCANVAS_THEME__: JSON.stringify(theme),
+		__OPEN_CANVAS_THEME__: JSON.stringify(theme),
 	},
 	resolve: {
 		modules: canvasResolve.modules,

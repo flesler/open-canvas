@@ -22,7 +22,7 @@ stage_external() {
 }
 
 echo "== smoke: verify + generate (canvas in /tmp) =="
-EXTERNAL="$(mktemp -d /tmp/opencanvas-smoke-external-XXXXXX)"
+EXTERNAL="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
 stage_external "$EXTERNAL"
 "${CLI[@]}" verify "$EXTERNAL/build-plane.canvas.tsx"
 "${CLI[@]}" generate "$EXTERNAL/build-plane.canvas.tsx" --formats html
@@ -30,11 +30,11 @@ test -f "$EXTERNAL/out/build-plane.html"
 rm -rf "$EXTERNAL"
 
 echo "== smoke: npm pack + install (--omit=dev) =="
-TARBALL_DIR="$(mktemp -d /tmp/opencanvas-smoke-pack-XXXXXX)"
+TARBALL_DIR="$(mktemp -d /tmp/open-canvas-smoke-pack-XXXXXX)"
 npm pack --pack-destination "$TARBALL_DIR" --silent
-TARBALL="$(ls "$TARBALL_DIR"/opencanvas-*.tgz | head -1)"
+TARBALL="$(ls "$TARBALL_DIR"/flesler-open-canvas-*.tgz | head -1)"
 
-PACK_DIR="$(mktemp -d /tmp/opencanvas-smoke-install-XXXXXX)"
+PACK_DIR="$(mktemp -d /tmp/open-canvas-smoke-install-XXXXXX)"
 (
 	cd "$PACK_DIR"
 	npm init -y >/dev/null
@@ -44,12 +44,12 @@ PACK_DIR="$(mktemp -d /tmp/opencanvas-smoke-install-XXXXXX)"
 		'import { Stack } from "cursor/canvas"' \
 		'export default function T() { return <Stack /> }' \
 		> smoke.canvas.tsx
-	npx --yes opencanvas verify smoke.canvas.tsx
+	npx --yes open-canvas verify smoke.canvas.tsx
 
-	EXT="$(mktemp -d /tmp/opencanvas-smoke-pack-ext-XXXXXX)"
+	EXT="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
 	stage_external "$EXT"
-	npx --yes opencanvas verify "$EXT/build-plane.canvas.tsx"
-	npx --yes opencanvas generate "$EXT/build-plane.canvas.tsx" --formats html
+	npx --yes open-canvas verify "$EXT/build-plane.canvas.tsx"
+	npx --yes open-canvas generate "$EXT/build-plane.canvas.tsx" --formats html
 	test -f "$EXT/out/build-plane.html"
 )
 
