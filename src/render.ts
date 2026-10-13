@@ -45,6 +45,7 @@ export async function render(ctx: RenderContext, formats: RenderFormats): Promis
 				...ctx.options.screenshot,
 				path: path.join(ctx.outDir, `${ctx.stem}.jpg`),
 				type: 'jpeg',
+				quality: ctx.options.screenshot.quality ?? 90,
 			})
 		}
 		if (formats.pdf) {

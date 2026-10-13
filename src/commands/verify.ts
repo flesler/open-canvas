@@ -27,7 +27,7 @@ export function runVerify(canvasPath: string): void {
 		isolatedModules: true,
 		resolveJsonModule: true,
 		noEmit: true,
-		...verifyTypeScriptPaths(),
+		...verifyTypeScriptPaths(abs),
 	}
 
 	const program = ts.createProgram([ambientTypes, abs], options)

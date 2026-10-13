@@ -7,7 +7,7 @@ describe('resolveRenderOptions', () => {
 		expect(cfg.page.viewport).toEqual({ width: 1280, height: 900 })
 		expect(cfg.page.deviceScaleFactor).toBe(1)
 		expect(cfg.page.colorScheme).toBe('light')
-		expect(cfg.screenshot.quality).toBe(90)
+		expect(cfg.screenshot.quality).toBeUndefined()
 	})
 
 	it('CLI width/height override defaults', () => {

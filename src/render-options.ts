@@ -32,7 +32,6 @@ const DEFAULTS: RenderOptions = {
 	screenshot: {
 		fullPage: true,
 		animations: 'disabled',
-		quality: 90,
 	},
 	pdf: {
 		printBackground: true,

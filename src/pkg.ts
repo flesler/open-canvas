@@ -37,15 +37,22 @@ function typeRootsUpward(start: string): string[] {
 }
 
 /** TypeScript `paths` / `typeRoots` for verify (canvas file may be anywhere). */
-export function verifyTypeScriptPaths(): {
+export function verifyTypeScriptPaths(_canvasPath: string): {
 	baseUrl: string;
 	typeRoots: string[];
 	paths: Record<string, string[]>
 } {
+	// Cursor canvases often ship minimal `canvases/node_modules/@types/react` stubs.
+	// Pin full @types/react from this package so JSX matches `cursor/canvas` prop types.
+	const reactTypes = path.join(pkgRoot, 'node_modules', '@types', 'react')
 	return {
 		baseUrl: pkgRoot,
 		typeRoots: typeRootsUpward(pkgRoot),
-		paths: { 'cursor/canvas': [cursorCanvasDir()] },
+		paths: {
+			'cursor/canvas': [cursorCanvasDir()],
+			react: [path.join(reactTypes, 'index.d.ts')],
+			'react/jsx-runtime': [path.join(reactTypes, 'jsx-runtime.d.ts')],
+		},
 	}
 }
 

@@ -1,6 +1,6 @@
 # open-canvas
 
-Export Cursor-style `.canvas.tsx` dashboards to HTML, PNG, PDF, and IDE-ready canvases.
+Export Cursor-style `.canvas.tsx` dashboards to HTML, PNG, PDF, and IDE-ready canvases. No Cursor or any API is needed.
 
 ## Global Installation
 
