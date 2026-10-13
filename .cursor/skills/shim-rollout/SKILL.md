@@ -33,7 +33,7 @@ Grid stretch beside a much taller sibling is an **author layout** issue in examp
 3. `./.cursor/skills/shim-rollout/scripts/sync-local-shim.sh`
 4. `npm run ci:local` in open-canvas.
 5. **Visual:** `scripts/verify-showcase-visual.sh` → Read `.cache/showcase-charts-verify.jpg`.
-6. **README:** `npm run example:screenshot` (open-canvas); `pnpm demo:screenshot` (fork, sibling open-canvas built).
+6. **README / Pages:** `npm run example:screenshot`; `npm run build:pages` → <https://flesler.github.io/open-canvas/>. Fork demo: `pnpm demo:screenshot` → <https://flesler.github.io/cursor-canvas-web/>.
 7. **Publish order:** `npm publish` shim **1.0.1+** first → in open-canvas `npm install @flesler/cursor-canvas-web@^1.0.1` (registry lock; no `file:` sibling in lock) → then publish open-canvas.
 
 ## Charts (shim)

@@ -1,9 +1,9 @@
-import react from "@vitejs/plugin-react";
-import { createRequire } from "node:module";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig, type Plugin } from "vite";
-import { viteSingleFile } from "vite-plugin-singlefile";
+import react from "@vitejs/plugin-react"
+import { createRequire } from "node:module"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { defineConfig, type Plugin } from "vite"
+import { viteSingleFile } from "vite-plugin-singlefile"
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 const pkgRequire = createRequire(path.join(configDir, "package.json"));
@@ -15,16 +15,21 @@ const { viteDataModule } = pkgRequire(
 ) as typeof import("./dist/util.js");
 
 const stem = process.env.OPEN_CANVAS_STEM ?? "index";
-const outDir =
-  process.env.OPEN_CANVAS_OUT_DIR ?? path.join(pkgRoot, "example", "out");
-const canvasPath = process.env.OPEN_CANVAS_CANVAS_PATH;
+const outDir = process.env.OPEN_CANVAS_OUT_DIR
+  ? path.resolve(pkgRoot, process.env.OPEN_CANVAS_OUT_DIR)
+  : path.join(pkgRoot, "example", "out");
+const canvasPath = process.env.OPEN_CANVAS_CANVAS_PATH
+  ? path.resolve(pkgRoot, process.env.OPEN_CANVAS_CANVAS_PATH)
+  : undefined;
 const theme = process.env.OPEN_CANVAS_THEME === "dark" ? "dark" : "light";
 const title = process.env.OPEN_CANVAS_TITLE ?? "Canvas";
 const viteBuildDir = path.join(outDir, "_build");
+const base = process.env.BASE_PATH ?? "./";
 
 if (!canvasPath) {
   throw new Error("OPEN_CANVAS_CANVAS_PATH is required for vite build");
 }
+
 
 const canvasResolve = viteResolveForCanvas(canvasPath);
 
@@ -58,7 +63,7 @@ function openCanvasDataImports(): Plugin {
 }
 
 export default defineConfig({
-  base: "./",
+  base,
   plugins: [react(), openCanvasDataImports(), htmlTitle(), viteSingleFile()],
   define: {
     __OPEN_CANVAS_THEME__: JSON.stringify(theme),

@@ -4,6 +4,8 @@ Build `.canvas.tsx` → HTML, PNG, PDF; optional JPG or `--formats cursor` (IDE 
 
 Uses [`@flesler/cursor-canvas-web`](https://github.com/flesler/cursor-canvas-web) to implement `cursor/canvas` at export time (Mantine-backed shim, aligned with the IDE SDK).
 
+**Live showcase:** <https://flesler.github.io/open-canvas/> — built from [`example/showcase.canvas.tsx`](example/showcase.canvas.tsx) on every push to `main` ([`deploy.yml`](.github/workflows/deploy.yml), `BASE_PATH=/open-canvas/`).
+
 <p>
   <img src="docs/showcase-light.png" alt="SDK showcase (light)" width="49%" />
   <img src="docs/showcase-dark.png" alt="SDK showcase (dark)" width="49%" />
