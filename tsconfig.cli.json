@@ -10,5 +10,5 @@
     "declaration": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.tsx"]
+  "exclude": ["src/**/*.tsx", "src/**/*.test.ts"]
 }

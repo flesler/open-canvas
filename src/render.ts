@@ -1,35 +1,33 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Page } from 'playwright'
+import type { RenderOptions } from './render-options.js'
 
 export type RenderContext = {
 	outDir: string;
 	stem: string;
-	theme: 'light' | 'dark'
+	options: RenderOptions
 }
 
-export type RasterFormats = {
+export type RenderFormats = {
 	png?: boolean;
 	pdf?: boolean;
 	jpg?: boolean
 }
 
-export async function renderRaster(ctx: RenderContext, formats: RasterFormats): Promise<void> {
+export async function render(ctx: RenderContext, formats: RenderFormats): Promise<void> {
 	if (!formats.png && !formats.pdf && !formats.jpg) {
 		return
 	}
 	const html = htmlPath(ctx)
 	if (!fs.existsSync(html)) {
-		throw new Error('HTML artifact missing; run vite build first')
+		throw new Error(`HTML artifact missing: ${html} (run generate with html, png, pdf, or jpg)`)
 	}
 	const { chromium } = await import('playwright')
 	const errors: string[] = []
-	const browser = await chromium.launch()
+	const browser = await chromium.launch(ctx.options.launch ?? {})
 	try {
-		const page = await browser.newPage({
-			viewport: { width: 1280, height: 900 },
-			colorScheme: ctx.theme,
-		})
+		const page = await browser.newPage(ctx.options.page)
 		page.on('pageerror', e => errors.push(e.message))
 		await page.goto(`file://${html}`, { waitUntil: 'networkidle' })
 		await page.waitForSelector('#root', { timeout: 15_000 })
@@ -38,37 +36,36 @@ export async function renderRaster(ctx: RenderContext, formats: RasterFormats): 
 		}
 		if (formats.png) {
 			await page.screenshot({
+				...ctx.options.screenshot,
 				path: path.join(ctx.outDir, `${ctx.stem}.png`),
-				fullPage: true,
-				animations: 'disabled',
 			})
 		}
 		if (formats.jpg) {
 			await page.screenshot({
+				...ctx.options.screenshot,
 				path: path.join(ctx.outDir, `${ctx.stem}.jpg`),
-				fullPage: true,
 				type: 'jpeg',
-				quality: 90,
-				animations: 'disabled',
 			})
 		}
 		if (formats.pdf) {
-			await writePdf(page, path.join(ctx.outDir, `${ctx.stem}.pdf`))
+			await writePdf(page, ctx, path.join(ctx.outDir, `${ctx.stem}.pdf`))
 		}
 	} finally {
 		await browser.close()
 	}
 }
 
-async function writePdf(page: Page, outPath: string): Promise<void> {
+async function writePdf(page: Page, ctx: RenderContext, outPath: string): Promise<void> {
+	const widthPx = ctx.options.page.viewport.width
 	const height = await page.evaluate(() => document.documentElement.scrollHeight)
-	await page.pdf({
-		path: outPath,
-		printBackground: true,
-		width: '1280px',
-		height: `${height}px`,
-		margin: { top: 0, right: 0, bottom: 0, left: 0 },
-	})
+	const pdf = { ...ctx.options.pdf }
+	if (!pdf.width) {
+		pdf.width = `${widthPx}px`
+	}
+	if (!pdf.height) {
+		pdf.height = `${height}px`
+	}
+	await page.pdf({ ...pdf, path: outPath })
 }
 
 function htmlPath(ctx: RenderContext): string {

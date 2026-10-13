@@ -1,22 +1,24 @@
-# Changelog
+### Changelog
 
-## 1.0.0
+All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-### Added
+## [1.0.0]
+#### 2026-10-13
 
+##### Added
 - `generate` (default): HTML, PNG, PDF, JPG, and IDE-ready `.canvas.tsx` (`--formats cursor`).
-- `verify --canvas`: typecheck canvases (`cursor/canvas` + data imports).
+- `verify <canvas>`: typecheck canvases (`cursor/canvas` + data imports).
 - `skill`: print or install agent `SKILL.md`.
 - Data imports: JSON, JSONL, CSV, TSV, YAML beside the canvas file.
+- E2E `npm run test:smoke` (external canvas + prod pack install).
 
-### Changed
-
-- Package and CLI name **`opencanvas`** (npm); repo `flesler/opencanvas`.
-- PDF via Playwright `page.pdf()` (removed `pdf-lib`).
-- Vite build uses published `dist/load-data-file.js`; runtime deps include Vite stack for `generate`.
+##### Changed
+- Package and CLI name **opencanvas** (npm); repo `flesler/opencanvas`.
+- Positional canvas path (no `--canvas`); bin entry `bin/opencanvas.js`.
+- PDF via Playwright `page.pdf()`; centralized render options in `render-options.ts`.
+- Vite resolve for canvases outside the package (`src/pkg.ts`).
 - Example canvas: `example/build-plane.canvas.tsx`.
 
-### Removed
-
+##### Removed
 - `export` subcommand name (use `generate`).
-- `@rollup/plugin-dsv` (shared `load-data-file` for CLI + Vite).
+- Separate `load-data-file` module (merged into `util`).

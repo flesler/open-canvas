@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": "github:flesler/opencanvas",
   "bin": {
-    "opencanvas": "./dist/cli.js"
+    "opencanvas": "./bin/opencanvas.js"
   },
   "engines": {
     "node": "^24.11.1",
@@ -14,23 +14,23 @@
   },
   "scripts": {
     "build": "npm run build:cli",
-    "build:cli": "rm -rf dist && tsc -p tsconfig.cli.json && node --input-type=module -e \"import fs from 'node:fs'; const p='dist/cli.js'; fs.writeFileSync(p, '#!/usr/bin/env node\\n' + fs.readFileSync(p));\"",
+    "build:cli": "tsc -b tsconfig.cli.json --clean && tsc -b tsconfig.cli.json && find dist -name '*.d.ts' -delete",
     "prepublishOnly": "npm run build:cli",
     "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
     "eslint": "eslint --cache --cache-strategy content",
-    "lint": "npm run eslint -- '{src,bin}/**/*.ts'",
+    "lint": "npm run eslint -- 'src/**/*.ts' 'src/**/*.tsx' 'example/**/*.canvas.tsx'",
     "lint:fix": "npm run lint -- --fix",
     "vitest": "VITE_CJS_IGNORE_WARNING=true vitest",
     "test": "npm run test:types && npm run test:unit",
+    "test:smoke": "bin/smoke.sh",
     "test:unit": "npm run vitest -- run",
-    "test:types:src": "tsc -p tsconfig.build.json --incremental --tsBuildInfoFile dist/src.tsbuildinfo",
-    "test:types:test": "tsc -p tsconfig.test.json --incremental --tsBuildInfoFile dist/test.tsbuildinfo",
-    "test:types:bin": "tsc -p bin/tsconfig.json --incremental --tsBuildInfoFile dist/bin.tsbuildinfo",
-    "test:types": "npm run test:types:src && npm run test:types:test && npm run test:types:bin",
+    "test:types:cli": "tsc -p tsconfig.cli.json --noEmit",
+    "test:types:app": "tsc -p tsconfig.json",
+    "test:types": "npm run test:types:cli && npm run test:types:app",
     "test:unit:min": "MINIMAL=1 npm run test:unit",
     "test:unit:verbose": "VERBOSE=1 npm run test:unit",
-    "lint:full": "bin/parallel-run.sh test:types:src test:types:test test:types:bin lint:fix",
-    "lint:full:silent": "bin/parallel-run.sh --silent test:types:src test:types:test test:types:bin lint:fix && echo LINT OK",
+    "lint:full": "bin/parallel-run.sh test:types:cli test:types:app lint:fix",
+    "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
@@ -70,7 +70,8 @@
     "vitest": "^4.1.11"
   },
   "files": [
-    "dist",
+    "bin/opencanvas.js",
+    "dist/**/*.js",
     "LICENSE",
     "src/shell",
     "src/types",

@@ -18,10 +18,10 @@ program
 program
 	.command('verify')
 	.description('Typecheck a .canvas.tsx (cursor/canvas + data imports)')
-	.requiredOption('--canvas <path>', 'path to *.canvas.tsx')
-	.action((opts: { canvas: string }) => {
+	.argument('<canvas>', 'path to *.canvas.tsx')
+	.action((canvas: string) => {
 		try {
-			runVerify(opts.canvas)
+			runVerify(canvas)
 		} catch (e) {
 			console.error(e instanceof Error ? e.message : e)
 			process.exit(1)
@@ -31,19 +31,28 @@ program
 program
 	.command('generate', { isDefault: true })
 	.description('Build artifacts from a canvas file')
-	.requiredOption('--canvas <path>', 'path to *.canvas.tsx')
+	.argument('<canvas>', 'path to *.canvas.tsx')
 	.option('--out <dir>', 'output directory (default: ./out next to canvas)', 'out')
 	.option('--title <text>', 'HTML document title')
 	.option('--theme <mode>', 'light or dark', 'light')
 	.option('--formats <list>', 'comma-separated: html,png,pdf,jpg,cursor', 'html,png,pdf')
-	.action(async (opts) => {
+	.option('--width <px>', 'render viewport width', (v: string) => Number(v))
+	.option('--height <px>', 'render viewport height', (v: string) => Number(v))
+	.option(
+		'--render-options <file|json>',
+		'Playwright options JSON (launch / page / screenshot / pdf) — https://playwright.dev/docs/api/class-page',
+	)
+	.action(async (canvas: string, opts) => {
 		try {
 			await runGenerate({
-				canvas: opts.canvas,
+				canvas,
 				out: opts.out,
 				title: opts.title,
 				theme: opts.theme as 'light' | 'dark',
 				formats: opts.formats,
+				viewportWidth: opts.width,
+				viewportHeight: opts.height,
+				renderOptions: opts.renderOptions,
 			})
 		} catch (e) {
 			console.error(e instanceof Error ? e.message : e)

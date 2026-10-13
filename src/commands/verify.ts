@@ -1,11 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
+import { pathInPkg, verifyTypeScriptPaths } from '../pkg.js'
 
-const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-const ambientTypes = path.join(pkgRoot, 'src', 'types', 'ambient.d.ts')
-const tsconfigPath = path.join(pkgRoot, 'tsconfig.json')
+const ambientTypes = pathInPkg('src', 'types', 'ambient.d.ts')
 
 export function runVerify(canvasPath: string): void {
 	const abs = path.resolve(canvasPath)
@@ -13,18 +11,26 @@ export function runVerify(canvasPath: string): void {
 		throw new Error(`canvas not found: ${abs}`)
 	}
 	if (!abs.endsWith('.canvas.tsx')) {
-		throw new Error('--canvas must end with .canvas.tsx')
+		throw new Error('canvas must end with .canvas.tsx')
 	}
 	if (!fs.existsSync(ambientTypes)) {
 		throw new Error('package types missing (src/types/ambient.d.ts)')
 	}
 
-	const read = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
-	if (read.error) {
-		throw new Error(ts.flattenDiagnosticMessageText(read.error.messageText, '\n'))
+	const options: ts.CompilerOptions = {
+		target: ts.ScriptTarget.ES2022,
+		module: ts.ModuleKind.ESNext,
+		moduleResolution: ts.ModuleResolutionKind.Bundler,
+		jsx: ts.JsxEmit.ReactJSX,
+		strict: true,
+		skipLibCheck: true,
+		isolatedModules: true,
+		resolveJsonModule: true,
+		noEmit: true,
+		...verifyTypeScriptPaths(),
 	}
-	const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, pkgRoot)
-	const program = ts.createProgram([ambientTypes, abs], { ...parsed.options, noEmit: true })
+
+	const program = ts.createProgram([ambientTypes, abs], options)
 	const diagnostics = ts.getPreEmitDiagnostics(program).filter(d => d.category === ts.DiagnosticCategory.Error)
 
 	if (diagnostics.length === 0) {

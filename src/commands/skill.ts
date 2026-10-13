@@ -1,9 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { pathInPkg } from '../pkg.js'
 
-const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-const skillPath = path.join(pkgRoot, 'src', 'md', 'SKILL.md')
+const skillPath = pathInPkg('src', 'md', 'SKILL.md')
 
 export function runSkill(targetPath?: string): void {
 	if (!fs.existsSync(skillPath)) {

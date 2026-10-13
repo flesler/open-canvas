@@ -1,12 +1,11 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { runVerify } from './commands/verify.js'
+import { pathInPkg } from '../pkg.js'
+import { runVerify } from './verify.js'
 
-const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const exampleCanvas = path.join(pkgRoot, 'example', 'build-plane.canvas.tsx')
+const exampleCanvas = pathInPkg('example', 'build-plane.canvas.tsx')
 
 describe('runVerify', () => {
 	it('accepts the example canvas', () => {

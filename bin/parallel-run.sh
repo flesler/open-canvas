@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run npm scripts in parallel (independent gates only).
 #
-#   bin/parallel-run.sh test:types:src test:types:bin lint:fix
+#   bin/parallel-run.sh test:types:cli test:types:app lint:fix
 #   bin/parallel-run.sh --silent lint:fix build test:unit
 set -euo pipefail
 

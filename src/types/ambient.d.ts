@@ -20,17 +20,13 @@ declare module '*.tsv' {
 	export default rows
 }
 
-type YamlData = {
-	rows?: Array<{ phase: string; p90: number }>
-}
-
 declare module '*.yaml' {
-	const data: YamlData
+	const data: any
 	export default data
 }
 
 declare module '*.yml' {
-	const data: YamlData
+	const data: any
 	export default data
 }
 

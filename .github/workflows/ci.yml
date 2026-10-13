@@ -18,15 +18,4 @@ jobs:
       - run: npm run build:cli
       - run: npm run lint:full
       - run: npm test
-      - run: node dist/cli.js verify --canvas example/build-plane.canvas.tsx
-      - run: npm pack --pack-destination /tmp
-      - name: Pack smoke
-        run: |
-          set -e
-          TARBALL=$(ls /tmp/opencanvas-*.tgz | head -1)
-          rm -rf /tmp/opencanvas-pack-verify
-          mkdir -p /tmp/opencanvas-pack-verify
-          cd /tmp/opencanvas-pack-verify
-          npm init -y
-          npm install "$TARBALL"
-          npx opencanvas skill | head -n 1 | grep -q opencanvas
+      - run: npm run test:smoke

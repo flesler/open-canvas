@@ -2,6 +2,7 @@ node_modules/
 .eslintcache
 dist/
 .cache/
+*.tsbuildinfo
 *.log
 example/out/
 **/out/_build/

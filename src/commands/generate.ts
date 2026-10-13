@@ -1,16 +1,20 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { renderRaster } from '../render.js'
+import { pathInPkg, pkgRoot, viteCliPath } from '../pkg.js'
+import { resolveRenderOptions } from '../render-options.js'
+import { render } from '../render.js'
 import { canvasStem, emitCursorCanvas, parseFormats, titleCaseFromStem } from '../util.js'
-import { pkgRoot, viteCliPath } from '../vite-bin.js'
 
 export type GenerateOptions = {
 	canvas: string;
 	out?: string;
 	title?: string;
 	theme?: 'light' | 'dark';
-	formats?: string
+	formats?: string;
+	viewportWidth?: number;
+	viewportHeight?: number;
+	renderOptions?: string
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
@@ -30,7 +34,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
 	const formats = parseFormats(opts.formats ?? 'html,png,pdf')
 	const needsHtml = formats.some(f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg')
-	const needsRaster = formats.some(f => f === 'png' || f === 'pdf' || f === 'jpg')
+	const needsRender = formats.some(f => f === 'png' || f === 'pdf' || f === 'jpg')
 
 	fs.mkdirSync(outDir, { recursive: true })
 
@@ -43,7 +47,13 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		OPENCANVAS_CANVAS_PATH: canvasPath,
 	}
 
-	const renderCtx = { outDir, stem, theme }
+	const options = resolveRenderOptions({
+		theme,
+		viewportWidth: opts.viewportWidth,
+		viewportHeight: opts.viewportHeight,
+		renderOptions: opts.renderOptions,
+	})
+	const renderCtx = { outDir, stem, options }
 
 	if (formats.includes('cursor')) {
 		const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)
@@ -52,8 +62,8 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	}
 
 	if (needsHtml) {
-		const viteCli = viteCliPath(pkgRoot)
-		const vite = spawnSync(process.execPath, [viteCli, 'build', '--config', path.join(pkgRoot, 'vite.config.ts')], {
+		const viteCli = viteCliPath()
+		const vite = spawnSync(process.execPath, [viteCli, 'build', '--config', pathInPkg('vite.config.ts')], {
 			cwd: pkgRoot,
 			stdio: 'inherit',
 			env,
@@ -63,8 +73,8 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		}
 	}
 
-	if (needsRaster) {
-		await renderRaster(renderCtx, {
+	if (needsRender) {
+		await render(renderCtx, {
 			png: formats.includes('png'),
 			pdf: formats.includes('pdf'),
 			jpg: formats.includes('jpg'),

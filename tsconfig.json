@@ -14,5 +14,9 @@
       "cursor/canvas": ["./node_modules/@thisismydesign/cursor-canvas-web"]
     }
   },
-  "include": ["src", "example"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "example/**/*.canvas.tsx"
+  ]
 }

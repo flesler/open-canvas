@@ -9,20 +9,14 @@ Follow Cursor’s native canvas skill end-to-end for **layout, components, desig
 - Skill file: `~/.cursor/skills-cursor/canvas/SKILL.md`
 - SDK types: `~/.cursor/skills-cursor/canvas/sdk/index.d.ts`
 
-Do **not** duplicate those rules here. This skill only adds what differs when authoring **in a repo** and shipping via `opencanvas` CLI.
+This skill only adds what differs when authoring via `opencanvas` CLI.
 
 ## Authoring overrides (repo / export lane)
 
-|Cursor IDE skill|opencanvas authoring|
-|---|---|
-|Import only `cursor/canvas`|Also: `import x from './data/*.{json,jsonl,csv,tsv,yaml,yml}'` (relative paths beside the canvas)|
-|Embed all data inline|Data lives in `data/` files; canvas imports them|
-|One file, no helpers|Still one `.canvas.tsx`; data files are separate|
-
-Example layout:
+The only difference is that you can import data files beside the canvas. Example:
 
 ```
-my-report.canvas.tsx
+report.canvas.tsx
 data/report.json
 data/phase-rss.yaml
 data/series.tsv
@@ -39,34 +33,29 @@ Map imported data in JSX with `.map()` — no fetch, no extra npm imports in the
 
 ## CLI
 
-Default command is **generate** (subcommand optional).
-
-```bash
-opencanvas --canvas path/to/report.canvas.tsx
-opencanvas generate --canvas path/to/report.canvas.tsx
-opencanvas verify --canvas path/to/report.canvas.tsx
-```
-
 |Flag|Default|
 |---|---|
 |`--out`|`./out` next to the canvas file|
 |`--title`|Title case of canvas stem|
 |`--theme`|`light` (`light` or `dark` only)|
 |`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
+|`--width` / `--height`|Render viewport (default `1280`×`900`)|
+|`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf` — [API](https://playwright.dev/docs/api/class-page)|
 
 ```bash
-opencanvas --canvas my-report.canvas.tsx --formats html,png,pdf,cursor
+opencanvas generate path/to/report.canvas.tsx
 ```
 
-Outputs: `out/<stem>.html`, `.png`, `.pdf`, and with `cursor` → `out/<stem>.canvas.tsx` (only `cursor/canvas` imports, data inlined). Copy that file into the workspace managed folder:
+Default `--formats` is `html,png,pdf`. Add `,jpg` or `,cursor` when needed.
 
-`~/.cursor/projects/<workspace>/canvases/<stem>.canvas.tsx`
+Outputs: `out/<stem>.html`, `.png`, `.pdf` by default; with `cursor` → `out/<stem>.canvas.tsx` (only `cursor/canvas` imports, data inlined). Copy that file into the workspace managed folder:
+
+`cp out/<stem>.canvas.tsx ~/.cursor/projects/<workspace>/canvases/`
 
 ## Install this skill
 
 ```bash
-opencanvas skill                    # print to stdout
+opencanvas skill # print to stdout
 opencanvas skill ~/.cursor/skills/opencanvas
 ```
-
 Reference example in the repo: `example/build-plane.canvas.tsx` + `example/data/`.

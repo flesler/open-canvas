@@ -1,14 +1,15 @@
 import react from '@vitejs/plugin-react'
-import { createRequire } from 'node:module'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 
-const pkgRoot = path.dirname(fileURLToPath(import.meta.url))
-const require = createRequire(import.meta.url)
-const { viteDataModule } = require('./dist/load-data-file.js') as typeof import('./dist/load-data-file.js')
+const configDir = path.dirname(fileURLToPath(import.meta.url))
+const pkgRequire = createRequire(path.join(configDir, 'package.json'))
+const { pkgRoot, viteResolveForCanvas } = pkgRequire('./dist/pkg.js') as typeof import('./dist/pkg.js')
+const { viteDataModule } = pkgRequire('./dist/util.js') as typeof import('./dist/util.js')
 
 const stem = process.env.OPENCANVAS_STEM ?? 'index'
 const outDir = process.env.OPENCANVAS_OUT_DIR ?? path.join(pkgRoot, 'example', 'out')
@@ -21,6 +22,8 @@ const htmlOut = path.join(outDir, `${stem}.html`)
 if (!canvasPath) {
 	throw new Error('OPENCANVAS_CANVAS_PATH is required for vite build')
 }
+
+const canvasResolve = viteResolveForCanvas(canvasPath)
 
 function flatHtmlArtifact(): Plugin {
 	return {
@@ -70,9 +73,12 @@ export default defineConfig({
 		__OPENCANVAS_THEME__: JSON.stringify(theme),
 	},
 	resolve: {
-		alias: {
-			'cursor/canvas': '@thisismydesign/cursor-canvas-web',
-			'@opencanvas/user-canvas': canvasPath,
+		modules: canvasResolve.modules,
+		alias: canvasResolve.alias,
+	},
+	server: {
+		fs: {
+			allow: canvasResolve.fsAllow,
 		},
 	},
 	root: path.join(pkgRoot, 'src', 'shell'),

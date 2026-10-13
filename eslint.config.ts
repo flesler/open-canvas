@@ -1,10 +1,10 @@
-import { defineConfig } from 'eslint/config'
 import eslintJs from '@eslint/js'
-import tsParser from '@typescript-eslint/parser'
-import tsPlugin from '@typescript-eslint/eslint-plugin'
 import stylisticPlugin from '@stylistic/eslint-plugin'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import importNewlinesPlugin from 'eslint-plugin-import-newlines'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
+import { defineConfig } from 'eslint/config'
 
 export default defineConfig([
 	{
@@ -12,11 +12,16 @@ export default defineConfig([
 	},
 	eslintJs.configs.recommended,
 	{
-		files: ['{src,bin}/**/*.ts'],
+		files: [
+			'src/**/*.ts',
+			'src/**/*.tsx',
+			'example/**/*.canvas.tsx',
+		],
 		languageOptions: {
 			parser: tsParser,
 			parserOptions: {
-				project: './bin/tsconfig.json',
+				project: './tsconfig.json',
+				ecmaFeatures: { jsx: true },
 			},
 			ecmaVersion: 2022,
 			sourceType: 'module',
