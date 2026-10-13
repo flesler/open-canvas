@@ -1,14 +1,12 @@
 # open-canvas
 
-Build `.canvas.tsx` → HTML, PNG, PDF; optional JPG or `--formats cursor` (IDE `.canvas.tsx`).
+Export Cursor-style `.canvas.tsx` files to HTML, PNG, PDF, or IDE-ready `.canvas.tsx`. No Cursor app or API required.
 
-Uses [`@flesler/cursor-canvas-web`](https://github.com/flesler/cursor-canvas-web) to implement `cursor/canvas` at export time (Mantine-backed shim, aligned with the IDE SDK).
-
-**Live showcase:** <https://flesler.github.io/open-canvas/> — built from [`example/showcase.canvas.tsx`](example/showcase.canvas.tsx) on every push to `main` ([`deploy.yml`](.github/workflows/deploy.yml), `BASE_PATH=/open-canvas/`).
+**Live example:** <https://flesler.github.io/open-canvas/>
 
 <p>
-  <img src="docs/showcase-light.png" alt="SDK showcase (light)" width="49%" />
-  <img src="docs/showcase-dark.png" alt="SDK showcase (dark)" width="49%" />
+  <img src="docs/showcase-light.png" alt="Showcase export (light)" width="49%" />
+  <img src="docs/showcase-dark.png" alt="Showcase export (dark)" width="49%" />
 </p>
 
 ## Install
@@ -17,23 +15,43 @@ Uses [`@flesler/cursor-canvas-web`](https://github.com/flesler/cursor-canvas-web
 npm install -g @flesler/open-canvas
 ```
 
-Checkout: `npm install && npm run build:cli`. Example: [showcase.canvas.tsx](example/showcase.canvas.tsx) + [data/](example/data/) (illustrative only — your canvases can use any layout). PNG/PDF/JPG need Playwright (Chromium).
+PNG, PDF, and JPG use headless Chromium (installed automatically on first export).
+
+## Write a canvas
+
+Use `cursor/canvas` components the same way as in Cursor. See Cursor’s canvas skill (`~/.cursor/skills-cursor/canvas/SKILL.md`) and `sdk/index.d.ts` for layout and APIs.
+
+Import data from files next to your canvas (JSON, YAML, TSV, CSV, JSONL):
+
+```tsx
+import { Stack, H1, BarChart } from "cursor/canvas";
+import report from "./data/report.json";
+```
 
 ## CLI
 
 ```bash
 open-canvas generate path/to/report.canvas.tsx
+open-canvas verify path/to/report.canvas.tsx
 ```
 
-Default `--formats`: `html,png,pdf`.
+| Command | Purpose |
+| --- | --- |
+| `generate <canvas>` | Build artifacts (default: `html`, `png`, `pdf` in `./out`) |
+| `verify <canvas>` | Typecheck imports and `cursor/canvas` usage |
+| `skill [path]` | Print or install agent `SKILL.md` |
 
-| Command | Description |
-|---------|-------------|
-| `generate <canvas>` | Build artifacts |
-| `verify <canvas>` | Typecheck |
-| `skill [path]` | Install or print `SKILL.md` |
+Common flags:
 
-Regenerate README screenshots (light + dark): `npm run example:screenshot`.
+| Flag | Default |
+| --- | --- |
+| `--out` | `./out` beside the canvas |
+| `--theme` | `light` or `dark` |
+| `--formats` | `html,png,pdf` — also `jpg`, `cursor` |
+| `--width` / `--height` | Viewport `1280`×`900` |
+| `--selector` | Export only matching nodes (`id`, class, or `data-*` on your JSX) |
+
+`--formats cursor` writes a single `.canvas.tsx` with data inlined for the IDE.
 
 ## License
 
