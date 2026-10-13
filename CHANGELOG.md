@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.1.1]
+#### 2026-10-13
+
+##### Changed
+- **Recharts 3** (`^3.10.1`), aligned with `@flesler/cursor-canvas-web` peer range (drops deprecated 2.x install warning).
+
 ## [1.1.0]
 #### 2026-10-13
 

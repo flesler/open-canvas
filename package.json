@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-	"version": "1.1.0",
+  "version": "1.1.1",
   "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
@@ -33,12 +33,12 @@
     "test:unit:verbose": "VERBOSE=1 npm run test:unit",
     "lint:full": "bin/parallel-run.sh test:types:cli test:types:app lint:fix",
     "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
-		"ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:contract && npm run test:smoke",
+    "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:contract && npm run test:smoke",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
-		"@flesler/cursor-canvas-web": "^1.0.0",
+    "@flesler/cursor-canvas-web": "^1.0.0",
     "@mantine/charts": "^8.3.1",
     "@mantine/core": "^8.3.1",
     "@types/react": "^19.2.3",
@@ -49,7 +49,7 @@
     "playwright": "^1.55.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "recharts": "^2.15.4",
+    "recharts": "^3.10.1",
     "ts-morph": "^25.0.1",
     "typescript": "^5.7.2",
     "vite": "^7.1.9",
