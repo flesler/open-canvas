@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ##### Changed
 - **Recharts 3** (`^3.10.1`), aligned with `@flesler/cursor-canvas-web` peer range (drops deprecated 2.x install warning).
+- Runtime deps: Mantine **8.3.18**, React **19.3**, Vite **7.3**, Playwright **1.64**, TypeScript **5.9**, ts-morph **28** (stay on Mantine 8 until shim peers allow 9).
 
 ## [1.1.0]
 #### 2026-10-13
