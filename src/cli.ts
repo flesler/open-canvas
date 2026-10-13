@@ -1,11 +1,18 @@
+import { createRequire } from 'node:module'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Command } from 'commander'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVerify } from './commands/verify.js'
 
+const require = createRequire(path.join(path.dirname(fileURLToPath(import.meta.url)), 'package.json'))
+const { version } = require('../package.json') as { version: string }
+
 const program = new Command()
 	.name('open-canvas')
 	.description('Generate HTML, PNG, PDF, and IDE-ready canvas from .canvas.tsx')
+	.version(version, '-v, --version', 'print version')
 
 program
 	.command('skill')
