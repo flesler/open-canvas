@@ -19,6 +19,13 @@ User canvases are free-form — fix **shim/components**, not “the one true lay
 
 Grid stretch beside a much taller sibling is an **author layout** issue in examples; shim still must size charts correctly for any parent.
 
+## SDK contract
+
+`cursor-canvas-web` `test:contract` checks the **committed** `test/contract/cursor-sdk/` snapshot. It does **not** copy `~/.cursor/skills-cursor/canvas/sdk` on CI or pre-push (Cursor versions differ per machine).
+
+- Refresh the snapshot only on purpose: `pnpm run sync:sdk` in the shim repo, review the diff, commit it with the shim changes.
+- Before that bump, `pnpm run check:sdk-live` (no writes). The shim must export every name the live skill has **and** every name the committed snapshot has — a superset, so older and newer Cursor skills both typecheck.
+
 ## Fix order
 
 1. Reproduce with fork `pnpm dev` and `open-canvas generate` on a minimal canvas if possible.
