@@ -1,6 +1,6 @@
 {
   "name": "open-canvas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Export Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
@@ -8,9 +8,30 @@
   "bin": {
     "open-canvas": "./dist/cli.js"
   },
+  "engines": {
+    "node": "^24.11.1",
+    "npm": "^11.0.0"
+  },
   "scripts": {
     "build:cli": "tsc -p tsconfig.cli.json && node --input-type=module -e \"import fs from 'node:fs'; const p='dist/cli.js'; fs.writeFileSync(p, '#!/usr/bin/env node\\n' + fs.readFileSync(p));\"",
-    "prepublishOnly": "npm run build:cli"
+    "prepublishOnly": "npm run build:cli",
+    "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
+    "eslint": "eslint --cache --cache-strategy content",
+    "lint": "npm run eslint -- '{src,bin}/**/*.ts'",
+    "lint:fix": "npm run lint -- --fix",
+    "vitest": "VITE_CJS_IGNORE_WARNING=true vitest",
+    "test": "npm run test:types && npm run test:unit",
+    "test:unit": "npm run vitest -- run",
+    "test:types:src": "tsc -p tsconfig.build.json --incremental --tsBuildInfoFile dist/src.tsbuildinfo",
+    "test:types:test": "tsc -p tsconfig.test.json --incremental --tsBuildInfoFile dist/test.tsbuildinfo",
+    "test:types:bin": "tsc -p bin/tsconfig.json --incremental --tsBuildInfoFile dist/bin.tsbuildinfo",
+    "test:types": "npm run test:types:src && npm run test:types:test && npm run test:types:bin",
+    "test:unit:min": "MINIMAL=1 npm run test:unit",
+    "test:unit:verbose": "VERBOSE=1 npm run test:unit",
+    "lint:full": "bin/parallel-run.sh test:types:src test:types:test test:types:bin lint:fix",
+    "lint:full:silent": "bin/parallel-run.sh --silent test:types:src test:types:test test:types:bin lint:fix && echo LINT OK",
+    "agent:stop": "npm run -s lint:full:silent",
+    "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.1",
@@ -27,15 +48,27 @@
     "ts-morph": "^25.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/d3-dsv": "^3.0.7",
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.68.0",
+    "@typescript-eslint/parser": "^8.68.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "auto-changelog": "^2.6.0",
+    "eslint": "^10.9.1",
+    "eslint-plugin-import-newlines": "^2.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "husky": "^9.1.7",
+    "jiti": "^2.7.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.9",
-    "vite-plugin-singlefile": "^2.3.0"
+    "vite-plugin-singlefile": "^2.3.0",
+    "vitest": "^4.1.11"
   },
   "files": [
     "dist",
