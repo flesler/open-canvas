@@ -16,9 +16,9 @@ export function viteCliPath(): string {
 	return path.join(path.dirname(vitePkg), 'bin', 'vite.js')
 }
 
-/** `@thisismydesign/cursor-canvas-web` install dir (hoisting-safe). */
+/** `@flesler/cursor-canvas-web` install dir (hoisting-safe). */
 function cursorCanvasDir(): string {
-	const entry = require.resolve('@thisismydesign/cursor-canvas-web')
+	const entry = require.resolve('@flesler/cursor-canvas-web')
 	return path.resolve(path.dirname(entry), '..')
 }
 
@@ -60,12 +60,26 @@ export function verifyTypeScriptPaths(_canvasPath: string): {
 export function viteResolveForCanvas(canvasPath: string) {
 	const abs = path.resolve(canvasPath)
 	const cc = cursorCanvasDir()
+	const reactPkg = path.dirname(require.resolve('react/package.json'))
+	const reactDomPkg = path.dirname(require.resolve('react-dom/package.json'))
+	const mantine = (name: string) => path.join(pkgRoot, 'node_modules', name)
 	return {
 		modules: [path.join(pkgRoot, 'node_modules'), 'node_modules'],
 		alias: {
-			'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-			'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+			react: reactPkg,
+			'react-dom': reactDomPkg,
+			'react/jsx-runtime': path.join(reactPkg, 'jsx-runtime.js'),
+			'react-dom/client': path.join(reactDomPkg, 'client.js'),
+			'react/jsx-dev-runtime': path.join(reactPkg, 'jsx-dev-runtime.js'),
+			'@mantine/core': mantine('@mantine/core'),
+			'@mantine/hooks': mantine('@mantine/hooks'),
+			'@mantine/charts': mantine('@mantine/charts'),
 			'cursor/canvas': path.join(cc, 'dist', 'cursor-canvas.js'),
+			'@flesler/cursor-canvas-web/runtime': path.join(
+				cc,
+				'dist',
+				'runtime.js',
+			),
 			'@open-canvas/user-canvas': abs,
 		},
 		fsAllow: [pkgRoot, path.dirname(abs)],

@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "paths": {
-      "cursor/canvas": ["./node_modules/@thisismydesign/cursor-canvas-web"]
+      "cursor/canvas": ["./node_modules/@flesler/cursor-canvas-web"]
     }
   },
   "include": [

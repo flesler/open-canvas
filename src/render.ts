@@ -1,7 +1,40 @@
+import { spawnSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Page } from 'playwright'
+import { pkgRoot } from './pkg.js'
 import type { RenderOptions } from './render-options.js'
+
+const require = createRequire(path.join(pkgRoot, 'package.json'))
+let chromiumReady = false
+
+function ensureChromium(): void {
+	if (chromiumReady) {
+		return
+	}
+	const { chromium } = require('playwright') as {
+		chromium: { executablePath: () => string }
+	}
+	const exe = chromium.executablePath()
+	if (fs.existsSync(exe)) {
+		chromiumReady = true
+		return
+	}
+	const playwrightPkg = require.resolve('playwright/package.json')
+	const cli = path.join(path.dirname(playwrightPkg), 'cli.js')
+	const install = spawnSync(process.execPath, [cli, 'install', 'chromium'], {
+		cwd: pkgRoot,
+		stdio: 'inherit',
+		env: process.env,
+	})
+	if (install.status !== 0) {
+		throw new Error(
+			'playwright install chromium failed (required for png/pdf/jpg)',
+		)
+	}
+	chromiumReady = true
+}
 
 export type RenderContext = {
 	outDir: string;
@@ -23,6 +56,7 @@ export async function render(ctx: RenderContext, formats: RenderFormats): Promis
 	if (!fs.existsSync(html)) {
 		throw new Error(`HTML artifact missing: ${html} (run generate with html, png, pdf, or jpg)`)
 	}
+	ensureChromium()
 	const { chromium } = await import('playwright')
 	const errors: string[] = []
 	const browser = await chromium.launch(ctx.options.launch ?? {})
@@ -30,7 +64,10 @@ export async function render(ctx: RenderContext, formats: RenderFormats): Promis
 		const page = await browser.newPage(ctx.options.page)
 		page.on('pageerror', e => errors.push(e.message))
 		await page.goto(`file://${html}`, { waitUntil: 'networkidle' })
-		await page.waitForSelector('#root', { timeout: 15_000 })
+		await page.waitForFunction(
+			() => (document.getElementById('root')?.childElementCount ?? 0) > 0,
+			{ timeout: 15_000 },
+		)
 		if (errors.length) {
 			throw new Error(errors.join('\n'))
 		}

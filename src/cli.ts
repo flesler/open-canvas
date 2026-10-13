@@ -1,7 +1,7 @@
+import { Command } from 'commander'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Command } from 'commander'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVerify } from './commands/verify.js'

@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
@@ -24,6 +24,7 @@
     "test:smoke": "bin/smoke.sh",
     "test:smoke:global": "bin/smoke.sh --global",
     "test:smoke:both": "bin/smoke.sh --both",
+    "test:contract": "bin/contract.sh",
     "test:unit": "npm run vitest -- run",
     "test:types:cli": "tsc -p tsconfig.cli.json --noEmit",
     "test:types:app": "tsc -p tsconfig.json",
@@ -36,9 +37,9 @@
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
+    "@flesler/cursor-canvas-web": "file:../cursor-canvas-web",
     "@mantine/charts": "^8.3.1",
     "@mantine/core": "^8.3.1",
-    "@thisismydesign/cursor-canvas-web": "^0.3.0",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.4",
