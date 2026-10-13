@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.0.2]
+#### 2026-10-13
+
+##### Added
+- CLI `-v` / `--version`.
+
+##### Changed
+- `engines.node`: `>=22.12.0` (shim + Vite 7; drop npm 11 pin).
+- Docs: `docs/TODO.md`; removed `docs/spec.md`; trimmed README and agent SKILL.
+
 ## [1.0.1]
 #### 2026-10-13
 
