@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # Contract smoke: shim export parity (fork repo) + open-canvas verify on fixtures.
-# Fixture: example/showcase.canvas.tsx (SDK + ./data imports).
+# Fixtures: showcase (./data imports) + fork demo (cursor emit) when sibling repo exists.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SHIM_ROOT="${CURSOR_CANVAS_WEB_ROOT:-$ROOT/../cursor-canvas-web}"
 DEFAULT_FIXTURES="$ROOT/example/showcase.canvas.tsx"
+DEMO_CANVAS="$SHIM_ROOT/.cursor/canvases/demo.canvas.tsx"
+if [[ -f "$DEMO_CANVAS" ]]; then
+	DEFAULT_FIXTURES="$DEFAULT_FIXTURES $DEMO_CANVAS"
+fi
 FIXTURES="${CANVAS_CONTRACT_FIXTURES:-$DEFAULT_FIXTURES}"
 
 if [[ -d "$SHIM_ROOT" ]]; then

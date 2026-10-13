@@ -2,6 +2,8 @@
 
 Build `.canvas.tsx` → HTML, PNG, PDF; optional JPG or `--formats cursor` (IDE `.canvas.tsx`).
 
+Uses [`@flesler/cursor-canvas-web`](https://github.com/flesler/cursor-canvas-web) to implement `cursor/canvas` at export time (Mantine-backed shim, aligned with the IDE SDK).
+
 <p>
   <img src="docs/showcase-light.png" alt="SDK showcase (light)" width="49%" />
   <img src="docs/showcase-dark.png" alt="SDK showcase (dark)" width="49%" />
@@ -13,7 +15,7 @@ Build `.canvas.tsx` → HTML, PNG, PDF; optional JPG or `--formats cursor` (IDE 
 npm install -g @flesler/open-canvas
 ```
 
-Checkout: `npm install && npm run build:cli`. Example: [showcase.canvas.tsx](example/showcase.canvas.tsx) + [data/](example/data/). PNG/PDF/JPG need Playwright (Chromium).
+Checkout: `npm install && npm run build:cli`. Example: [showcase.canvas.tsx](example/showcase.canvas.tsx) + [data/](example/data/) (illustrative only — your canvases can use any layout). PNG/PDF/JPG need Playwright (Chromium).
 
 ## CLI
 

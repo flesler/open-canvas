@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Generate Cursor canvases to HTML, PNG, PDF, and IDE-ready .canvas.tsx",
   "type": "module",
   "license": "MIT",
@@ -33,13 +33,14 @@
     "test:unit:verbose": "VERBOSE=1 npm run test:unit",
     "lint:full": "bin/parallel-run.sh test:types:cli test:types:app lint:fix",
     "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
-		"example:screenshot": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme light --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-light.png && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme dark --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-dark.png",
+    "example:screenshot": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme light --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-light.png && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme dark --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-dark.png",
+    "example:cursor": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --formats cursor",
     "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:contract && npm run test:smoke",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
-    "@flesler/cursor-canvas-web": "^1.0.0",
+    "@flesler/cursor-canvas-web": "^1.0.1",
     "@mantine/charts": "^8.3.18",
     "@mantine/core": "^8.3.18",
     "@types/react": "^19.3.0",

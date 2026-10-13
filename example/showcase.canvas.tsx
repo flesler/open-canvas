@@ -10,6 +10,9 @@ import outlierRows from './data/outliers.csv'
 import phaseRssMb from './data/phase-rss.yaml'
 import report from './data/report.json'
 
+/** Bar/line height in the charts grid; pie `size` matches for visual parity. */
+const SHOWCASE_CHART_HEIGHT = 200
+
 const OUTLIER_TABLE = {
 	headers: ['App', 'Stack', 'Total', 'Peak RSS', 'Files@pack'],
 	rows: outlierRows.map(r => [
@@ -354,37 +357,44 @@ export default function ShowcaseCanvas() {
 					</Row>
 
 					{tab === 'charts' && (
-						<Grid columns={2} gap={16}>
-							<Card>
-								<CardHeader>Latency (ms)</CardHeader>
-								<CardBody>
-									<LineChart
-										categories={CATEGORIES}
-										series={LATENCY}
-										height={200}
-										valueSuffix="ms"
-									/>
-								</CardBody>
-							</Card>
-							<Card>
-								<CardHeader>Requests by source</CardHeader>
-								<CardBody>
-									<BarChart
-										categories={CATEGORIES}
-										series={REQUESTS}
-										height={200}
-										stacked
-									/>
-								</CardBody>
-							</Card>
-							<Card>
-								<CardHeader>Test outcomes</CardHeader>
-								<CardBody>
-									<Row justify="center">
-										<PieChart data={OUTCOMES} donut size={180} />
-									</Row>
-								</CardBody>
-							</Card>
+						<Stack gap={16}>
+							<Grid columns={3} gap={16} align="start">
+								<Card>
+									<CardHeader>Latency (ms)</CardHeader>
+									<CardBody>
+										<LineChart
+											categories={CATEGORIES}
+											series={LATENCY}
+											height={SHOWCASE_CHART_HEIGHT}
+											valueSuffix="ms"
+										/>
+									</CardBody>
+								</Card>
+								<Card>
+									<CardHeader>Requests by source</CardHeader>
+									<CardBody>
+										<BarChart
+											categories={CATEGORIES}
+											series={REQUESTS}
+											height={SHOWCASE_CHART_HEIGHT}
+											stacked
+										/>
+									</CardBody>
+								</Card>
+								<Card>
+									<CardHeader>Test outcomes</CardHeader>
+									<CardBody
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											minHeight: SHOWCASE_CHART_HEIGHT,
+										}}
+									>
+										<PieChart data={OUTCOMES} donut size={SHOWCASE_CHART_HEIGHT} />
+									</CardBody>
+								</Card>
+							</Grid>
 							<Card>
 								<CardHeader>Callout tones</CardHeader>
 								<CardBody>
@@ -407,7 +417,7 @@ export default function ShowcaseCanvas() {
 									</Stack>
 								</CardBody>
 							</Card>
-						</Grid>
+						</Stack>
 					)}
 
 					{tab === 'table' && (
@@ -562,7 +572,7 @@ export default function ShowcaseCanvas() {
 
 			{/* Disclosure & tasks -------------------------------------------- */}
 			<Section title="Disclosure & tasks">
-				<Grid columns={2} gap={16}>
+				<Grid columns={2} gap={16} align="start">
 					<Stack gap={8}>
 						<CollapsibleSection
 							title="Tools"

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.1.2]
+#### 2026-10-13
+
+##### Changed
+- **`@flesler/cursor-canvas-web@^1.0.1`** (shim `PieChart` sizing).
+- Example: single `example/showcase.canvas.tsx` (SDK gallery + data imports); README light/dark screenshots and fork link.
+- Contract verifies fork `demo.canvas.tsx` when sibling shim repo is present; `npm run example:cursor` for cursor emit.
+
 ## [1.1.1]
 #### 2026-10-13
 
@@ -48,7 +56,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - Positional canvas path (no `--canvas`); bin `bin/open-canvas.js`.
 - PDF via Playwright `page.pdf()`; centralized render options in `render-options.ts`.
 - Vite resolve for canvases outside the package (`src/pkg.ts`).
-- Example canvas: `example/build-plane.canvas.tsx`.
+- Example canvas: `example/showcase.canvas.tsx`.
 
 ##### Removed
 - `export` subcommand name (use `generate`).
