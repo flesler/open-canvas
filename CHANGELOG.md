@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. Dates are d
 #### 2026-10-13
 
 ##### Fixed
-- `verify` on real Cursor canvases: pin `@types/react` from this package (ignore minimal `canvases/node_modules/@types/react` stubs).
+- `verify`: pin `@types/react` so canvas JSX matches `cursor/canvas` types.
 - PNG screenshots: omit JPEG `quality` (Playwright rejects it for PNG).
 
 ## [1.0.0]
