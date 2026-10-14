@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Agent-friendly canvas visuals (charts, tables, UI) from .canvas.tsx to HTML, PNG, PDF, JPG, or IDE-ready canvas",
   "type": "module",
   "license": "MIT",
@@ -37,13 +37,13 @@
     "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
     "example:screenshot": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme light --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-light.png && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme dark --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-dark.png",
     "example:cursor": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --formats cursor",
-		"test:pack": "bash bin/check-npm-pack.sh",
+    "test:pack": "bash bin/check-npm-pack.sh",
     "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:pack && npm run test:contract && npm run test:smoke",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
-		"@flesler/cursor-canvas-web": "^1.1.1",
+    "@flesler/cursor-canvas-web": "^1.1.1",
     "@mantine/charts": "^8.3.18",
     "@mantine/core": "^8.3.18",
     "@types/react": "^19.3.0",

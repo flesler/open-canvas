@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.3.1]
+#### 2026-10-14
+
+##### Added
+- `shim-visual` agent skill and parity notes for chart rendering vs the IDE.
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.1.1`.
+- Showcase layout: responsive typography, theme row, DAG scaling, header repo link; refreshed README screenshots.
+- CI: `actions/checkout` and `setup-node` v5; drop redundant shim contract job.
+- `test:pack` rejects git/file lockfile resolutions for the shim; lockfile uses npm tarball only.
+- Lighter pre-push hooks; release skill documents agent boundaries.
+
 ## [1.3.0]
 #### 2026-10-14
 
