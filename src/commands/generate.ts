@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
 import { pathInPkg, viteCliPath } from '../paths.js'
 import { pkgRoot } from '../pkg.js'
 import { resolveRenderOptions } from '../render-options.js'
@@ -63,6 +64,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
 	fs.mkdirSync(outDir, { recursive: true })
 
+	const initialCanvasState = readCanvasStateSidecar(canvasPath)
 	const env: NodeJS.ProcessEnv = {
 		...process.env,
 		OPEN_CANVAS_STEM: stem,
@@ -79,7 +81,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		viewportHeight: opts.viewportHeight,
 		renderOptions: opts.renderOptions,
 	})
-	const renderCtx = { outDir, stem, options, selectors }
+	const renderCtx = { outDir, stem, options, selectors, initialCanvasState }
 
 	if (formats.includes('cursor')) {
 		const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)

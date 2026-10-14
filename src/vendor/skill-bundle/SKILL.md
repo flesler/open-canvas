@@ -22,6 +22,7 @@ open-canvas skill ~/.cursor/skills/open-canvas
 |-----|-------------|
 | `…/canvases/*.canvas.tsx` | any path |
 | data inline only | `import` sibling `./data/*` (json, yaml, tsv, csv) |
+| `.canvas.data.json` host state | same file beside the canvas; `generate` seeds `useCanvasState` |
 | IDE typecheck | `open-canvas verify <file>` |
 | IDE preview | `open-canvas generate <file>` → `out/` |
 

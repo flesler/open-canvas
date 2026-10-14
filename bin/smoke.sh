@@ -52,6 +52,7 @@ stage_external() {
 	local dest="$1"
 	mkdir -p "$dest"
 	cp "$ROOT/example/$SHOWCASE" "$dest/"
+	cp "$ROOT/example/showcase.canvas.data.json" "$dest/"
 	cp -r "$ROOT/example/data" "$dest/data"
 }
 

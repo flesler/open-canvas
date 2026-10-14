@@ -27,7 +27,7 @@ Installs open-canvas `SKILL.md`, Cursor `/canvas` prose from the shim (`src/vend
 
 ## Author a `.canvas.tsx`
 
-One React file, high-level layout and viz (bar/line/pie charts, tables, callouts, forms). Import data from sibling files — no fetch, no extra deps in the canvas:
+One React file, high-level layout and viz (bar/line/pie charts, tables, callouts, forms). Import report data from sibling `./data/*` files. Interactive `useCanvasState` values live in a sibling `<stem>.canvas.data.json` (flat object, keys = hook keys); `generate` seeds them before mount. Stale keys are ignored; missing keys use the hook default.
 
 ```tsx
 import { Stack, H1, BarChart } from "cursor/canvas";
