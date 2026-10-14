@@ -3,7 +3,7 @@
  *
  * Single example for verify, smoke, contract, and the README screenshot.
  */
-import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, colorPalette, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
+import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
 import outlierRows from './data/outliers.csv'
@@ -142,6 +142,9 @@ const STEPS: { n: string; title: string; desc: string }[] = [
 	},
 ]
 
+const DAG_NODE_W = 96
+const DAG_NODE_H = 40
+
 const DAG = computeDAGLayout({
 	nodes: [
 		{ id: 'Plan' },
@@ -158,10 +161,11 @@ const DAG = computeDAGLayout({
 		{ from: 'Review', to: 'Edit' },
 	],
 	direction: 'horizontal',
-	nodeWidth: 96,
-	nodeHeight: 34,
-	rankGap: 40,
+	nodeWidth: DAG_NODE_W,
+	nodeHeight: DAG_NODE_H,
+	rankGap: 52,
 	nodeGap: 18,
+	padding: 32,
 })
 
 /* -------------------------------------------------------------- subsections */
@@ -188,17 +192,21 @@ function Section({
 function DagDiagram() {
 	const theme = useHostTheme()
 	const labelOf = (id: string) => id
+	const backEdgeLift = 48
 	return (
-		<div style={{ overflowX: 'auto' }}>
+		<div style={{ width: '100%' }}>
 			<svg
-				width={DAG.width}
-				height={DAG.height}
+				viewBox={`0 0 ${DAG.width} ${DAG.height}`}
+				width="100%"
+				height="auto"
+				preserveAspectRatio="xMidYMid meet"
 				role="img"
 				aria-label="Agent loop graph"
+				style={{ display: 'block', minHeight: 88, maxHeight: 140 }}
 			>
 				<defs>
 					<marker
-						id="arrow"
+						id="dag-arrow"
 						viewBox="0 0 8 8"
 						refX={7}
 						refY={4}
@@ -208,17 +216,41 @@ function DagDiagram() {
 					>
 						<path d="M0 0L8 4L0 8z" fill={theme.text.tertiary} />
 					</marker>
+					<marker
+						id="dag-arrow-back"
+						viewBox="0 0 8 8"
+						refX={7}
+						refY={4}
+						markerWidth={6}
+						markerHeight={6}
+						orient="auto-start-reverse"
+					>
+						<path d="M0 0L8 4L0 8z" fill={theme.accent.primary} />
+					</marker>
 				</defs>
+				{DAG.ranks.map(rank => (
+					<rect
+						key={rank.rank}
+						x={rank.x}
+						y={rank.y}
+						width={rank.width}
+						height={rank.height}
+						rx={8}
+						fill={theme.fill.secondary}
+						stroke={theme.stroke.secondary}
+						strokeWidth={1}
+					/>
+				))}
 				{DAG.edges.map(edge =>
 					edge.isBackEdge ? (
 						<path
 							key={`${edge.from}-${edge.to}`}
-							d={`M ${edge.sourceX} ${edge.sourceY} C ${edge.sourceX} ${edge.sourceY - 42}, ${edge.targetX} ${edge.targetY - 42}, ${edge.targetX} ${edge.targetY}`}
+							d={`M ${edge.sourceX} ${edge.sourceY} C ${edge.sourceX} ${edge.sourceY - backEdgeLift}, ${edge.targetX} ${edge.targetY - backEdgeLift}, ${edge.targetX} ${edge.targetY}`}
 							fill="none"
 							stroke={theme.accent.primary}
 							strokeWidth={1.5}
 							strokeDasharray="4 3"
-							markerEnd="url(#arrow)"
+							markerEnd="url(#dag-arrow-back)"
 						/>
 					) : (
 						<line
@@ -229,7 +261,7 @@ function DagDiagram() {
 							y2={edge.targetY}
 							stroke={theme.text.tertiary}
 							strokeWidth={1.5}
-							markerEnd="url(#arrow)"
+							markerEnd="url(#dag-arrow)"
 						/>
 					),
 				)}
@@ -238,15 +270,15 @@ function DagDiagram() {
 						<rect
 							x={node.x}
 							y={node.y}
-							width={96}
-							height={34}
+							width={DAG_NODE_W}
+							height={DAG_NODE_H}
 							rx={6}
-							fill={theme.fill.tertiary}
+							fill={theme.fill.primary}
 							stroke={theme.stroke.primary}
 						/>
 						<text
-							x={node.x + 48}
-							y={node.y + 17}
+							x={node.x + DAG_NODE_W / 2}
+							y={node.y + DAG_NODE_H / 2}
 							textAnchor="middle"
 							dominantBaseline="central"
 							fontSize={12}
@@ -304,9 +336,10 @@ export default function ShowcaseCanvas() {
 	return (
 		<Stack gap={20}>
 			{/* Header --------------------------------------------------------- */}
-			<Row gap={12}>
+			<Row gap={12} align="center">
 				<H1>Cursor Canvas SDK showcase</H1>
 				<Spacer />
+				<Link href="https://github.com/flesler/open-canvas">open-canvas</Link>
 				<Pill tone="info" active={live}>
 					{live ? 'live' : 'paused'}
 				</Pill>
@@ -668,41 +701,150 @@ export default function ShowcaseCanvas() {
 				</Grid>
 			</Section>
 
-			{/* Typography ----------------------------------------------------- */}
-			<Section title="Typography & text">
-				<Card>
-					<CardBody>
-						<Stack gap={6}>
-							<Text>
-								Nested emphasis stays inline, including{' '}
-								<Text weight="semibold">25 staged items</Text> and{' '}
-								<Text weight="semibold">41 open alerts</Text>.
-							</Text>
-							<H3>Heading level 3</H3>
-							<Text>Primary body text in the default tone and weight.</Text>
-							<Text tone="secondary">Secondary — supporting copy.</Text>
-							<Text tone="tertiary" size="small">
-								Tertiary, small — captions and hints.
-							</Text>
-							<Text weight="semibold">Semibold emphasis.</Text>
-							<Text italic tone="secondary">
-								Italic remark.
-							</Text>
-							<Row gap={6} wrap>
-								<Pill tone="success">success</Pill>
-								<Pill tone="warning">warning</Pill>
-								<Pill tone="info" leadingContent={<Swatch color="blue" />}>
-									with swatch
-								</Pill>
-								<Pill tone="neutral" keyboardHint="⇧Tab">
-									hint
-								</Pill>
-								<Pill tone="deleted">deleted</Pill>
-								<Pill tone="renamed">renamed</Pill>
-							</Row>
-						</Stack>
-					</CardBody>
-				</Card>
+			{/* Typography + theme (half width each; stack on narrow viewports) ----- */}
+			<Section title="Typography & theme">
+				<Grid
+					columns="repeat(auto-fit, minmax(min(100%, 22rem), 1fr))"
+					gap={16}
+					align="start"
+				>
+					<Card>
+						<CardHeader>Typography & text</CardHeader>
+						<CardBody>
+							<Stack gap={6}>
+								<Text>
+									Nested emphasis stays inline, including{' '}
+									<Text weight="semibold">25 staged items</Text>
+								</Text>
+								<Text tone="secondary" size="small">
+									A second line of body copy sits directly under the emphasis.
+								</Text>
+								<H3>Heading level 3</H3>
+								<Text>Primary body text in the default tone and weight.</Text>
+								<Text tone="secondary">Secondary — supporting copy.</Text>
+								<Text tone="tertiary" size="small">
+									Tertiary, small — captions and hints.
+								</Text>
+								<Text weight="semibold">Semibold emphasis.</Text>
+								<Text italic tone="secondary">
+									Italic remark.
+								</Text>
+								<Row gap={6} wrap>
+									<Pill tone="success">success</Pill>
+									<Pill tone="warning">warning</Pill>
+									<Pill tone="info" leadingContent={<Swatch color="blue" />}>
+										with swatch
+									</Pill>
+									<Pill tone="neutral" keyboardHint="⇧Tab">
+										hint
+									</Pill>
+									<Pill tone="deleted">deleted</Pill>
+									<Pill tone="renamed">renamed</Pill>
+								</Row>
+							</Stack>
+						</CardBody>
+					</Card>
+					<Card>
+						<CardHeader>Theme tokens (useHostTheme)</CardHeader>
+						<CardBody>
+							<Stack gap={10}>
+								<Text size="small" tone="secondary">
+									Semantic palette keys from <Code>theme.palette</Code>:
+								</Text>
+								<Row gap={10} wrap>
+									{(
+										[
+											['accent', theme.palette.accent],
+											['link', theme.palette.link],
+											['strokePrimary', theme.palette.strokePrimary],
+										] as const
+									).map(([key, hex]) => (
+										<Row key={key} gap={6}>
+											<span
+												style={{
+													width: 16,
+													height: 16,
+													borderRadius: 4,
+													background: hex,
+													border: `1px solid ${theme.stroke.secondary}`,
+												}}
+											/>
+											<Text size="small" tone="tertiary">
+												chart.{key}
+											</Text>
+										</Row>
+									))}
+								</Row>
+								<Text size="small" tone="secondary">
+									Category hues (<Code>theme.category</Code>):
+								</Text>
+								<Row gap={10} wrap>
+									{(
+										[
+											['orange', theme.category.orange],
+											['blue', theme.category.blue],
+											['gray', theme.category.gray],
+										] as const
+									).map(([key, hex]) => (
+										<Row key={key} gap={6}>
+											<span
+												style={{
+													width: 16,
+													height: 16,
+													borderRadius: 4,
+													background: hex,
+													border: `1px solid ${theme.stroke.secondary}`,
+												}}
+											/>
+											<Text size="small" tone="tertiary">
+												category.{key}
+											</Text>
+										</Row>
+									))}
+								</Row>
+								<Text size="small" tone="secondary">Text fills:</Text>
+								<Grid columns={2} gap={8}>
+									{(['primary', 'secondary', 'tertiary', 'quaternary'] as const).map(
+										key => (
+											<div
+												key={key}
+												style={mergeStyle(
+													{
+														display: 'flex',
+														alignItems: 'center',
+														gap: 8,
+														padding: '6px 10px',
+														borderRadius: 6,
+														border: `1px solid ${theme.stroke.secondary}`,
+														minWidth: 0,
+													},
+													{ background: theme.fill.quaternary },
+												)}
+											>
+												<span
+													style={{
+														width: 14,
+														height: 14,
+														borderRadius: 4,
+														background: theme.text[key],
+														flexShrink: 0,
+													}}
+												/>
+												<Text size="small" tone="secondary">
+													text.{key}
+												</Text>
+											</div>
+										),
+									)}
+								</Grid>
+								<Text size="small" tone="tertiary">
+									React hooks: {hookMark}. First{' '}
+									<Code>usageColorSequence</Code> hue: {usageColorSequence[0]}.
+								</Text>
+							</Stack>
+						</CardBody>
+					</Card>
+				</Grid>
 			</Section>
 
 			{/* Forms ---------------------------------------------------------- */}
@@ -774,102 +916,6 @@ export default function ShowcaseCanvas() {
 						</Stack>
 					</CardBody>
 				</Card>
-			</Section>
-
-			{/* Theme tokens --------------------------------------------------- */}
-			<Section title="Theme tokens (useHostTheme)">
-				<Stack gap={10}>
-					<Text size="small" tone="secondary">
-						Semantic palette keys from <Code>theme.palette</Code>:
-					</Text>
-					<Row gap={10} wrap>
-						{(
-							[
-								['accent', theme.palette.accent],
-								['link', theme.palette.link],
-								['strokePrimary', theme.palette.strokePrimary],
-							] as const
-						).map(([key, hex]) => (
-							<Row key={key} gap={6}>
-								<span
-									style={{
-										width: 16,
-										height: 16,
-										borderRadius: 4,
-										background: hex,
-										border: `1px solid ${theme.stroke.secondary}`,
-									}}
-								/>
-								<Text size="small" tone="tertiary">
-									chart.{key}
-								</Text>
-							</Row>
-						))}
-					</Row>
-					<Text size="small" tone="secondary">
-						Category hues (canvases read <Code>theme.category</Code>):
-					</Text>
-					<Row gap={10} wrap>
-						{(
-							[
-								['orange', theme.category.orange],
-								['blue', theme.category.blue],
-								['gray', theme.category.gray],
-							] as const
-						).map(([key, hex]) => (
-							<Row key={key} gap={6}>
-								<span
-									style={{
-										width: 16,
-										height: 16,
-										borderRadius: 4,
-										background: hex,
-										border: `1px solid ${theme.stroke.secondary}`,
-									}}
-								/>
-								<Text size="small" tone="tertiary">
-									category.{key}
-								</Text>
-							</Row>
-						))}
-					</Row>
-					<Text size="small" tone="tertiary">
-						React hooks from <Code>cursor/canvas</Code>: {hookMark}. First{' '}
-						<Code>usageColorSequence</Code> hue: {usageColorSequence[0]}.
-					</Text>
-				</Stack>
-				<Row gap={10} wrap>
-					{(['primary', 'secondary', 'tertiary', 'quaternary'] as const).map(
-						key => (
-							<div
-								key={key}
-								style={mergeStyle(
-									{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 8,
-										padding: '6px 10px',
-										borderRadius: 6,
-										border: `1px solid ${theme.stroke.secondary}`,
-									},
-									{ background: theme.fill.quaternary },
-								)}
-							>
-								<span
-									style={{
-										width: 14,
-										height: 14,
-										borderRadius: 4,
-										background: theme.text[key],
-									}}
-								/>
-								<Text size="small" tone="secondary">
-									text.{key}
-								</Text>
-							</div>
-						),
-					)}
-				</Row>
 			</Section>
 
 			<Section title="Data imports (JSON, YAML, TSV, CSV, JSONL)">
@@ -979,14 +1025,6 @@ export default function ShowcaseCanvas() {
 				</Stack>
 			</Section>
 
-			<Divider />
-			<Text size="small" tone="tertiary">
-				<Code>cursor/canvas</Code> + relative data files · colors from{' '}
-				<Code>useHostTheme()</Code> · category hues from{' '}
-				<Code>colorPalette</Code> ({Object.keys(colorPalette).length} hues) ·{' '}
-				<Link href="https://github.com/flesler/open-canvas">open-canvas</Link> ·
-				same file in the IDE, CLI verify, and static exports.
-			</Text>
 		</Stack>
 	)
 }
