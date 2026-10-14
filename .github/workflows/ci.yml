@@ -19,7 +19,7 @@ jobs:
           repository: flesler/cursor-canvas-web
           path: cursor-canvas-web
           ref: v1.1.0
-      - run: npm install ./cursor-canvas-web && npm install
+      - run: npm ci
       - name: lock root version matches package.json
         run: node -e "const p=require('./package.json');const r=require('./package-lock.json').packages[''].version;if(p.version!==r)throw new Error('package.json '+p.version+' vs lock '+r)"
       - run: npx playwright install chromium
@@ -30,5 +30,8 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 11
-      - run: npm run test:contract
+      - name: contract (shim source checkout)
+        env:
+          CURSOR_CANVAS_WEB_ROOT: ${{ github.workspace }}/cursor-canvas-web
+        run: npm run test:contract
       - run: npm run test:smoke

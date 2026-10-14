@@ -3,7 +3,7 @@
  *
  * Single example for verify, smoke, contract, and the README screenshot.
  */
-import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, colorPalette, computeDAGLayout, mergeStyle, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
+import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, colorPalette, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
 import outlierRows from './data/outliers.csv'
@@ -38,7 +38,11 @@ const REQUESTS: ChartSeries[] = [
 const CATEGORIES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const UPTIME: ChartSeries[] = [
-	{ name: 'uptime %', data: [99.2, 99.5, 99.1, 99.8, 99.6, 99.9], tone: 'success' },
+	{
+		name: 'uptime %',
+		data: [99.2, 99.5, 99.1, 99.8, 99.6, 99.9],
+		tone: 'success',
+	},
 ]
 const TRAFFIC_SHARE: ChartSeries[] = [
 	{ name: 'Web', data: [40, 45, 50], tone: 'info' },
@@ -46,12 +50,6 @@ const TRAFFIC_SHARE: ChartSeries[] = [
 	{ name: 'Batch', data: [25, 25, 25], tone: 'neutral' },
 ]
 const SHARE_WEEKS = ['W1', 'W2', 'W3']
-const QUEUE: ChartSeries[] = [
-	{ name: 'ready', data: [12, 8, 15, 6], tone: 'neutral' },
-	{ name: 'retry', data: [3, 5, 2, 4], tone: 'warning' },
-]
-const QUEUE_STAGES = ['ingest', 'build', 'test', 'ship']
-
 const OUTCOMES = [
 	{ label: 'Passing', value: 68, tone: 'success' as const },
 	{ label: 'Flaky', value: 14, tone: 'warning' as const },
@@ -82,6 +80,21 @@ const TODOS: TodoItem[] = [
 		id: '5',
 		content: 'Vendor official .d.ts as the type source',
 		status: 'cancelled',
+	},
+]
+
+/** Extra rows on the selectable TodoList so the right column matches the left stack height. */
+const TODOS_SELECTABLE: TodoItem[] = [
+	...TODOS,
+	{
+		id: '6',
+		content: 'Keep README showcase PNGs in sync after layout edits',
+		status: 'pending',
+	},
+	{
+		id: '7',
+		content: 'Run contract + verify on every SDK bump',
+		status: 'pending',
 	},
 ]
 
@@ -269,19 +282,22 @@ export default function ShowcaseCanvas() {
 	}, [])
 	const dimmed = useMemo(
 		() =>
-			new Set(
-				TODOS.filter(t => t.status === 'completed').map(t => t.id),
-			),
+			new Set(TODOS.filter(t => t.status === 'completed').map(t => t.id)),
 		[],
 	)
 
 	const { meta, kpis, durationByPhase } = report
 	const cap = { color: theme.text.tertiary, fontSize: 12 }
-	const rssRows = (phaseRssMb as { rows?: Array<{ phase: string; p90: number }> }).rows ?? []
+	const rssRows =
+		(phaseRssMb as { rows?: Array<{ phase: string; p90: number }> }).rows ?? []
 	const phases = durationByPhase.rows.map(r => r.phase)
 	const durationSeries: ChartSeries[] = [
 		{ name: 'p50', data: durationByPhase.rows.map(r => r.p50), tone: 'info' },
-		{ name: 'p90', data: durationByPhase.rows.map(r => r.p90), tone: 'warning' },
+		{
+			name: 'p90',
+			data: durationByPhase.rows.map(r => r.p90),
+			tone: 'warning',
+		},
 	]
 	const dayLabels = daily.map(d => d.date.slice(5))
 
@@ -308,14 +324,15 @@ export default function ShowcaseCanvas() {
 			</Row>
 
 			<Text tone="secondary">
-				Full <Code>cursor/canvas</Code> gallery plus <Code>./data/*</Code> imports
-				(JSON, YAML, TSV, CSV, JSONL) — one file for verify, smoke, and exports.
+				Full <Code>cursor/canvas</Code> gallery plus <Code>./data/*</Code>{' '}
+				imports (JSON, YAML, TSV, CSV, JSONL) — one file for verify, smoke, and
+				exports.
 			</Text>
 
 			{/* How it works (stepped explanation, not a callout) -------------- */}
 			<Section title="How it works">
-				<Grid columns={4} gap={12}>
-					{STEPS.map(step => (
+				<Grid columns={3} gap={12}>
+					{STEPS.slice(0, 3).map(step => (
 						<Card key={step.n}>
 							<CardBody>
 								<Stack gap={6}>
@@ -332,7 +349,7 @@ export default function ShowcaseCanvas() {
 			</Section>
 
 			{/* Stats ---------------------------------------------------------- */}
-			<Grid columns={4} gap={12}>
+			<Grid columns={3} gap={12}>
 				<Card>
 					<CardBody>
 						<Stat value="35" label="Components" tone="info" />
@@ -346,11 +363,6 @@ export default function ShowcaseCanvas() {
 				<Card>
 					<CardBody>
 						<Stat value="1" label="Source of truth" />
-					</CardBody>
-				</Card>
-				<Card>
-					<CardBody>
-						<Stat value="0" label="Canvas edits to deploy" tone="success" />
 					</CardBody>
 				</Card>
 			</Grid>
@@ -368,7 +380,7 @@ export default function ShowcaseCanvas() {
 
 					{tab === 'charts' && (
 						<Stack gap={16}>
-							<Grid columns={3} gap={16} align="start">
+							<Grid columns={2} gap={16}>
 								<Card>
 									<CardHeader>Latency (ms)</CardHeader>
 									<CardBody>
@@ -391,8 +403,10 @@ export default function ShowcaseCanvas() {
 										/>
 									</CardBody>
 								</Card>
+							</Grid>
+							<Grid columns={2} gap={16}>
 								<Card>
-									<CardHeader>Test outcomes</CardHeader>
+									<CardHeader>Test outcomes (pie)</CardHeader>
 									<CardBody
 										style={{
 											display: 'flex',
@@ -401,7 +415,24 @@ export default function ShowcaseCanvas() {
 											minHeight: SHOWCASE_CHART_HEIGHT,
 										}}
 									>
-										<PieChart data={OUTCOMES} donut size={SHOWCASE_CHART_HEIGHT} />
+										<PieChart data={OUTCOMES} size={SHOWCASE_CHART_HEIGHT} />
+									</CardBody>
+								</Card>
+								<Card>
+									<CardHeader>Test outcomes (donut)</CardHeader>
+									<CardBody
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											minHeight: SHOWCASE_CHART_HEIGHT,
+										}}
+									>
+										<PieChart
+											data={OUTCOMES}
+											donut
+											size={SHOWCASE_CHART_HEIGHT}
+										/>
 									</CardBody>
 								</Card>
 							</Grid>
@@ -493,9 +524,8 @@ export default function ShowcaseCanvas() {
 								yMin={99}
 								yMax={100}
 								valueSuffix="%"
-								referenceLines={[
-									{ value: 99.9, label: 'SLO', tone: 'danger' },
-								]}
+								referenceLines={[{ value: 99.9, label: 'SLO', tone: 'danger' }]}
+								showHoverGuide
 							/>
 						</CardBody>
 					</Card>
@@ -513,14 +543,21 @@ export default function ShowcaseCanvas() {
 						</CardBody>
 					</Card>
 					<Card variant="borderless">
-						<CardHeader>Queue depth (horizontal stacked)</CardHeader>
+						<CardHeader>Lane depth (horizontal, long labels)</CardHeader>
 						<CardBody>
 							<BarChart
-								categories={QUEUE_STAGES}
-								series={QUEUE}
-								height={160}
+								categories={[
+									'Aurora north intake',
+									'HUD memory pressure',
+									'Local-vs-CI divergence label',
+									'ship',
+								]}
+								series={[
+									{ name: 'Depth', data: [40, 85, 170, 255], tone: 'warning' },
+								]}
+								height={200}
 								horizontal
-								stacked
+								beginAtZero
 								showValues
 							/>
 						</CardBody>
@@ -575,7 +612,11 @@ export default function ShowcaseCanvas() {
 						showcase.canvas.tsx
 					</CardHeader>
 					<CardBody style={{ padding: 0 }}>
-						<DiffView path="showcase.canvas.tsx" lines={DIFF_LINES} />
+						<DiffView
+							path="showcase.canvas.tsx"
+							language="typescript"
+							lines={DIFF_LINES}
+						/>
 					</CardBody>
 				</Card>
 			</Section>
@@ -606,13 +647,17 @@ export default function ShowcaseCanvas() {
 								</Text>
 							</CollapsibleSection>
 						</CollapsibleSection>
-						<TodoListCard todos={TODOS} dimmedTodoIds={dimmed} defaultExpanded />
+						<TodoListCard
+							todos={TODOS}
+							dimmedTodoIds={dimmed}
+							defaultExpanded
+						/>
 					</Stack>
 					<Card>
 						<CardHeader>TodoList (selectable)</CardHeader>
 						<CardBody>
 							<TodoList
-								todos={TODOS}
+								todos={TODOS_SELECTABLE}
 								onTodoClick={t => setSelectedTodo(t.id)}
 							/>
 							<Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
@@ -628,6 +673,11 @@ export default function ShowcaseCanvas() {
 				<Card>
 					<CardBody>
 						<Stack gap={6}>
+							<Text>
+								Nested emphasis stays inline, including{' '}
+								<Text weight="semibold">25 staged items</Text> and{' '}
+								<Text weight="semibold">41 open alerts</Text>.
+							</Text>
 							<H3>Heading level 3</H3>
 							<Text>Primary body text in the default tone and weight.</Text>
 							<Text tone="secondary">Secondary — supporting copy.</Text>
@@ -784,7 +834,8 @@ export default function ShowcaseCanvas() {
 						))}
 					</Row>
 					<Text size="small" tone="tertiary">
-						React hooks from <Code>cursor/canvas</Code>: {hookMark}
+						React hooks from <Code>cursor/canvas</Code>: {hookMark}. First{' '}
+						<Code>usageColorSequence</Code> hue: {usageColorSequence[0]}.
 					</Text>
 				</Stack>
 				<Row gap={10} wrap>
@@ -824,28 +875,38 @@ export default function ShowcaseCanvas() {
 			<Section title="Data imports (JSON, YAML, TSV, CSV, JSONL)">
 				<Stack gap={12}>
 					<Text size="small" tone="secondary">
-						{meta.periodStart} → {meta.periodEnd} · {meta.deployCount.toLocaleString()} deploys ·{' '}
-						{deployEvents.length} tail events in JSONL
+						{meta.periodStart} → {meta.periodEnd} ·{' '}
+						{meta.deployCount.toLocaleString()} deploys · {deployEvents.length}{' '}
+						tail events in JSONL
 					</Text>
 					<Grid columns={3} gap={12}>
 						{kpis.map(k => (
 							<Card key={k.label}>
 								<CardBody>
 									<Stat value={k.value} label={k.label} />
-									{k.hint && <Text style={{ ...cap, marginTop: 4 }}>{k.hint}</Text>}
+									{k.hint && (
+										<Text style={{ ...cap, marginTop: 4 }}>{k.hint}</Text>
+									)}
 								</CardBody>
 							</Card>
 						))}
 					</Grid>
 					<Callout tone="danger" title="Deps dominates p90; watch tail latency">
-						Deps ~51% of p90 wall time (211s of 412s). Max 47m 27s is 6.9× p90 — check cache and workspace size.
+						Deps ~51% of p90 wall time (211s of 412s). Max 47m 27s is 6.9× p90 —
+						check cache and workspace size.
 					</Callout>
 					<Grid columns={2} gap={16}>
 						<Card>
 							<CardHeader>Phase duration (p50 vs p90)</CardHeader>
 							<CardBody>
 								<Text style={cap}>Y: seconds</Text>
-								<BarChart categories={phases} series={durationSeries} height={260} valuePrefix="$" valueSuffix="s" />
+								<BarChart
+									categories={phases}
+									series={durationSeries}
+									height={260}
+									valuePrefix="$"
+									valueSuffix="s"
+								/>
 							</CardBody>
 						</Card>
 						<Card>
@@ -854,7 +915,13 @@ export default function ShowcaseCanvas() {
 								<Text style={cap}>Y: megabytes</Text>
 								<BarChart
 									categories={rssRows.map(r => r.phase)}
-									series={[{ name: 'p90', data: rssRows.map(r => r.p90), tone: 'danger' }]}
+									series={[
+										{
+											name: 'p90',
+											data: rssRows.map(r => r.p90),
+											tone: 'danger',
+										},
+									]}
 									height={260}
 									valueSuffix=" MB"
 								/>
@@ -885,9 +952,15 @@ export default function ShowcaseCanvas() {
 								<BarChart
 									categories={dayLabels}
 									series={[
-										{ name: 'deploys', data: daily.map(d => Number(d.deploys)), tone: 'neutral' },
+										{
+											name: 'deploys',
+											data: daily.map(d => Number(d.deploys)),
+											tone: 'neutral',
+										},
 									]}
 									height={220}
+									beginAtZero
+									showValues
 								/>
 							</CardBody>
 						</Card>
@@ -909,8 +982,8 @@ export default function ShowcaseCanvas() {
 			<Divider />
 			<Text size="small" tone="tertiary">
 				<Code>cursor/canvas</Code> + relative data files · colors from{' '}
-				<Code>useHostTheme()</Code> · category hues from <Code>colorPalette</Code>{' '}
-				({Object.keys(colorPalette).length} hues) ·{' '}
+				<Code>useHostTheme()</Code> · category hues from{' '}
+				<Code>colorPalette</Code> ({Object.keys(colorPalette).length} hues) ·{' '}
 				<Link href="https://github.com/flesler/open-canvas">open-canvas</Link> ·
 				same file in the IDE, CLI verify, and static exports.
 			</Text>
