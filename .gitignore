@@ -2,6 +2,7 @@ node_modules/
 .eslintcache
 dist/
 .cache/
+src/vendor/skill-bundle/assets/
 *.tsbuildinfo
 *.log
 example/out/

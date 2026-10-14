@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pkgRoot } from './pkg.js'
@@ -14,9 +15,87 @@ export function viteCliPath(): string {
 }
 
 /** `@flesler/cursor-canvas-web` install dir (hoisting-safe). */
-function cursorCanvasDir(): string {
+export function cursorCanvasDir(): string {
 	const entry = require.resolve('@flesler/cursor-canvas-web')
 	return path.resolve(path.dirname(entry), '..')
+}
+
+function shimPackageRoot(): string {
+	return cursorCanvasDir()
+}
+
+function resolveShimCanvasSkillPath(packageRoot: string): string | undefined {
+	for (const rel of ['src/vendor/canvas/SKILL.md', 'vendor/canvas/SKILL.md']) {
+		const p = path.join(packageRoot, rel)
+		if (fs.existsSync(p)) {
+			return p
+		}
+	}
+	const legacy = path.join(
+		packageRoot,
+		'skills',
+		'open-canvas',
+		'references',
+		'canvas.md',
+	)
+	if (fs.existsSync(legacy)) {
+		return legacy
+	}
+	return undefined
+}
+
+/** Vendored Cursor `/canvas` skill (`src/vendor/canvas/SKILL.md` in shim). */
+export function shimCanvasReferencePath(): string {
+	const fromPkg = resolveShimCanvasSkillPath(shimPackageRoot())
+	if (fromPkg) {
+		return fromPkg
+	}
+	const shimRoot =
+		process.env.CURSOR_CANVAS_WEB_ROOT ?? path.join(pkgRoot, '..', 'cursor-canvas-web')
+	const sibling = resolveShimCanvasSkillPath(shimRoot)
+	if (sibling) {
+		return sibling
+	}
+	throw new Error(
+		'canvas skill missing — install @flesler/cursor-canvas-web (run sync:sdk in shim)',
+	)
+}
+
+function resolveShimCanvasSdkDir(packageRoot: string): string | undefined {
+	for (const rel of ['src/vendor/canvas-sdk', 'vendor/canvas-sdk']) {
+		const dir = path.join(packageRoot, rel)
+		if (fs.existsSync(path.join(dir, 'index.d.ts'))) {
+			return dir
+		}
+	}
+	return undefined
+}
+
+/** Canonical vendored `cursor/canvas` declarations (from the shim package). */
+export function shimCanvasSdkDir(): string {
+	const fromPkg = resolveShimCanvasSdkDir(shimPackageRoot())
+	if (fromPkg) {
+		return fromPkg
+	}
+	const shimRoot =
+		process.env.CURSOR_CANVAS_WEB_ROOT ?? path.join(pkgRoot, '..', 'cursor-canvas-web')
+	const sibling = resolveShimCanvasSdkDir(shimRoot)
+	if (sibling) {
+		return sibling
+	}
+	throw new Error(
+		'canvas-sdk types missing — install @flesler/cursor-canvas-web (reinstall @flesler/open-canvas)',
+	)
+}
+
+/** @deprecated alias */
+export function canvasSdkTypesDir(): string {
+	return shimCanvasSdkDir()
+}
+
+/** @deprecated */
+export function shimCanvasSkillPath(): string {
+	return shimCanvasReferencePath()
 }
 
 function typeRootsUpward(start: string): string[] {
@@ -40,11 +119,12 @@ export function verifyTypeScriptPaths(_canvasPath: string): {
 	paths: Record<string, string[]>
 } {
 	const reactTypes = path.join(pkgRoot, 'node_modules', '@types', 'react')
+	const sdk = shimCanvasSdkDir()
 	return {
 		baseUrl: pkgRoot,
 		typeRoots: typeRootsUpward(pkgRoot),
 		paths: {
-			'cursor/canvas': [cursorCanvasDir()],
+			'cursor/canvas': [path.join(sdk, 'index.d.ts')],
 			react: [path.join(reactTypes, 'index.d.ts')],
 			'react/jsx-runtime': [path.join(reactTypes, 'jsx-runtime.d.ts')],
 		},

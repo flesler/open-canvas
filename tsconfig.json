@@ -11,12 +11,14 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "paths": {
-      "cursor/canvas": ["./node_modules/@flesler/cursor-canvas-web"]
+      "cursor/canvas": [
+        "./node_modules/@flesler/cursor-canvas-web/src/vendor/canvas-sdk/index.d.ts"
+      ]
     }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "example/**/*.canvas.tsx"
+    "example/showcase.canvas.tsx"
   ]
 }

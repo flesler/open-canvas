@@ -13,7 +13,7 @@ const program = new Command()
 program
 	.command('skill')
 	.description('Print or install agent SKILL.md')
-	.argument('[path]', 'directory or file (writes SKILL.md)')
+	.argument('[dir]', 'install directory (copies skill-bundle contents)')
 	.action((path?: string) => {
 		runSkill(path)
 	})
@@ -39,6 +39,7 @@ program
 	.option('--name <slug>', 'output basename without extension (default: canvas stem, else title slug)')
 	.option('--title <text>', 'HTML document title')
 	.option('--theme <mode>', 'light or dark', 'light')
+	.option('--brand <name>', 'cursor or grok (host theme brand)', 'cursor')
 	.addOption(
 		new Option('--formats <list>', 'comma-separated: html,png,pdf,jpg,cursor')
 			.argParser(v => v.split(',').map(s => s.trim()))
@@ -69,6 +70,7 @@ program
 				name: opts.name,
 				title: opts.title,
 				theme: opts.theme as 'light' | 'dark',
+				brand: opts.brand as 'cursor' | 'grok',
 				formats: opts.formats,
 				viewportWidth: opts.width,
 				viewportHeight: opts.height,

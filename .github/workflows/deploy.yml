@@ -24,13 +24,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run build:pages
+      - run: npm run build:github-pages
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: .cache/github-pages
 
   deploy:
     needs: build

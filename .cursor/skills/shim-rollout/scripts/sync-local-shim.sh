@@ -4,7 +4,10 @@ set -euo pipefail
 
 OPEN_CANVAS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 SHIM_ROOT="${CURSOR_CANVAS_WEB_ROOT:-$OPEN_CANVAS_ROOT/../cursor-canvas-web}"
-TARGET="$OPEN_CANVAS_ROOT/node_modules/@flesler/cursor-canvas-web/dist"
+SHIM_PKG="$OPEN_CANVAS_ROOT/node_modules/@flesler/cursor-canvas-web"
+TARGET="$SHIM_PKG/dist"
+VENDOR_SRC="$SHIM_ROOT/src/vendor"
+VENDOR_DST="$SHIM_PKG/src/vendor"
 DRY_RUN=0
 
 usage() {
@@ -52,4 +55,10 @@ fi
 (cd "$SHIM_ROOT" && pnpm run build:lib)
 mkdir -p "$TARGET"
 cp -a "$SHIM_ROOT/dist/." "$TARGET/"
+cp "$SHIM_ROOT/package.json" "$SHIM_PKG/package.json"
+if [[ -d "$VENDOR_SRC" ]]; then
+	rm -rf "$VENDOR_DST"
+	cp -a "$VENDOR_SRC" "$VENDOR_DST"
+	echo "synced src/vendor -> $VENDOR_DST"
+fi
 echo "synced shim dist -> $TARGET"

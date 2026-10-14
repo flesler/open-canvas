@@ -1,4 +1,14 @@
 declare const __OPEN_CANVAS_THEME__: 'light' | 'dark'
+declare const __OPEN_CANVAS_BRAND__: 'cursor' | 'grok'
+
+/** IDE-style host bridge; open-canvas shell seeds this for `useHostTheme()`. */
+interface Window {
+	__cursorCanvas?: {
+		state?: {
+			theme?: { kind: 'light' | 'dark'; brand: 'cursor' | 'grok' }
+		}
+	}
+}
 
 declare module '*.json' {
 	const data: any

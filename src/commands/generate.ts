@@ -13,6 +13,7 @@ export type GenerateOptions = {
 	name?: string;
 	title?: string;
 	theme?: 'light' | 'dark';
+	brand?: 'cursor' | 'grok';
 	formats?: string[];
 	viewportWidth?: number;
 	viewportHeight?: number;
@@ -39,6 +40,10 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	if (theme !== 'light' && theme !== 'dark') {
 		throw new Error(`--theme must be light or dark (got ${theme})`)
 	}
+	const brand = opts.brand ?? 'cursor'
+	if (brand !== 'cursor' && brand !== 'grok') {
+		throw new Error(`--brand must be cursor or grok (got ${brand})`)
+	}
 
 	const formats = parseFormats(opts.formats ?? DEFAULT_FORMAT_LIST)
 	const needsHtml = formats.some(
@@ -58,6 +63,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		OPEN_CANVAS_STEM: stem,
 		OPEN_CANVAS_OUT_DIR: outDir,
 		OPEN_CANVAS_THEME: theme,
+		OPEN_CANVAS_BRAND: brand,
 		OPEN_CANVAS_TITLE: title,
 		OPEN_CANVAS_CANVAS_PATH: canvasPath,
 	}

@@ -89,6 +89,23 @@ run_pack_install() {
 	(
 		cd "$pack_dir"
 		npm init -y >/dev/null
+		local shim_root="${CURSOR_CANVAS_WEB_ROOT:-$ROOT/../cursor-canvas-web}"
+		local shim_spec
+		shim_spec="$(node -e "const v=require('$ROOT/package.json').dependencies['@flesler/cursor-canvas-web'];process.stdout.write(v||'')")"
+		if [[ -f "$shim_root/package.json" ]] && [[ "$shim_spec" != file:* ]]; then
+			if ! npm view "@flesler/cursor-canvas-web@${shim_spec#^}" version &>/dev/null; then
+				local shim_name shim_tgz
+				shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
+				shim_tgz="$tarball_dir/$shim_name"
+				npm install "$shim_tgz" --omit=dev
+			fi
+		fi
+		if [[ "$shim_spec" == file:* ]]; then
+			local shim_name shim_tgz
+			shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
+			shim_tgz="$tarball_dir/$shim_name"
+			npm install "$shim_tgz" --omit=dev
+		fi
 		npm install "$tarball" --omit=dev
 
 		printf '%s\n' \

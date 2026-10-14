@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
+import { formatCanvasSdkContractLine } from '../canvas-sdk-contract.js'
 import { pathInPkg, verifyTypeScriptPaths } from '../paths.js'
 
 const ambientTypes = pathInPkg('src', 'types', 'ambient.d.ts')
@@ -34,6 +35,7 @@ export function runVerify(canvasPath: string): void {
 	const diagnostics = ts.getPreEmitDiagnostics(program).filter(d => d.category === ts.DiagnosticCategory.Error)
 
 	if (diagnostics.length === 0) {
+		console.error(formatCanvasSdkContractLine())
 		return
 	}
 

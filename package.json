@@ -13,8 +13,8 @@
   },
   "scripts": {
     "build": "npm run build:cli",
-    "build:cli": "tsc -b tsconfig.cli.json --clean && tsc -b tsconfig.cli.json && find dist -name '*.d.ts' -delete",
-    "build:pages": "npm run build:cli && rm -rf site && node dist/cli.js generate example/showcase.canvas.tsx --formats html --out ../site --name index --theme light --title 'Open Canvas — SDK Showcase' && node dist/cli.js generate example/showcase.canvas.tsx --formats html --out ../site --name dark --theme dark --title 'Open Canvas — SDK Showcase (dark)'",
+    "build:cli": "tsc -b tsconfig.cli.json --clean && tsc -b tsconfig.cli.json && find dist -name '*.d.ts' -delete && rm -rf dist/scripts dist/canvas-sdk-hash.js",
+    "build:github-pages": "npm run build:cli && bash bin/build-github-pages.sh",
     "prepublishOnly": "npm run build:cli",
     "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
     "eslint": "eslint --cache --cache-strategy content",
@@ -26,6 +26,7 @@
     "test:smoke:global": "bin/smoke.sh --global",
     "test:smoke:both": "bin/smoke.sh --both",
     "test:contract": "bin/contract.sh",
+    "test:verify-canvases": "npm run build:cli && bash bin/verify-canvases.sh",
     "test:unit": "npm run vitest -- run",
     "test:types:cli": "tsc -p tsconfig.cli.json --noEmit",
     "test:types:app": "tsc -p tsconfig.json",
@@ -36,12 +37,13 @@
     "lint:full:silent": "bin/parallel-run.sh --silent test:types:cli test:types:app lint:fix && echo LINT OK",
     "example:screenshot": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme light --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-light.png && node dist/cli.js generate example/showcase.canvas.tsx --title 'Open Canvas — SDK Showcase' --formats png --theme dark --width 1280 --height 900 && cp example/out/showcase.png docs/showcase-dark.png",
     "example:cursor": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --formats cursor",
-    "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:contract && npm run test:smoke",
+    "test:pack": "bash scripts/check-npm-pack.sh",
+    "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:pack && npm run test:contract && npm run test:smoke",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
-    "@flesler/cursor-canvas-web": "^1.0.2",
+		"@flesler/cursor-canvas-web": "^1.1.0",
     "@mantine/charts": "^8.3.18",
     "@mantine/core": "^8.3.18",
     "@types/react": "^19.3.0",
@@ -82,9 +84,7 @@
     "LICENSE",
     "src/shell",
     "src/types",
-    "src/md/SKILL.md",
-    "vite.config.ts",
-    "tsconfig.json",
-    "tsconfig.cli.json"
+    "src/vendor/skill-bundle/**",
+    "vite.config.ts"
   ]
 }

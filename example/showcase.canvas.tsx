@@ -730,15 +730,14 @@ export default function ShowcaseCanvas() {
 			<Section title="Theme tokens (useHostTheme)">
 				<Stack gap={10}>
 					<Text size="small" tone="secondary">
-						Chart palette keys (some IDE canvases read{' '}
-						<Code>theme.chart.palette</Code>):
+						Semantic palette keys from <Code>theme.palette</Code>:
 					</Text>
 					<Row gap={10} wrap>
 						{(
 							[
-								['green', theme.chart.palette.green],
-								['blue', theme.chart.palette.blue],
-								['neutralLine', theme.chart.palette.neutralLine],
+								['accent', theme.palette.accent],
+								['link', theme.palette.link],
+								['strokePrimary', theme.palette.strokePrimary],
 							] as const
 						).map(([key, hex]) => (
 							<Row key={key} gap={6}>

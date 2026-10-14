@@ -23,6 +23,8 @@ const canvasPath = process.env.OPEN_CANVAS_CANVAS_PATH
   ? path.resolve(pkgRoot, process.env.OPEN_CANVAS_CANVAS_PATH)
   : undefined;
 const theme = process.env.OPEN_CANVAS_THEME === "dark" ? "dark" : "light";
+const brand =
+  process.env.OPEN_CANVAS_BRAND === "grok" ? "grok" : "cursor";
 const title = process.env.OPEN_CANVAS_TITLE ?? "Canvas";
 const viteBuildDir = path.join(outDir, "_build");
 const base = process.env.BASE_PATH ?? "./";
@@ -68,6 +70,7 @@ export default defineConfig({
   plugins: [react(), openCanvasDataImports(), htmlTitle(), viteSingleFile()],
   define: {
     __OPEN_CANVAS_THEME__: JSON.stringify(theme),
+    __OPEN_CANVAS_BRAND__: JSON.stringify(brand),
   },
   resolve: {
     modules: canvasResolve.modules,
