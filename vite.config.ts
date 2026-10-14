@@ -15,7 +15,6 @@ const { viteDataModule } = pkgRequire(
   "./dist/util.js",
 ) as typeof import("./dist/util.js");
 
-const stem = process.env.OPEN_CANVAS_STEM ?? "index";
 const outDir = process.env.OPEN_CANVAS_OUT_DIR
   ? path.resolve(pkgRoot, process.env.OPEN_CANVAS_OUT_DIR)
   : path.join(pkgRoot, "example", "out");
@@ -86,5 +85,6 @@ export default defineConfig({
     outDir: viteBuildDir,
     emptyOutDir: true,
     assetsInlineLimit: 100_000_000,
+    reportCompressedSize: false,
   },
 });

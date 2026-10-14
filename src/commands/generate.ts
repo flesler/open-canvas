@@ -7,6 +7,11 @@ import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
 import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
 
+function generateDebug(): boolean {
+	const v = process.env.OPEN_CANVAS_DEBUG
+	return v === '1' || v === 'true'
+}
+
 export type GenerateOptions = {
 	canvas: string;
 	out?: string;
@@ -90,15 +95,31 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	try {
 		if (needsHtml) {
 			const viteCli = viteCliPath()
+			const debug = generateDebug()
 			const vite = spawnSync(
 				process.execPath,
-				[viteCli, 'build', '--config', pathInPkg('vite.config.ts')],
+				[
+					viteCli,
+					'build',
+					'--config',
+					pathInPkg('vite.config.ts'),
+					'--logLevel',
+					debug ? 'info' : 'silent',
+				],
 				{
 					cwd: pkgRoot,
-					stdio: 'inherit',
+					stdio: debug ? 'inherit' : ['ignore', 'pipe', 'pipe'],
 					env,
 				},
 			)
+			if (!debug && vite.status !== 0) {
+				if (vite.stdout?.length) {
+					process.stderr.write(vite.stdout)
+				}
+				if (vite.stderr?.length) {
+					process.stderr.write(vite.stderr)
+				}
+			}
 			viteExit = vite.status ?? 1
 		}
 
