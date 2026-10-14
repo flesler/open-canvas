@@ -5,11 +5,16 @@ description: Read before cutting an npm release for this repo.
 
 Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 
-## Agents
+## Division of labor
 
-- **Never** `npm publish` — the user publishes to npm only.
-- **Never** `git push`, tags, or `gh release` unless the user explicitly asks you to run a release.
-- Before asking the user to publish: `npm run ci:local` once locally; do not chain push + publish in one command (pre-push hooks run per push).
+| Who | Does |
+|-----|------|
+| **Agent** | Product commits, `npm run ci:local`, version bump commit, annotated tag, `git push origin main vX.Y.Z` (one push for branch + tag). |
+| **User** | `npm publish` only (npm 2FA). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`. |
+
+- **Never** `npm publish` in the agent — user publishes to npm only.
+- On `/release` (or an explicit release request): run the full agent checklist below; do not stop after the version commit and wait for the user to tag or push.
+- Run `npm run ci:local` before the version commit when practical; pre-push hooks run again on push — do not chain `git push` and `npm publish` in one command (user publishes separately).
 
 ## Commit shape
 
@@ -32,7 +37,7 @@ NEVER squash product work into the version commit. NEVER use one commit that mix
 
 ## Ready to ship?
 
-If this release needs a new `@flesler/cursor-canvas-web`, ship the shim first (its `.cursor/skills/release/SKILL.md`), bump the dependency here, then continue.
+If this release needs a new `@flesler/cursor-canvas-web`, the user ships the shim first (shim repo `.cursor/skills/release/SKILL.md`), then the agent bumps the dependency here and continues.
 
 ```bash
 npm run ci:local
@@ -45,7 +50,7 @@ node -p "require('./package.json').version"
 
 Ship when `ci:local` is green, changelog matches the diff since the **previous git tag**, and the tree is clean except the version-only commit you are about to make.
 
-## Tag (no editor)
+## Tag and push (agent)
 
 NEVER run bare `git tag` (opens an editor). Pass name and message on the CLI:
 
@@ -55,9 +60,9 @@ git tag -a "v${VERSION}" -m "v${VERSION}"
 git push origin main "v${VERSION}"
 ```
 
-One push for branch + tag (avoids running pre-push twice). User runs push when they are ready.
+One push for branch + tag (avoids running pre-push twice).
 
-Optional GitHub release (user only, explicit OK):
+Optional GitHub release (only if the user asks):
 
 ```bash
 gh release create "v${VERSION}" --notes-file CHANGELOG.md --title "v${VERSION}"
@@ -73,12 +78,18 @@ npm publish --access public --tag latest
 
 `prepublishOnly` runs `build:cli`. Scoped package needs `--access public` and npm 2FA.
 
+After publish, user may confirm: `npm view @flesler/open-canvas version`.
+
+## Checklist (agent)
+
+1. Product commits on `main` (including shim dependency + lockfile when needed).
+2. `npm run ci:local` green.
+3. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`.
+4. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`.
+5. Tell the user to `npm publish --access public --tag latest` when git is on the tag they expect.
+
 ## Checklist (user)
 
-1. Product commits on `main`
-2. Shim published first when SDK / canvas skill reference changed; dependency + lockfile updated here
-3. `npm run ci:local`
-4. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`
-5. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`
-6. `npm publish --access public --tag latest`
-7. `npm view @flesler/open-canvas version`
+1. Publish shim to npm when SDK / canvas skill reference changed.
+2. `npm publish --access public --tag latest` for `@flesler/open-canvas`.
+3. `npm view @flesler/open-canvas version`.
