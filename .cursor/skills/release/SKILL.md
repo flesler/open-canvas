@@ -16,7 +16,17 @@ Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 NEVER squash product work into the version commit. NEVER use one commit that mixes features with `package.json` / `CHANGELOG.md` for the release (including subjects like `Release 1.3.0: …` that bundle both).
 
 1. Land normal commits on `main` first — plain descriptive subjects (no `feat:` / `chore:` prefixes).
-2. Last commit before the tag: **only** `package.json` version (± lockfile if needed) and `CHANGELOG.md` for that version. Commit subject is **exactly the version number**, e.g. `1.3.0`.
+2. Last commit before the tag: **only** the release version bump and `CHANGELOG.md` for that version. Commit subject is **exactly the version number**, e.g. `1.3.0`.
+
+   Bump `package.json` `version`, then sync the lockfile in the **same** commit:
+
+   ```bash
+   npm version X.Y.Z --no-git-tag-version --allow-same-version   # if package.json already shows X.Y.Z
+   # or: npm version patch|minor|major --no-git-tag-version
+   npm install   # when dependencies changed; refreshes resolved versions in package-lock.json
+   ```
+
+   `package-lock.json` must match: root `version`, `packages[""].version`, and dependency entries (not only `package.json`).
 
 `CHANGELOG.md` uses `## [X.Y.Z]` with a `#### YYYY-MM-DD` line under each release. Put the new section in the version-only commit unless it already landed in earlier commits on `main`.
 
@@ -68,7 +78,7 @@ npm publish --access public --tag latest
 1. Product commits on `main`
 2. Shim published first when SDK / canvas skill reference changed; dependency + lockfile updated here
 3. `npm run ci:local`
-4. Version-only commit (`package.json`, `CHANGELOG.md`, ± lockfile) — subject `X.Y.Z`
+4. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`
 5. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`
 6. `npm publish --access public --tag latest`
 7. `npm view @flesler/open-canvas version`
