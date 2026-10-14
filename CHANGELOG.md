@@ -2,11 +2,24 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.3.0]
+#### 2026-10-14
+
+##### Added
+- Agent skill bundle (`open-canvas skill`) with pinned `assets/sdk` + `manifest.json` (`contentHash`).
+- `open-canvas skill` copies SDK types from `@flesler/cursor-canvas-web`; `npm run test:pack`; contract line on `verify` / `skill`.
+- GitHub Pages via `npm run build:github-pages` → `.cache/github-pages`.
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.1.0`.
+- Skill bundle is `SKILL.md` only in-repo; types come from the shim dependency.
+- npm `files` whitelist (runtime only).
+
 ## [1.2.1]
 #### 2026-10-13
 
 ##### Added
-- GitHub Pages live showcase (`npm run build:pages`, deploy workflow).
+- GitHub Pages live showcase (`npm run build:github-pages`, deploy workflow).
 
 ##### Changed
 - User-facing README and npm description (agent-ready visuals, not “export from Cursor”).
@@ -26,13 +39,13 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ##### Changed
 - Showcase exercises newer SDK surface (theme categories, React hooks, chart prefixes).
-- Pairs with **`@flesler/cursor-canvas-web@1.0.2`** (manual SDK contract; chart prop tolerance). Bump `^1.0.2` in `package.json` / lock after shim is on npm.
+- Pairs with `@flesler/cursor-canvas-web@1.0.2` (manual SDK contract; chart prop tolerance). Bump `^1.0.2` in `package.json` / lock after shim is on npm.
 
 ## [1.1.2]
 #### 2026-10-13
 
 ##### Changed
-- **`@flesler/cursor-canvas-web@^1.0.1`** (shim `PieChart` sizing).
+- `@flesler/cursor-canvas-web@^1.0.1` (shim `PieChart` sizing).
 - Example: single `example/showcase.canvas.tsx` (SDK gallery + data imports); README light/dark screenshots and fork link.
 - Contract verifies fork `demo.canvas.tsx` when sibling shim repo is present; `npm run example:cursor` for cursor emit.
 
@@ -47,7 +60,7 @@ All notable changes to this project will be documented in this file. Dates are d
 #### 2026-10-13
 
 ##### Changed
-- Dependency **`@flesler/cursor-canvas-web@^1.0.0`** (npm fork; SDK contract + Mantine 8).
+- Dependency `@flesler/cursor-canvas-web@^1.0.0` (npm fork; SDK contract + Mantine 8).
 - Vite resolve dedupes React/Mantine; `ensureChromium` for headless renders.
 
 ## [1.0.2]
@@ -78,7 +91,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - E2E `npm run test:smoke` (external canvas + prod pack install).
 
 ##### Changed
-- npm package **`@flesler/open-canvas`**; CLI **`open-canvas`**; repo `flesler/open-canvas`.
+- npm package `@flesler/open-canvas`; CLI `open-canvas`; repo `flesler/open-canvas`.
 - Positional canvas path (no `--canvas`); bin `bin/open-canvas.js`.
 - PDF via Playwright `page.pdf()`; centralized render options in `render-options.ts`.
 - Vite resolve for canvases outside the package (`src/pkg.ts`).
