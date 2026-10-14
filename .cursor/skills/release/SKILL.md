@@ -5,6 +5,12 @@ description: Read before cutting an npm release for this repo.
 
 Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 
+## Agents
+
+- **Never** `npm publish` — the user publishes to npm only.
+- **Never** `git push`, tags, or `gh release` unless the user explicitly asks you to run a release.
+- Before asking the user to publish: `npm run ci:local` once locally; do not chain push + publish in one command (pre-push hooks run per push).
+
 ## Commit shape
 
 NEVER squash product work into the version commit. NEVER use one commit that mixes features with `package.json` / `CHANGELOG.md` for the release (including subjects like `Release 1.3.0: …` that bundle both).
@@ -36,12 +42,12 @@ NEVER run bare `git tag` (opens an editor). Pass name and message on the CLI:
 ```bash
 VERSION=1.3.0
 git tag -a "v${VERSION}" -m "v${VERSION}"
-git push origin "v${VERSION}"
+git push origin main "v${VERSION}"
 ```
 
-Push the version commit to `main` before or with the tag.
+One push for branch + tag (avoids running pre-push twice). User runs push when they are ready.
 
-Optional GitHub release (explicit OK only):
+Optional GitHub release (user only, explicit OK):
 
 ```bash
 gh release create "v${VERSION}" --notes-file CHANGELOG.md --title "v${VERSION}"
@@ -49,7 +55,7 @@ gh release create "v${VERSION}" --notes-file CHANGELOG.md --title "v${VERSION}"
 
 Trim notes to that version’s section if the file lists multiple releases.
 
-## Publish
+## Publish (user only)
 
 ```bash
 npm publish --access public --tag latest
@@ -57,12 +63,12 @@ npm publish --access public --tag latest
 
 `prepublishOnly` runs `build:cli`. Scoped package needs `--access public` and npm 2FA.
 
-## Checklist
+## Checklist (user)
 
 1. Product commits on `main`
 2. Shim published first when SDK / canvas skill reference changed; dependency + lockfile updated here
 3. `npm run ci:local`
 4. Version-only commit (`package.json`, `CHANGELOG.md`, ± lockfile) — subject `X.Y.Z`
-5. `git tag -a vX.Y.Z -m vX.Y.Z` → push `main` + tag
+5. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`
 6. `npm publish --access public --tag latest`
 7. `npm view @flesler/open-canvas version`

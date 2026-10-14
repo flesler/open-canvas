@@ -14,7 +14,11 @@ FIXTURES="${CANVAS_CONTRACT_FIXTURES:-$DEFAULT_FIXTURES}"
 
 if [[ -d "$SHIM_ROOT" ]]; then
 	echo "contract: cursor-canvas-web at $SHIM_ROOT"
-	(cd "$SHIM_ROOT" && pnpm run test:contract)
+	if [[ "${OPEN_CANVAS_CONTRACT_FAST:-}" == 1 ]]; then
+		(cd "$SHIM_ROOT" && pnpm run check:sdk-exports)
+	else
+		(cd "$SHIM_ROOT" && pnpm run test:contract)
+	fi
 else
 	echo "contract: skip shim (no dir at $SHIM_ROOT); set CURSOR_CANVAS_WEB_ROOT" >&2
 fi

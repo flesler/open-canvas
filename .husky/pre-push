@@ -5,18 +5,13 @@ if ! command -v npm >/dev/null 2>&1 && [ -s "$HOME/.nvm/nvm.sh" ]; then
   nvm use
 fi
 
-# Matches .github/workflows/ci.yml (pre-commit already runs lint:full + test:unit).
+# Lighter than CI: pre-commit already ran lint:full + test:unit. Full contract + smoke run in GitHub Actions.
 if ! npm run build:cli; then
   echo "pre-push: build:cli failed"
   exit 1
 fi
 
-if ! npm run test:contract; then
+if ! OPEN_CANVAS_CONTRACT_FAST=1 npm run test:contract; then
   echo "pre-push: test:contract failed"
-  exit 1
-fi
-
-if ! npm run test:smoke; then
-  echo "pre-push: test:smoke failed"
   exit 1
 fi
