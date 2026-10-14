@@ -9,16 +9,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: actions/checkout@v4
-        with:
-          repository: flesler/cursor-canvas-web
-          path: cursor-canvas-web
-          ref: v1.1.0
       - run: npm ci
       - name: lock root version matches package.json
         run: node -e "const p=require('./package.json');const r=require('./package-lock.json').packages[''].version;if(p.version!==r)throw new Error('package.json '+p.version+' vs lock '+r)"
@@ -27,11 +22,5 @@ jobs:
       - run: npm run lint:full
       - run: npm test
       - run: npm run test:pack
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-      - name: contract (shim source checkout)
-        env:
-          CURSOR_CANVAS_WEB_ROOT: ${{ github.workspace }}/cursor-canvas-web
-        run: npm run test:contract
+      - run: node dist/cli.js verify example/showcase.canvas.tsx
       - run: npm run test:smoke

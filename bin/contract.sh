@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Contract smoke: shim export parity (fork repo) + open-canvas verify on fixtures.
-# Fixtures: showcase (./data imports) + fork demo (cursor emit) when sibling repo exists.
+# open-canvas verify on fixtures (showcase + optional shim demo when sibling repo exists).
+# Shim SDK export parity lives in cursor-canvas-web CI, not here.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -11,17 +11,6 @@ if [[ -f "$DEMO_CANVAS" ]]; then
 	DEFAULT_FIXTURES="$DEFAULT_FIXTURES $DEMO_CANVAS"
 fi
 FIXTURES="${CANVAS_CONTRACT_FIXTURES:-$DEFAULT_FIXTURES}"
-
-if [[ -d "$SHIM_ROOT" ]]; then
-	echo "contract: cursor-canvas-web at $SHIM_ROOT"
-	if [[ "${OPEN_CANVAS_CONTRACT_FAST:-}" == 1 ]]; then
-		(cd "$SHIM_ROOT" && pnpm run check:sdk-exports)
-	else
-		(cd "$SHIM_ROOT" && pnpm run test:contract)
-	fi
-else
-	echo "contract: skip shim (no dir at $SHIM_ROOT); set CURSOR_CANVAS_WEB_ROOT" >&2
-fi
 
 for canvas in $FIXTURES; do
 	if [[ ! -f "$canvas" ]]; then
