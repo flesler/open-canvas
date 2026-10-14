@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.3.2]
+#### 2026-10-14
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.1.2`.
+- `generate`: silent Vite builds by default; `OPEN_CANVAS_DEBUG=1` for verbose logs; stderr on failure.
+- Vite build: `reportCompressedSize: false`; refreshed showcase screenshots.
+
 ## [1.3.1]
 #### 2026-10-14
 
