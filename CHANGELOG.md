@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.4.0]
+#### 2026-10-14
+
+##### Added
+- Canvas state sidecar: sibling `<stem>.canvas.data.json` (flat object) hydrates `useCanvasState` before mount during `generate` / render.
+- Unit tests for sidecar path resolution and parsing; showcase `showcase.canvas.data.json` example.
+
+##### Changed
+- README documents sidecar behavior; skill bundle note; smoke covers sidecar path; refreshed showcase screenshots.
+
 ## [1.3.2]
 #### 2026-10-14
 
