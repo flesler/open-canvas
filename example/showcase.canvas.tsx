@@ -3,7 +3,7 @@
  *
  * Single example for verify, smoke, contract, and the README screenshot.
  */
-import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TodoItem } from 'cursor/canvas'
+import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, canvasPaletteGrokDark, canvasPaletteGrokLight, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TableRowTone, type TodoItem } from 'cursor/canvas'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
 import outlierRows from './data/outliers.csv'
@@ -50,6 +50,23 @@ const TRAFFIC_SHARE: ChartSeries[] = [
 	{ name: 'Batch', data: [25, 25, 25], tone: 'neutral' },
 ]
 const SHARE_WEEKS = ['W1', 'W2', 'W3']
+
+const DRAIN_CHECKPOINTS = ['T+5s', 'T+10s', 'T+15s', 'T+20s', 'T+30s']
+const DRAIN_SERIES: ChartSeries[] = [
+	{ name: 'Off-heap reclaimed', data: [0.12, 0.18, 0.24, 0.36, 0.41], tone: 'info' },
+	{ name: 'Heap reclaimed', data: [0.58, 0.55, 0.62, 0.71, 0.85], tone: 'warning' },
+]
+
+function serviceTableRows(): {
+	tone?: TableRowTone;
+	row: [string, string, string]
+}[] {
+	return [
+		{ row: ['api-gateway', 'healthy', '3.2k'], tone: 'success' },
+		{ row: ['workers', 'hot', '8.1k'], tone: 'warning' },
+		{ row: ['billing', 'down', '0'], tone: 'danger' },
+	]
+}
 const OUTCOMES = [
 	{ label: 'Passing', value: 68, tone: 'success' as const },
 	{ label: 'Flaky', value: 14, tone: 'warning' as const },
@@ -319,7 +336,36 @@ export default function ShowcaseCanvas() {
 	)
 
 	const { meta, kpis, durationByPhase } = report
+	const grokPalette =
+		theme.kind === 'light' ? canvasPaletteGrokLight : canvasPaletteGrokDark
 	const cap = { color: theme.text.tertiary, fontSize: 12 }
+
+	const envTraffic = useMemo(() => {
+		if (env === 'staging') {
+			return { rps: '1.2k', tone: 'warning' as const, hint: 'mirrored subset' }
+		}
+		if (env === 'dev') {
+			return { rps: '120', tone: 'info' as const, hint: 'local stack' }
+		}
+		return { rps: '3.2k', tone: 'success' as const, hint: 'primary region' }
+	}, [env])
+
+	const outlierRowTone = useMemo(
+		() =>
+			outlierRows.map((_, i) => {
+				if (i === 0) {
+					return 'danger' as const
+				}
+				if (i < 3) {
+					return 'warning' as const
+				}
+				if (i === outlierRows.length - 1) {
+					return 'success' as const
+				}
+				return undefined
+			}),
+		[],
+	)
 	const rssRows =
 		(phaseRssMb as { rows?: Array<{ phase: string; p90: number }> }).rows ?? []
 	const phases = durationByPhase.rows.map(r => r.phase)
@@ -498,13 +544,23 @@ export default function ShowcaseCanvas() {
 						<Table
 							headers={['Service', 'Status', 'RPS']}
 							columnAlign={['left', 'left', 'right']}
-							rowTone={['success', undefined, 'danger']}
+							rowTone={serviceTableRows().map(r => r.tone)}
 							striped
-							rows={[
-								['api-gateway', <Pill tone="success">healthy</Pill>, '3.2k'],
-								['workers', <Pill tone="warning">hot</Pill>, '8.1k'],
-								['billing', <Pill tone="deleted">down</Pill>, '0'],
-							]}
+							rows={serviceTableRows().map(r => [
+								r.row[0],
+								<Pill
+									tone={
+										r.tone === 'success'
+											? 'success'
+											: r.tone === 'warning'
+												? 'warning'
+												: 'deleted'
+									}
+								>
+									{r.row[1]}
+								</Pill>,
+								r.row[2],
+							])}
 						/>
 					)}
 
@@ -621,6 +677,53 @@ export default function ShowcaseCanvas() {
 						</CardBody>
 					</Card>
 				</Grid>
+				<Divider />
+				<Grid columns="1.2fr 1fr" gap={16}>
+					<Card>
+						<CardHeader>Dual series, filled area</CardHeader>
+						<CardBody>
+							<LineChart
+								categories={DRAIN_CHECKPOINTS}
+								series={DRAIN_SERIES}
+								height={200}
+								fill
+								beginAtZero
+								valueSuffix=" GB"
+								showValues
+							/>
+							<Text size="small" tone="tertiary">
+								Median reclaimed resources vs checkpoint (illustrative).
+							</Text>
+						</CardBody>
+					</Card>
+					<Card>
+						<CardHeader trailing="no bar labels">
+							Weekly volume
+						</CardHeader>
+						<CardBody>
+							<BarChart
+								categories={SHARE_WEEKS}
+								series={[
+									{
+										name: 'Builds',
+										data: [42, 51, 48],
+										tone: 'neutral',
+									},
+								]}
+								height={160}
+								showValues={false}
+							/>
+							<Row justify="space-between" align="end">
+								<Text size="small" tone="secondary">
+									Row justify / align
+								</Text>
+								<Text size="small" tone="quaternary">
+									quaternary caption
+								</Text>
+							</Row>
+						</CardBody>
+					</Card>
+				</Grid>
 			</Section>
 
 			{/* Graph ---------------------------------------------------------- */}
@@ -687,7 +790,9 @@ export default function ShowcaseCanvas() {
 						/>
 					</Stack>
 					<Card>
-						<CardHeader>TodoList (selectable)</CardHeader>
+						<CardHeader trailing={<Pill active>selectable</Pill>}>
+							TodoList
+						</CardHeader>
 						<CardBody>
 							<TodoList
 								todos={TODOS_SELECTABLE}
@@ -724,6 +829,9 @@ export default function ShowcaseCanvas() {
 								<Text tone="secondary">Secondary — supporting copy.</Text>
 								<Text tone="tertiary" size="small">
 									Tertiary, small — captions and hints.
+								</Text>
+								<Text tone="quaternary" size="small">
+									Quaternary — footnotes and source lines.
 								</Text>
 								<Text weight="semibold">Semibold emphasis.</Text>
 								<Text italic tone="secondary">
@@ -847,11 +955,101 @@ export default function ShowcaseCanvas() {
 				</Grid>
 			</Section>
 
+			<Section title="Host brand (Cursor vs Grok)">
+				<Stack gap={10}>
+					<Row gap={8} wrap>
+						<Pill active={theme.brand === 'cursor'}>brand: {theme.brand}</Pill>
+						<Text size="small" tone="secondary">
+							<Code>useHostTheme().brand</Code> from the host (open-canvas{' '}
+							<Code>--brand grok</Code> for export).
+						</Text>
+					</Row>
+					<Row gap={16} wrap>
+						<Card size="base">
+							<CardHeader>
+								<Text weight="semibold">Active accent (host)</Text>
+							</CardHeader>
+							<CardBody>
+								<Row gap={8}>
+									<span
+										style={{
+											width: 120,
+											height: 32,
+											borderRadius: theme.radius.md,
+											background: theme.palette.accent,
+											border: `1px solid ${theme.stroke.secondary}`,
+										}}
+									/>
+									<Text size="small" tone="secondary">
+										{theme.palette.accent}
+									</Text>
+								</Row>
+							</CardBody>
+						</Card>
+						{theme.brand === 'cursor' ? (
+							<Card size="base" variant="borderless">
+								<CardHeader>
+									<Text weight="semibold">Grok reference</Text>
+								</CardHeader>
+								<CardBody>
+									<Row gap={8}>
+										<span
+											style={{
+												width: 120,
+												height: 32,
+												borderRadius: 8,
+												background: grokPalette.accent,
+												border: `1px solid ${theme.stroke.secondary}`,
+											}}
+										/>
+										<Text size="small" tone="secondary">
+											{grokPalette.accent}
+										</Text>
+									</Row>
+								</CardBody>
+							</Card>
+						) : null}
+					</Row>
+					<BarChart
+						categories={['A', 'B', 'C']}
+						series={[
+							{ name: 's1', data: [3, 5, 2], tone: 'info' },
+							{ name: 's2', data: [2, 4, 6], tone: 'success' },
+						]}
+						height={140}
+					/>
+				</Stack>
+			</Section>
+
 			{/* Forms ---------------------------------------------------------- */}
 			<Section title="Forms (state persists via useCanvasState)">
 				<Card>
 					<CardBody>
 						<Stack gap={12}>
+							<Card variant="borderless">
+								<CardHeader trailing="reads sidecar on export">
+									Environment snapshot
+								</CardHeader>
+								<CardBody
+									style={{
+										background: theme.bg.editor,
+										borderRadius: 8,
+										padding: 12,
+									}}
+								>
+									<Row gap={16} wrap align="center">
+										<Stat
+											value={envTraffic.rps}
+											label={`${env} · ${envTraffic.hint}`}
+											tone={envTraffic.tone}
+										/>
+										<Text size="small" tone="secondary">
+											Change Environment below —{' '}
+											<Code>.canvas.data.json</Code> is inlined on export.
+										</Text>
+									</Row>
+								</CardBody>
+							</Card>
 							<Grid columns={2} gap={16}>
 								<Stack gap={6}>
 									<Text size="small" tone="secondary" weight="medium">
@@ -1017,6 +1215,7 @@ export default function ShowcaseCanvas() {
 							<Table
 								headers={OUTLIER_TABLE.headers}
 								columnAlign={['left', 'left', 'right', 'right', 'right']}
+								rowTone={outlierRowTone}
 								rows={OUTLIER_TABLE.rows}
 								striped
 							/>

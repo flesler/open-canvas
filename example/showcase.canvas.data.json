@@ -1,5 +1,5 @@
 {
   "show.env": "staging",
-  "show.note": "Hydrated from showcase.canvas.data.json",
+	"show.note": "Hydrated from .canvas.data.json on export",
   "show.live": false
 }
