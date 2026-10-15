@@ -24,7 +24,9 @@ export type GenerateOptions = {
 	viewportWidth?: number;
 	viewportHeight?: number;
 	renderOptions?: string;
-	selectors?: string | string[]
+	selectors?: string | string[];
+	/** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
+	inlineState?: boolean
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
@@ -64,7 +66,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
 	fs.mkdirSync(outDir, { recursive: true })
 
-	const initialCanvasState = readCanvasStateSidecar(canvasPath)
+	const canvasStateForBuild = readCanvasStateSidecar(canvasPath) ?? {}
 	const env: NodeJS.ProcessEnv = {
 		...process.env,
 		OPEN_CANVAS_STEM: stem,
@@ -73,6 +75,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		OPEN_CANVAS_BRAND: brand,
 		OPEN_CANVAS_TITLE: title,
 		OPEN_CANVAS_CANVAS_PATH: canvasPath,
+		OPEN_CANVAS_CANVAS_STATE: JSON.stringify(canvasStateForBuild),
 	}
 
 	const options = resolveRenderOptions({
@@ -81,11 +84,13 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		viewportHeight: opts.viewportHeight,
 		renderOptions: opts.renderOptions,
 	})
-	const renderCtx = { outDir, stem, options, selectors, initialCanvasState }
+	const renderCtx = { outDir, stem, options, selectors }
 
 	if (formats.includes('cursor')) {
 		const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)
-		emitCursorCanvas(canvasPath, cursorOut)
+		emitCursorCanvas(canvasPath, cursorOut, {
+			inlineState: opts.inlineState,
+		})
 		console.log(`→ ${cursorOut}`)
 	}
 

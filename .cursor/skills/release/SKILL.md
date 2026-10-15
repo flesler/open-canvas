@@ -7,10 +7,10 @@ Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 
 ## Division of labor
 
-| Who | Does |
-|-----|------|
-| **Agent** | Product commits, `npm run ci:local`, version bump commit, annotated tag, `git push origin main vX.Y.Z` (one push for branch + tag). |
-| **User** | `npm publish` only (npm 2FA). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`. |
+|Who|Does|
+|---|---|
+|**Agent**|Product commits, `npm run ci:local`, version bump commit, annotated tag, `git push origin main vX.Y.Z` (one push for branch + tag).|
+|**User**|`npm publish` only (npm 2FA). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`.|
 
 - **Never** `npm publish` in the agent — user publishes to npm only.
 - On `/release` (or an explicit release request): run the full agent checklist below; do not stop after the version commit and wait for the user to tag or push.

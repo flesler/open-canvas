@@ -31,3 +31,22 @@ export function readCanvasStateSidecar(
 	}
 	return parsed as CanvasStateSidecar
 }
+
+/** Prepended to the canvas module (export + optional `cursor` emit with --inline-state). */
+export function canvasStateSeedPreamble(state: CanvasStateSidecar): string {
+	if (Object.keys(state).length === 0) {
+		return ''
+	}
+	const json = JSON.stringify(state)
+	return `const __canvasJsonState = ${json} as Record<string, unknown>
+if (typeof localStorage !== 'undefined') {
+	for (const [key, value] of Object.entries(__canvasJsonState)) {
+		const storageKey = 'canvas:' + key
+		if (localStorage.getItem(storageKey) === null) {
+			localStorage.setItem(storageKey, JSON.stringify(value))
+		}
+	}
+}
+
+`
+}

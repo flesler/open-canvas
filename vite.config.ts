@@ -14,6 +14,9 @@ const { viteResolveForCanvas } = pkgRequire(
 const { viteDataModule } = pkgRequire(
   "./dist/util.js",
 ) as typeof import("./dist/util.js");
+const { canvasStateSeedPreamble } = pkgRequire(
+  "./dist/canvas-state-sidecar.js",
+) as typeof import("./dist/canvas-state-sidecar.js");
 
 const outDir = process.env.OPEN_CANVAS_OUT_DIR
   ? path.resolve(pkgRoot, process.env.OPEN_CANVAS_OUT_DIR)
@@ -64,9 +67,41 @@ function openCanvasDataImports(): Plugin {
   };
 }
 
+function openCanvasCanvasStateSeed(): Plugin {
+  const stateJson = process.env.OPEN_CANVAS_CANVAS_STATE ?? "{}";
+  let state: Record<string, unknown> = {};
+  try {
+    state = JSON.parse(stateJson) as Record<string, unknown>;
+  } catch {
+    throw new Error("OPEN_CANVAS_CANVAS_STATE must be JSON");
+  }
+  const preamble = canvasStateSeedPreamble(state);
+  const absCanvas = canvasPath ? path.resolve(canvasPath) : "";
+  return {
+    name: "open-canvas-canvas-state-seed",
+    enforce: "pre",
+    transform(src, id) {
+      if (!preamble || !absCanvas) {
+        return;
+      }
+      const file = id.split("?")[0] ?? id;
+      if (path.resolve(file) !== absCanvas) {
+        return;
+      }
+      return { code: preamble + src, map: null };
+    },
+  };
+}
+
 export default defineConfig({
   base,
-  plugins: [react(), openCanvasDataImports(), htmlTitle(), viteSingleFile()],
+  plugins: [
+    openCanvasCanvasStateSeed(),
+    react(),
+    openCanvasDataImports(),
+    htmlTitle(),
+    viteSingleFile(),
+  ],
   define: {
     __OPEN_CANVAS_THEME__: JSON.stringify(theme),
     __OPEN_CANVAS_BRAND__: JSON.stringify(brand),

@@ -18,23 +18,23 @@ open-canvas skill ~/.cursor/skills/open-canvas
 
 ## CLI (not in canvas reference)
 
-| IDE | open-canvas |
-|-----|-------------|
-| `…/canvases/*.canvas.tsx` | any path |
-| data inline only | `import` sibling `./data/*` (json, yaml, tsv, csv) |
-| `.canvas.data.json` host state | same file beside the canvas; `generate` seeds `useCanvasState` |
-| IDE typecheck | `open-canvas verify <file>` |
-| IDE preview | `open-canvas generate <file>` → `out/` |
+|IDE|open-canvas|
+|---|---|
+|`…/canvases/*.canvas.tsx`|any path|
+|data inline only|`import` sibling `./data/*` (json, yaml, tsv, csv)|
+|`.canvas.data.json` host state|beside the canvas; `generate` inlines into the bundle; `cursor --inline-state` for one file|
+|IDE typecheck|`open-canvas verify <file>`|
+|IDE preview|`open-canvas generate <file>` → `out/`|
 
 ```bash
 open-canvas verify path/to/x.canvas.tsx
 open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 ```
 
-| Flag | Default |
-|------|---------|
-| `--out` | `./out` next to canvas |
-| `--formats` | `html,png,pdf` (+ `jpg`, `cursor`) |
-| `--theme` | `light` |
+|Flag|Default|
+|---|---|
+|`--out`|`./out` next to canvas|
+|`--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
+|`--theme`|`light`|
 
 `--formats cursor` → IDE-style single file with data inlined.

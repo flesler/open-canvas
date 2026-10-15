@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Project } from 'ts-morph'
 import { parse as parseYaml } from 'yaml'
+import { canvasStateSeedPreamble, readCanvasStateSidecar } from './canvas-state-sidecar.js'
 
 /** Relative data imports beside a canvas (json handled by Vite natively). */
 export const DATA_FILE_EXT = /\.(jsonl|json|csv|tsv|ya?ml)$/i
@@ -139,7 +140,11 @@ export function parseSelectors(
 	return selectors.length > 0 ? selectors : undefined
 }
 
-export function emitCursorCanvas(canvasPath: string, outPath: string): void {
+export function emitCursorCanvas(
+	canvasPath: string,
+	outPath: string,
+	opts?: { inlineState?: boolean },
+): void {
 	const absCanvas = path.resolve(canvasPath)
 	const canvasDir = path.dirname(absCanvas)
 	const project = new Project({
@@ -175,7 +180,11 @@ export function emitCursorCanvas(canvasPath: string, outPath: string): void {
 	}
 
 	const body = source.getFullText().trim()
-	const out = formatCursorCanvasEmit({ cursorImports, inlines, body })
+	const statePreamble =
+		opts?.inlineState
+			? canvasStateSeedPreamble(readCanvasStateSidecar(absCanvas) ?? {})
+			: ''
+	const out = formatCursorCanvasEmit({ cursorImports, inlines, body, statePreamble })
 	fs.mkdirSync(path.dirname(outPath), { recursive: true })
 	fs.writeFileSync(outPath, out)
 }
@@ -183,11 +192,15 @@ export function emitCursorCanvas(canvasPath: string, outPath: string): void {
 export function formatCursorCanvasEmit(parts: {
 	cursorImports: string[];
 	inlines: string[];
-	body: string
+	body: string;
+	statePreamble?: string
 }): string {
 	let out = ''
 	if (parts.cursorImports.length > 0) {
 		out += `${parts.cursorImports.join('\n')}\n\n`
+	}
+	if (parts.statePreamble) {
+		out += parts.statePreamble
 	}
 	if (parts.inlines.length > 0) {
 		out += `${parts.inlines.join('\n')}\n`

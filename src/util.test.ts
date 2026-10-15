@@ -122,4 +122,23 @@ describe('emitCursorCanvas', () => {
 			"import { Stack } from 'cursor/canvas'\n\nconst nums = {\"n\":1}\nexport default function Mini() { return <Stack /> }\n",
 		)
 	})
+
+	it('prepends state seed when inlineState is set', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-emit-'))
+		const canvas = path.join(dir, 'mini.canvas.tsx')
+		fs.writeFileSync(
+			canvas,
+			'import { Stack } from \'cursor/canvas\'\nexport default function Mini() { return <Stack /> }\n',
+		)
+		fs.writeFileSync(
+			path.join(dir, 'mini.canvas.data.json'),
+			'{ "tab": "table" }\n',
+		)
+		const out = path.join(dir, 'mini-out.canvas.tsx')
+		emitCursorCanvas(canvas, out, { inlineState: true })
+		const text = fs.readFileSync(out, 'utf8')
+		expect(text).toContain('__canvasJsonState')
+		expect(text).toContain('"tab":"table"')
+		expect(text).toContain('getItem(storageKey) === null')
+	})
 })

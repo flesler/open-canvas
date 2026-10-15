@@ -1,12 +1,10 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { chromium } from 'playwright'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { canvasStateSidecarPath, readCanvasStateSidecar } from './canvas-state-sidecar.js'
-import { pathInPkg } from './paths.js'
-import { seedCanvasState } from './render.js'
+import { describe, expect, it } from 'vitest'
+import { canvasStateSeedPreamble, canvasStateSidecarPath, readCanvasStateSidecar } from './canvas-state-sidecar.js'
 import { runGenerate } from './commands/generate.js'
+import { pathInPkg } from './paths.js'
 
 describe('readCanvasStateSidecar', () => {
 	it('returns undefined when the sidecar is missing', () => {
@@ -50,40 +48,21 @@ describe('readCanvasStateSidecar', () => {
 	})
 })
 
-describe('seedCanvasState', () => {
-	let browser: Awaited<ReturnType<typeof chromium.launch>>
-
-	beforeAll(async () => {
-		browser = await chromium.launch()
+describe('canvasStateSeedPreamble', () => {
+	it('returns empty when there is no state', () => {
+		expect(canvasStateSeedPreamble({})).toBe('')
 	})
 
-	afterAll(async () => {
-		await browser?.close()
-	})
-
-	it('writes canvas:<key> before page scripts run', async () => {
-		const page = await browser.newPage()
-		const file = path.join(
-			os.tmpdir(),
-			`open-canvas-seed-${process.pid}.html`,
-		)
-		fs.writeFileSync(file, '<!doctype html><title>seed</title>')
-		await seedCanvasState(page, { 'show.env': 'staging', live: false })
-		await page.goto(`file://${file}`)
-		const stored = await page.evaluate(() => ({
-			env: localStorage.getItem('canvas:show.env'),
-			live: localStorage.getItem('canvas:live'),
-		}))
-		expect(stored).toEqual({
-			env: JSON.stringify('staging'),
-			live: JSON.stringify(false),
-		})
-		await page.close()
+	it('only seeds localStorage when a key is missing', () => {
+		const code = canvasStateSeedPreamble({ label: 'from-sidecar' })
+		expect(code).toContain('__canvasJsonState')
+		expect(code).toContain('getItem(storageKey) === null')
+		expect(code).toContain('"from-sidecar"')
 	})
 })
 
-describe('generate hydrates useCanvasState', () => {
-	it('renders the sidecar value instead of the hook default', async () => {
+describe('generate inlines canvas state into html', () => {
+	it('embeds sidecar values in the html bundle', async () => {
 		if (!fs.existsSync(pathInPkg('dist', 'cli.js'))) {
 			return
 		}
@@ -106,10 +85,8 @@ export default function Label() {
 			canvas,
 			formats: ['html'],
 			theme: 'light',
-			selectors: '#root',
 		})
 		const html = fs.readFileSync(path.join(dir, 'out', 'label.html'), 'utf8')
-		expect(html).toContain('>from-sidecar<')
-		expect(html).not.toContain('>default-label<')
+		expect(html).toContain('from-sidecar')
 	})
 })

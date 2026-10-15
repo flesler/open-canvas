@@ -4,7 +4,6 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import type { Page } from 'playwright'
 import { pkgRoot } from './pkg.js'
-import type { CanvasStateSidecar } from './canvas-state-sidecar.js'
 import type { RenderOptions } from './render-options.js'
 
 const require = createRequire(path.join(pkgRoot, 'package.json'))
@@ -41,20 +40,7 @@ export type RenderContext = {
 	outDir: string;
 	stem: string;
 	options: RenderOptions;
-	selectors?: string[];
-	initialCanvasState?: CanvasStateSidecar
-}
-
-/** Match shim `useCanvasState`: `localStorage['canvas:' + key] = JSON.stringify(value)`. */
-export async function seedCanvasState(
-	page: Page,
-	state: CanvasStateSidecar,
-): Promise<void> {
-	await page.addInitScript((record) => {
-		for (const [key, value] of Object.entries(record)) {
-			localStorage.setItem(`canvas:${key}`, JSON.stringify(value))
-		}
-	}, state)
+	selectors?: string[]
 }
 
 export type RenderFormats = {
@@ -84,9 +70,6 @@ export async function render(
 	try {
 		const page = await browser.newPage(ctx.options.page)
 		page.on('pageerror', e => errors.push(e.message))
-		if (ctx.initialCanvasState) {
-			await seedCanvasState(page, ctx.initialCanvasState)
-		}
 		await page.goto(`file://${html}`, { waitUntil: 'networkidle' })
 		await page.waitForFunction(
 			() => (document.getElementById('root')?.childElementCount ?? 0) > 0,

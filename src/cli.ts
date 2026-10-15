@@ -62,6 +62,10 @@ program
 		(value, previous: string[]) => [...previous, value],
 		[],
 	)
+	.option(
+		'--inline-state',
+		'with --formats cursor: inline .canvas.data.json and seed localStorage (html/png/pdf always seed at build)',
+	)
 	.action(async (canvas: string, opts) => {
 		try {
 			await runGenerate({
@@ -76,6 +80,7 @@ program
 				viewportHeight: opts.height,
 				renderOptions: opts.renderOptions,
 				selectors: opts.selector,
+				inlineState: Boolean(opts.inlineState),
 			})
 		} catch (e) {
 			console.error(e instanceof Error ? e.message : e)

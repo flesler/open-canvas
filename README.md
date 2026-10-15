@@ -1,6 +1,6 @@
 # open-canvas
 
-**Charts, tables, and structured visuals agents can one-shot** — from a single `.canvas.tsx` file to HTML, PNG, PDF, JPG, or an IDE-ready canvas. Built on Cursor’s `cursor/canvas` component set (same primitives agents already use in Canvas), but **you don’t need the Cursor app** to author or render.
+**Charts, tables, and structured visuals agents can one-shot** — from a single `.canvas.tsx` file to HTML, PNG, PDF, JPG, or an IDE-ready canvas. Same `cursor/canvas` primitives as Cursor Canvas; **no Cursor app required** to build or export.
 
 **Live example:** [light](https://flesler.github.io/open-canvas/) · [dark](https://flesler.github.io/open-canvas/dark.html)
 
@@ -15,7 +15,7 @@
 npm install -g @flesler/open-canvas
 ```
 
-Raster and PDF output uses headless Chromium (installed automatically on first `generate`).
+PNG, PDF, and JPG use headless Chromium (installed on first `generate`).
 
 ### Agent skill
 
@@ -23,11 +23,11 @@ Raster and PDF output uses headless Chromium (installed automatically on first `
 open-canvas skill ~/.cursor/skills/open-canvas
 ```
 
-Installs open-canvas `SKILL.md`, Cursor `/canvas` prose from the shim (`src/vendor/canvas/SKILL.md` → `references/canvas.md`), and `./assets/sdk/` from `@flesler/cursor-canvas-web`.
+Installs the open-canvas skill, Cursor canvas reference, and SDK types from `@flesler/cursor-canvas-web`.
 
 ## Author a `.canvas.tsx`
 
-One React file, high-level layout and viz (bar/line/pie charts, tables, callouts, forms). Import report data from sibling `./data/*` files. Interactive `useCanvasState` values live in a sibling `<stem>.canvas.data.json` (flat object, keys = hook keys); `generate` seeds them before mount. Stale keys are ignored; missing keys use the hook default.
+One React file: charts, tables, callouts, forms — import only from `cursor/canvas`. Static data can live in sibling `./data/*` files. Saved toggles and form state can live in `<stem>.canvas.data.json` beside the canvas (same keys as `useCanvasState`).
 
 ```tsx
 import { Stack, H1, BarChart } from "cursor/canvas";
@@ -45,18 +45,19 @@ open-canvas verify path/to/report.canvas.tsx
 |---|---|
 |`generate <canvas>`|HTML, PNG, PDF (default) into `./out`|
 |`verify <canvas>`|Typecheck `cursor/canvas` and data imports|
-|`skill [dir]`|Print `SKILL.md` or install the full skill bundle into `<dir>`|
+|`skill [dir]`|Print or install the agent skill bundle|
 
 |Flag|Default|
 |---|---|
 |`--out`|`./out` beside the canvas|
 |`--theme`|`light` or `dark`|
 |`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
-|`--name`|Output slug without extension (default: canvas stem)|
-|`--width` / `--height`|Playwright viewport (`1280`×`900`); usually omit — exports use full page height|
-|`--selector`|Only matched sections (`id`, `class`, or `data-*` in your JSX)|
+|`--name`|Output basename (default: canvas stem)|
+|`--width` / `--height`|Viewport (`1280`×`900`); exports use full page height|
+|`--selector`|Export only matched sections|
+|`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 
-`--formats cursor` emits one `.canvas.tsx` with data inlined (handy for Cursor IDE).
+Exports read `.canvas.data.json` when present. `--formats cursor` inlines `./data/*` into one file for the IDE; add `--inline-state` to include saved UI state too.
 
 ## License
 
