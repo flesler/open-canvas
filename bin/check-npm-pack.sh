@@ -64,8 +64,8 @@ done <<< "$list"
 required=(
 	bin/open-canvas.js
 	dist/cli.js
+	dist/export-vite-config.js
 	src/vendor/skill-bundle/SKILL.md
-	vite.config.ts
 )
 for path in "${required[@]}"; do
 	if ! grep -qxF "$path" <<< "$list"; then

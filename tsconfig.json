@@ -20,5 +20,6 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "example/showcase.canvas.tsx"
-  ]
+  ],
+  "exclude": ["src/**/*.test.ts"]
 }

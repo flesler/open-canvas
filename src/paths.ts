@@ -9,11 +9,6 @@ export function pathInPkg(...segments: string[]): string {
 	return path.join(pkgRoot, ...segments)
 }
 
-export function viteCliPath(): string {
-	const vitePkg = require.resolve('vite/package.json')
-	return path.join(path.dirname(vitePkg), 'bin', 'vite.js')
-}
-
 /** `@flesler/cursor-canvas-web` install dir (hoisting-safe). */
 export function cursorCanvasDir(): string {
 	const entry = require.resolve('@flesler/cursor-canvas-web')

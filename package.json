@@ -84,7 +84,6 @@
     "LICENSE",
     "src/shell",
     "src/types",
-    "src/vendor/skill-bundle/**",
-    "vite.config.ts"
+		"src/vendor/skill-bundle/**"
   ]
 }

@@ -1,9 +1,8 @@
-import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { build } from 'vite'
 import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
-import { pathInPkg, viteCliPath } from '../paths.js'
-import { pkgRoot } from '../pkg.js'
+import { buildExportViteConfig } from '../export-vite-config.js'
 import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
 import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
@@ -67,16 +66,6 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	fs.mkdirSync(outDir, { recursive: true })
 
 	const canvasStateForBuild = readCanvasStateSidecar(canvasPath) ?? {}
-	const env: NodeJS.ProcessEnv = {
-		...process.env,
-		OPEN_CANVAS_STEM: stem,
-		OPEN_CANVAS_OUT_DIR: outDir,
-		OPEN_CANVAS_THEME: theme,
-		OPEN_CANVAS_BRAND: brand,
-		OPEN_CANVAS_TITLE: title,
-		OPEN_CANVAS_CANVAS_PATH: canvasPath,
-		OPEN_CANVAS_CANVAS_STATE: JSON.stringify(canvasStateForBuild),
-	}
 
 	const options = resolveRenderOptions({
 		theme,
@@ -97,40 +86,33 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	const viteBuildDir = path.join(outDir, '_build')
 	const stagedHtml = path.join(viteBuildDir, 'index.html')
 	const deliveredHtml = path.join(outDir, `${stem}.html`)
-	let viteExit: number | null = null
+	let viteFailed = false
 
 	try {
 		if (needsHtml) {
-			const viteCli = viteCliPath()
 			const debug = generateDebug()
-			const vite = spawnSync(
-				process.execPath,
-				[
-					viteCli,
-					'build',
-					'--config',
-					pathInPkg('vite.config.ts'),
-					'--logLevel',
-					debug ? 'info' : 'silent',
-				],
-				{
-					cwd: pkgRoot,
-					stdio: debug ? 'inherit' : ['ignore', 'pipe', 'pipe'],
-					env,
-				},
-			)
-			if (!debug && vite.status !== 0) {
-				if (vite.stdout?.length) {
-					process.stderr.write(vite.stdout)
-				}
-				if (vite.stderr?.length) {
-					process.stderr.write(vite.stderr)
+			try {
+				await build({
+					...buildExportViteConfig({
+						canvasPath,
+						outDir,
+						theme,
+						brand,
+						title,
+						canvasState: canvasStateForBuild,
+						basePath: process.env.BASE_PATH,
+					}),
+					logLevel: debug ? 'info' : 'silent',
+				})
+			} catch (e) {
+				viteFailed = true
+				if (debug) {
+					console.error(e)
 				}
 			}
-			viteExit = vite.status ?? 1
 		}
 
-		if (viteExit === null || viteExit === 0) {
+		if (!viteFailed) {
 			if (needsBrowser) {
 				await render(renderCtx, {
 					png: formats.includes('png'),
@@ -147,8 +129,8 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 		fs.rmSync(viteBuildDir, { recursive: true, force: true })
 	}
 
-	if (viteExit !== null && viteExit !== 0) {
-		process.exit(viteExit)
+	if (viteFailed) {
+		process.exit(1)
 	}
 
 	for (const f of formats) {
