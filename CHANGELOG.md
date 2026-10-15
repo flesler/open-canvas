@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.5.0]
+#### 2026-10-15
+
+##### Added
+- `generate --inline-state` with `--formats cursor`: embed `.canvas.data.json` in the emitted file.
+- Export Vite pipeline in `buildExportViteConfig` with plugin unit tests; tarball ships `dist/export-vite-config.js` instead of root `vite.config.ts`.
+
+##### Changed
+- Html/png/pdf/jpg exports inline sidecar state into the canvas bundle (`__canvasJsonState`); `localStorage` is seeded only for missing keys.
+- `generate` calls `vite.build()` in-process (no subprocess / env-driven config file).
+- Showcase exercises more SDK patterns (Divider, host brand palette, table tones, env snapshot from sidecar).
+- README and skill bundle trimmed for consumers.
+
 ## [1.4.0]
 #### 2026-10-14
 
