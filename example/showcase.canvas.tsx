@@ -4,11 +4,19 @@
  * Single example for verify, smoke, contract, and the README screenshot.
  */
 import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, canvasPaletteGrokDark, canvasPaletteGrokLight, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TableRowTone, type TodoItem } from 'cursor/canvas'
+import pkg from '../package.json'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
 import outlierRows from './data/outliers.csv'
 import phaseRssMb from './data/phase-rss.yaml'
 import report from './data/report.json'
+
+type PhaseRssMb = {
+	rows: { phase: string; p90: number }[]
+}
+
+const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`
+const shimDep = pkg.dependencies['@flesler/cursor-canvas-web']
 
 /** Bar/line height in the charts grid; pie `size` matches for visual parity. */
 const SHOWCASE_CHART_HEIGHT = 200
@@ -366,8 +374,7 @@ export default function ShowcaseCanvas() {
 			}),
 		[],
 	)
-	const rssRows =
-		(phaseRssMb as { rows?: Array<{ phase: string; p90: number }> }).rows ?? []
+	const rssRows = (phaseRssMb as PhaseRssMb).rows
 	const phases = durationByPhase.rows.map(r => r.phase)
 	const durationSeries: ChartSeries[] = [
 		{ name: 'p50', data: durationByPhase.rows.map(r => r.p50), tone: 'info' },
@@ -385,7 +392,7 @@ export default function ShowcaseCanvas() {
 			<Row gap={12} align="center">
 				<H1>Cursor Canvas SDK showcase</H1>
 				<Spacer />
-				<Link href="https://github.com/flesler/open-canvas">open-canvas</Link>
+				<Link href={repoUrl}>{pkg.name}</Link>
 				<Pill tone="info" active={live}>
 					{live ? 'live' : 'paused'}
 				</Pill>
@@ -403,9 +410,8 @@ export default function ShowcaseCanvas() {
 			</Row>
 
 			<Text tone="secondary">
-				Full <Code>cursor/canvas</Code> gallery plus <Code>./data/*</Code>{' '}
-				imports (JSON, YAML, TSV, CSV, JSONL) — one file for verify, smoke, and
-				exports.
+				Full <Code>cursor/canvas</Code> gallery — <Code>../package.json</Code>,{' '}
+				<Code>./data/*</Code> (JSON, YAML, TSV, CSV, JSONL).
 			</Text>
 
 			{/* How it works (stepped explanation, not a callout) -------------- */}
@@ -1118,6 +1124,23 @@ export default function ShowcaseCanvas() {
 
 			<Section title="Data imports (JSON, YAML, TSV, CSV, JSONL)">
 				<Stack gap={12}>
+					<Grid columns={3} gap={12}>
+						<Card>
+							<CardBody>
+								<Stat value={pkg.version} label="Version" />
+							</CardBody>
+						</Card>
+						<Card>
+							<CardBody>
+								<Stat value={shimDep} label="@flesler/cursor-canvas-web" />
+							</CardBody>
+						</Card>
+						<Card>
+							<CardBody>
+								<Stat value={pkg.license} label="License" />
+							</CardBody>
+						</Card>
+					</Grid>
 					<Text size="small" tone="secondary">
 						{meta.periodStart} → {meta.periodEnd} ·{' '}
 						{meta.deployCount.toLocaleString()} deploys · {deployEvents.length}{' '}

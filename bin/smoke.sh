@@ -50,10 +50,12 @@ done
 
 stage_external() {
 	local dest="$1"
-	mkdir -p "$dest"
-	cp "$ROOT/example/$SHOWCASE" "$dest/"
-	cp "$ROOT/example/showcase.canvas.data.json" "$dest/"
-	cp -r "$ROOT/example/data" "$dest/data"
+	local run_dir="$dest/run"
+	mkdir -p "$run_dir"
+	cp "$ROOT/example/$SHOWCASE" "$run_dir/"
+	cp "$ROOT/example/showcase.canvas.data.json" "$run_dir/"
+	cp -r "$ROOT/example/data" "$run_dir/data"
+	cp "$ROOT/package.json" "$dest/package.json"
 }
 
 run_with_open_canvas() {
@@ -65,9 +67,9 @@ run_with_open_canvas() {
 	local external
 	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
 	stage_external "$external"
-	"${OC[@]}" verify "$external/$SHOWCASE"
-	"${OC[@]}" generate "$external/$SHOWCASE" --formats html --theme light
-	test -f "$external/out/showcase.html"
+	"${OC[@]}" verify "$external/run/$SHOWCASE"
+	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats html --theme light
+	test -f "$external/run/out/showcase.html"
 	rm -rf "$external"
 }
 
@@ -118,9 +120,9 @@ run_pack_install() {
 		local ext
 		ext="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
 		stage_external "$ext"
-		npx --yes open-canvas verify "$ext/$SHOWCASE"
-		npx --yes open-canvas generate "$ext/$SHOWCASE" --formats html --theme light
-		test -f "$ext/out/showcase.html"
+		npx --yes open-canvas verify "$ext/run/$SHOWCASE"
+		npx --yes open-canvas generate "$ext/run/$SHOWCASE" --formats html --theme light
+		test -f "$ext/run/out/showcase.html"
 		rm -rf "$ext"
 	)
 

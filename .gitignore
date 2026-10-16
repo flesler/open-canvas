@@ -8,3 +8,4 @@ src/vendor/skill-bundle/assets/
 example/out/
 site/
 **/out/_build/
+__pycache__/

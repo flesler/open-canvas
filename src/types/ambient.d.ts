@@ -10,11 +10,6 @@ interface Window {
 	}
 }
 
-declare module '*.json' {
-	const data: any
-	export default data
-}
-
 declare module '*.jsonl' {
 	const rows: unknown[]
 	export default rows
@@ -31,12 +26,12 @@ declare module '*.tsv' {
 }
 
 declare module '*.yaml' {
-	const data: any
+	const data: unknown
 	export default data
 }
 
 declare module '*.yml' {
-	const data: any
+	const data: unknown
 	export default data
 }
 

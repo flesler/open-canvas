@@ -157,6 +157,10 @@ export function viteResolveForCanvas(canvasPath: string) {
 			),
 			'@open-canvas/user-canvas': abs,
 		},
-		fsAllow: [pkgRoot, path.dirname(abs)],
+		fsAllow: [
+			pkgRoot,
+			path.dirname(abs),
+			path.dirname(path.dirname(abs)),
+		],
 	}
 }

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import type { Plugin, UserConfig } from 'vite'
+import type { IndexHtmlTransformContext, Plugin, TransformResult, UserConfig } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
 import { buildExportViteConfig, canvasStateSeedPlugin, dataImportsPlugin, escapeHtmlForExportTitle, htmlTitlePlugin, type ExportViteBuildInput } from './export-vite-config.js'
@@ -48,6 +48,35 @@ function pluginNamed(config: UserConfig, name: string): Plugin {
 	return found
 }
 
+const htmlCtx: IndexHtmlTransformContext = {
+	filename: 'index.html',
+	path: '/index.html',
+	server: undefined as never,
+	bundle: undefined as never,
+}
+
+function runTransform(plugin: Plugin, code: string, id: string) {
+	const hook = plugin.transform
+	if (!hook) {
+		return undefined
+	}
+	const fn = typeof hook === 'function' ? hook : hook.handler
+	return (fn as (code: string, id: string) => TransformResult | undefined)(code, id)
+}
+
+function runTransformIndexHtml(plugin: Plugin, html: string) {
+	const hook = plugin.transformIndexHtml
+	if (!hook || typeof hook !== 'function') {
+		return html
+	}
+	return (
+		(hook as (html: string, ctx: IndexHtmlTransformContext) => string | undefined)(
+			html,
+			htmlCtx,
+		) ?? html
+	)
+}
+
 describe('escapeHtmlForExportTitle', () => {
 	it.each([
 		{ raw: 'Plain', out: 'Plain' },
@@ -63,19 +92,16 @@ describe('escapeHtmlForExportTitle', () => {
 describe('htmlTitlePlugin', () => {
 	it('replaces the default shell title', () => {
 		const plugin = htmlTitlePlugin('My Report')
-		const html = plugin.transformIndexHtml!(
+		const html = runTransformIndexHtml(
+			plugin,
 			'<!doctype html><head><title>Canvas</title></head>',
-			{ path: '/index.html', server: undefined as never, bundle: undefined as never },
 		)
 		expect(html).toContain('<title>My Report</title>')
 	})
 
 	it('escapes unsafe title text', () => {
 		const plugin = htmlTitlePlugin('X & Y')
-		const html = plugin.transformIndexHtml!(
-			'<title>Canvas</title>',
-			{ path: '/index.html', server: undefined as never, bundle: undefined as never },
-		)
+		const html = runTransformIndexHtml(plugin, '<title>Canvas</title>')
 		expect(html).toContain('<title>X &amp; Y</title>')
 	})
 })
@@ -83,7 +109,7 @@ describe('htmlTitlePlugin', () => {
 describe('canvasStateSeedPlugin', () => {
 	it('does not transform when state is empty', () => {
 		const plugin = canvasStateSeedPlugin(SHOWCASE, {})
-		const out = plugin.transform?.('export default function X() {}', SHOWCASE)
+		const out = runTransform(plugin, 'export default function X() {}', SHOWCASE)
 		expect(out).toBeUndefined()
 	})
 
@@ -91,9 +117,9 @@ describe('canvasStateSeedPlugin', () => {
 		const state = { tab: 'chart' }
 		const plugin = canvasStateSeedPlugin(SHOWCASE, state)
 		const body = 'export default function X() {}'
-		const hit = plugin.transform?.(body, SHOWCASE)
+		const hit = runTransform(plugin, body, SHOWCASE)
 		expect(hit?.code).toBe(canvasStateSeedPreamble(state) + body)
-		expect(plugin.transform?.(body, '/other/file.tsx')).toBeUndefined()
+		expect(runTransform(plugin, body, '/other/file.tsx')).toBeUndefined()
 	})
 
 	it('matches canvas path when id has a query suffix', () => {
@@ -101,16 +127,14 @@ describe('canvasStateSeedPlugin', () => {
 		const plugin = canvasStateSeedPlugin(SHOWCASE, state)
 		const body = 'export {}'
 		const id = `${SHOWCASE}?t=1`
-		expect(plugin.transform?.(body, id)?.code).toContain('__canvasJsonState')
+		expect(runTransform(plugin, body, id)?.code).toContain('__canvasJsonState')
 	})
 })
 
 describe('dataImportsPlugin', () => {
 	it('ignores non-data modules', () => {
 		const plugin = dataImportsPlugin()
-		expect(
-			plugin.transform?.('export const x = 1', '/foo/bar.tsx'),
-		).toBeUndefined()
+		expect(runTransform(plugin, 'export const x = 1', '/foo/bar.tsx')).toBeUndefined()
 	})
 
 	it('rewrites sibling csv imports', () => {
@@ -119,7 +143,7 @@ describe('dataImportsPlugin', () => {
 		fs.writeFileSync(csv, 'a,b\n1,2\n')
 		const plugin = dataImportsPlugin()
 		const src = 'import rows from "./rows.csv"'
-		const out = plugin.transform?.(src, csv)
+		const out = runTransform(plugin, src, csv)
 		expect(out?.code).toContain('export default')
 		expect(out?.map).toBeNull()
 	})
@@ -190,10 +214,7 @@ describe('buildExportViteConfig', () => {
 			defaultInput({ title: 'Quarterly KPIs' }),
 		)
 		const plugin = pluginNamed(config, 'html-title')
-		const html = plugin.transformIndexHtml!(
-			'<title>Canvas</title>',
-			{ path: '/index.html', server: undefined as never, bundle: undefined as never },
-		)
+		const html = runTransformIndexHtml(plugin, '<title>Canvas</title>')
 		expect(html).toContain('Quarterly KPIs')
 	})
 
@@ -203,7 +224,7 @@ describe('buildExportViteConfig', () => {
 		)
 		const plugin = pluginNamed(config, 'canvas-state-seed')
 		const body = 'export default function C() {}'
-		expect(plugin.transform?.(body, SHOWCASE)?.code).toContain('"env":"prod"')
+		expect(runTransform(plugin, body, SHOWCASE)?.code).toContain('"env":"prod"')
 	})
 
 	it('sets build options for single-file export', () => {
