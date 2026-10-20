@@ -110,11 +110,27 @@ export async function render(
 	}
 }
 
+/** Chromium PDF duplicates a blank page when nested wrappers use `min-height: 100vh`. */
+async function neutralizeViewportMinHeightsForPdf(page: Page): Promise<void> {
+	await page.evaluate(() => {
+		const usesVh = (value: string) => /\d*vh/i.test(value)
+		for (const el of document.querySelectorAll<HTMLElement>('*')) {
+			if (usesVh(el.style.minHeight)) {
+				el.style.minHeight = '0'
+			}
+			if (usesVh(el.style.height)) {
+				el.style.height = 'auto'
+			}
+		}
+	})
+}
+
 async function writePdf(
 	page: Page,
 	ctx: RenderContext,
 	outPath: string,
 ): Promise<void> {
+	await neutralizeViewportMinHeightsForPdf(page)
 	const widthPx = ctx.options.page.viewport.width
 	const height = await page.evaluate(
 		() => document.documentElement.scrollHeight,
