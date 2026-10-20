@@ -318,6 +318,165 @@ function DagDiagram() {
 	)
 }
 
+const SEQ_ACTORS = [
+	{ label: 'CI', sub: 'orchestrator' },
+	{ label: 'CLI', sub: 'runner' },
+	{ label: 'API', sub: 'service' },
+	{ label: 'Worker', sub: 'queue' },
+]
+
+type SeqKind = 'call' | 'return' | 'async'
+
+const SEQ_MESSAGES: {
+	from: number;
+	to: number;
+	label: string;
+	kind: SeqKind;
+	step?: string
+}[] = [
+	{ from: 0, to: 1, label: 'invoke', kind: 'call', step: '1' },
+	{ from: 1, to: 2, label: 'submit job', kind: 'call' },
+	{ from: 2, to: 1, label: 'accepted', kind: 'return' },
+	{ from: 2, to: 3, label: 'enqueue', kind: 'async' },
+	{ from: 3, to: 2, label: 'complete', kind: 'async' },
+	{ from: 1, to: 0, label: 'exit code', kind: 'return' },
+]
+
+function SequenceDiagram() {
+	const theme = useHostTheme()
+	const boxStroke = theme.stroke.primary
+	const lifelineStroke = theme.stroke.secondary
+	const width = 920
+	const headerH = 52
+	const rowH = 34
+	const gap = 14
+	const labelRail = 40
+	const boxW = 120
+	const slot = (width - labelRail - 12) / SEQ_ACTORS.length
+	const centers = SEQ_ACTORS.map(
+		(_, index) => labelRail + slot * index + slot / 2,
+	)
+	const rows = SEQ_MESSAGES.map((message, index) => {
+		const previous = SEQ_MESSAGES[index - 1]
+		const extra = message.step && previous ? gap : 0
+		return { message, extra }
+	})
+	let cursor = headerH + 16
+	const placed = rows.map((row) => {
+		cursor += row.extra
+		const y = cursor
+		cursor += rowH
+		return { ...row, y }
+	})
+	const height = cursor + 12
+	const highlight = 1
+
+	return (
+		<svg
+			viewBox={`0 0 ${width} ${height}`}
+			width="100%"
+			role="img"
+			aria-label="Sequence diagram: CI invokes a CLI that talks to an API and async worker"
+			style={{ display: 'block' }}
+		>
+			{SEQ_ACTORS.map((actor, index) => {
+				const x = centers[index] - boxW / 2
+				const primary = index === highlight
+				return (
+					<g key={actor.label}>
+						<rect
+							x={x}
+							y={8}
+							width={boxW}
+							height={40}
+							rx={6}
+							fill={primary ? theme.fill.tertiary : theme.bg.elevated}
+							stroke={primary ? theme.accent.primary : boxStroke}
+							strokeWidth={1.5}
+						/>
+						<text
+							x={centers[index]}
+							y={26}
+							textAnchor="middle"
+							fill={theme.text.primary}
+							fontSize={13}
+							fontWeight={600}
+						>
+							{actor.label}
+						</text>
+						<text
+							x={centers[index]}
+							y={40}
+							textAnchor="middle"
+							fill={theme.text.tertiary}
+							fontSize={10}
+						>
+							{actor.sub}
+						</text>
+						<line
+							x1={centers[index]}
+							y1={52}
+							x2={centers[index]}
+							y2={height - 8}
+							stroke={lifelineStroke}
+							strokeWidth={2}
+							strokeDasharray="4 5"
+						/>
+					</g>
+				)
+			})}
+			{placed.map(({ message, y }) => {
+				const x1 = centers[message.from]
+				const x2 = centers[message.to]
+				const dir = x2 >= x1 ? 1 : -1
+				const dashed = message.kind !== 'call'
+				const color = dashed ? theme.stroke.primary : theme.accent.primary
+				const lineWidth = dashed ? 2 : 2.5
+				const mid = (x1 + x2) / 2
+				const head = 8
+				const tip = x2 - dir * 2
+				return (
+					<g key={`${message.label}-${y}`}>
+						{message.step && (
+							<text
+								x={8}
+								y={y - 10}
+								fill={theme.text.tertiary}
+								fontSize={10}
+								fontWeight={600}
+							>
+								{message.step}
+							</text>
+						)}
+						<line
+							x1={x1}
+							y1={y}
+							x2={tip - dir * head}
+							y2={y}
+							stroke={color}
+							strokeWidth={lineWidth}
+							strokeDasharray={dashed ? '5 4' : undefined}
+						/>
+						<polygon
+							points={`${tip},${y} ${tip - dir * head},${y - 5} ${tip - dir * head},${y + 5}`}
+							fill={color}
+						/>
+						<text
+							x={mid}
+							y={y - 6}
+							textAnchor="middle"
+							fill={theme.text.primary}
+							fontSize={11}
+						>
+							{message.label}
+						</text>
+					</g>
+				)
+			})}
+		</svg>
+	)
+}
+
 /* --------------------------------------------------------------------- main */
 
 export default function ShowcaseCanvas() {
@@ -392,7 +551,7 @@ export default function ShowcaseCanvas() {
 			<Row gap={12} align="center">
 				<H1>Cursor Canvas SDK showcase</H1>
 				<Spacer />
-				<Link href={repoUrl}>{pkg.name}</Link>
+				<Link href={repoUrl}>open-canvas</Link>
 				<Pill tone="info" active={live}>
 					{live ? 'live' : 'paused'}
 				</Pill>
@@ -742,6 +901,20 @@ export default function ShowcaseCanvas() {
 								accent edge is a detected back-edge (cycle).
 							</Text>
 							<DagDiagram />
+						</Stack>
+					</CardBody>
+				</Card>
+			</Section>
+
+			<Section title="Sequence diagram (SVG)">
+				<Card>
+					<CardBody>
+						<Stack gap={8}>
+							<Text size="small" tone="secondary">
+								Solid arrows are synchronous calls; dashed arrows are returns or
+								async hand-offs. Same host tokens as the DAG chart above.
+							</Text>
+							<SequenceDiagram />
 						</Stack>
 					</CardBody>
 				</Card>
