@@ -15,8 +15,14 @@ export function cursorCanvasDir(): string {
 	return path.resolve(path.dirname(entry), '..')
 }
 
+/** `CURSOR_CANVAS_WEB_ROOT` points at a local shim checkout (runs its sources, not `dist`). */
+function localShimRoot(): string | undefined {
+	const root = process.env.CURSOR_CANVAS_WEB_ROOT
+	return root ? path.resolve(root) : undefined
+}
+
 function shimPackageRoot(): string {
-	return cursorCanvasDir()
+	return localShimRoot() ?? cursorCanvasDir()
 }
 
 function resolveShimCanvasSkillPath(packageRoot: string): string | undefined {
@@ -107,6 +113,12 @@ function typeRootsUpward(start: string): string[] {
 	return roots
 }
 
+/** `cursor/canvas` typings: the shim's superset (SDK + `extra` props), else the plain SDK for older shims. */
+export function canvasTypesPath(): string {
+	const superset = path.join(shimPackageRoot(), 'src', 'superset', 'index.d.ts')
+	return fs.existsSync(superset) ? superset : path.join(shimCanvasSdkDir(), 'index.d.ts')
+}
+
 /** TypeScript `paths` / `typeRoots` for verify (canvas file may be anywhere). */
 export function verifyTypeScriptPaths(_canvasPath: string): {
 	baseUrl: string;
@@ -114,22 +126,39 @@ export function verifyTypeScriptPaths(_canvasPath: string): {
 	paths: Record<string, string[]>
 } {
 	const reactTypes = path.join(pkgRoot, 'node_modules', '@types', 'react')
-	const sdk = shimCanvasSdkDir()
 	return {
 		baseUrl: pkgRoot,
 		typeRoots: typeRootsUpward(pkgRoot),
 		paths: {
-			'cursor/canvas': [path.join(sdk, 'index.d.ts')],
+			'cursor/canvas': [canvasTypesPath()],
 			react: [path.join(reactTypes, 'index.d.ts')],
 			'react/jsx-runtime': [path.join(reactTypes, 'jsx-runtime.d.ts')],
 		},
 	}
 }
 
+/** Runtime entries for `cursor/canvas` and the shim host runtime. */
+function shimModulePaths(): { canvas: string; runtime: string; root: string } {
+	const local = localShimRoot()
+	if (local) {
+		return {
+			canvas: path.join(local, 'src', 'shim', 'cursor-canvas.tsx'),
+			runtime: path.join(local, 'src', 'runtime', 'index.tsx'),
+			root: local,
+		}
+	}
+	const cc = cursorCanvasDir()
+	return {
+		canvas: path.join(cc, 'dist', 'cursor-canvas.js'),
+		runtime: path.join(cc, 'dist', 'runtime.js'),
+		root: cc,
+	}
+}
+
 /** Vite resolve when the canvas file is outside `src/shell`. */
 export function viteResolveForCanvas(canvasPath: string) {
 	const abs = path.resolve(canvasPath)
-	const cc = cursorCanvasDir()
+	const shim = shimModulePaths()
 	const reactPkg = path.dirname(require.resolve('react/package.json'))
 	const reactDomPkg = path.dirname(require.resolve('react-dom/package.json'))
 	const mantineCoreStyles = require.resolve('@mantine/core/styles.css')
@@ -149,18 +178,15 @@ export function viteResolveForCanvas(canvasPath: string) {
 			'@mantine/hooks': mantineRoot('@mantine/hooks'),
 			'@mantine/charts': mantineRoot('@mantine/charts'),
 			'@mantine/charts/styles.css': mantineChartsStyles,
-			'cursor/canvas': path.join(cc, 'dist', 'cursor-canvas.js'),
-			'@flesler/cursor-canvas-web/runtime': path.join(
-				cc,
-				'dist',
-				'runtime.js',
-			),
+			'cursor/canvas': shim.canvas,
+			'@flesler/cursor-canvas-web/runtime': shim.runtime,
 			'@open-canvas/user-canvas': abs,
 		},
 		fsAllow: [
 			pkgRoot,
 			path.dirname(abs),
 			path.dirname(path.dirname(abs)),
+			shim.root,
 		],
 	}
 }

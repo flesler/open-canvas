@@ -17,6 +17,13 @@ npm install -g @flesler/open-canvas
 
 PNG, PDF, and JPG use headless Chromium (installed on first `generate`).
 
+To develop against a local `@flesler/cursor-canvas-web` checkout without changing `package.json`:
+
+```bash
+export CURSOR_CANVAS_WEB_ROOT=/path/to/cursor-canvas-web
+open-canvas generate path/to/report.canvas.tsx
+```
+
 ### Agent skill
 
 ```bash
@@ -33,6 +40,8 @@ One React file: charts, tables, callouts, forms — import only from `cursor/can
 import { Stack, H1, BarChart } from "cursor/canvas";
 import report from "./data/report.json";
 ```
+
+Some components accept an `extra` prop with features beyond the Cursor SDK, such as `<BarChart extra={{ valueAxis: { scale: "log" } }} />`. Cursor ignores `extra`, so the canvas still renders there. See the shim's [superset docs](https://github.com/flesler/cursor-canvas-web/blob/main/COMPAT.md#superset).
 
 ## Generate
 
