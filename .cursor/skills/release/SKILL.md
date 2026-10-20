@@ -33,7 +33,9 @@ NEVER squash product work into the version commit. NEVER use one commit that mix
 
    `package-lock.json` must match: root `version`, `packages[""].version`, and dependency entries (not only `package.json`).
 
-   After the shim is on npm, run `npm update @flesler/cursor-canvas-web` (or `npm install @flesler/cursor-canvas-web@^X.Y.Z`) so `package-lock.json` **integrity** matches the published tarball — **never** `npm install` a local `.tgz` or `file:` path (`bin/check-shim-lockfile.sh` / `test:pack` reject it).
+   After the shim is on npm, run `npm update @flesler/cursor-canvas-web` so `package-lock.json` **integrity** matches `npm view … dist.integrity` (`bin/check-shim-lockfile.sh` enforces this when the version is published). **Never** `npm install` a local `.tgz` or `file:` path.
+
+   Move the git tag to the commit you will publish if you fixed the lock after the version-only commit (e.g. `git tag -f vX.Y.Z` on `main`); npm uses the tree at **HEAD** / the tag, not “the version commit” in isolation.
 
 `CHANGELOG.md` uses `## [X.Y.Z]` with a `#### YYYY-MM-DD` line under each release. Put the new section in the version-only commit unless it already landed in earlier commits on `main`.
 
