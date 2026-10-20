@@ -14,11 +14,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Shim lockfile policy (registry URL + integrity when published)
-        run: bash bin/check-shim-lockfile.sh
+      - run: bash bin/check-package-lock.sh
       - run: npm ci
-      - name: lock root version matches package.json
-        run: node -e "const p=require('./package.json');const r=require('./package-lock.json').packages[''].version;if(p.version!==r)throw new Error('package.json '+p.version+' vs lock '+r)"
       - run: npx playwright install chromium
       - run: npm run build:cli
       - run: npm run lint:full

@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-bash "$ROOT/bin/check-shim-lockfile.sh"
+bash "$ROOT/bin/check-package-lock.sh"
 
 if [[ ! -f dist/cli.js ]]; then
 	echo "check-npm-pack: run npm run build:cli first" >&2

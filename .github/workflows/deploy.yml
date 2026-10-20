@@ -23,7 +23,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: bash bin/check-shim-lockfile.sh
+      - run: bash bin/check-package-lock.sh
       - run: npm ci
       - run: npm run build:github-pages
       - uses: actions/configure-pages@v5
