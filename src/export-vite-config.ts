@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import fs from 'node:fs'
 import path from 'node:path'
 import type { Plugin, UserConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
@@ -53,6 +54,8 @@ export function canvasStateSeedPlugin(
 ): Plugin {
 	const preamble = canvasStateSeedPreamble(state)
 	const absCanvas = path.resolve(canvasPath)
+	/** Vite ids are real paths, e.g. `/private/var/…` for a `/var/…` (macOS tmp) canvas. */
+	const canvasIds = new Set([absCanvas, fs.existsSync(absCanvas) ? fs.realpathSync(absCanvas) : absCanvas])
 	return {
 		name: 'canvas-state-seed',
 		enforce: 'pre',
@@ -61,7 +64,7 @@ export function canvasStateSeedPlugin(
 				return
 			}
 			const file = id.split('?')[0] ?? id
-			if (path.resolve(file) !== absCanvas) {
+			if (!canvasIds.has(path.resolve(file))) {
 				return
 			}
 			return { code: preamble + src, map: null }
