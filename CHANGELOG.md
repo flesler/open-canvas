@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.6.0]
+#### 2026-10-20
+
+##### Added
+- `CURSOR_CANVAS_WEB_ROOT` for local shim checkout; export Vite config resolves superset typings from the shim package.
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.2.0` (superset `cursor/canvas` types on npm).
+- Node `24.11.1` via `.nvmrc`; shim sync script uses `npm run build:lib`.
+- Dropped legacy shim path fallbacks; showcase and verify require shim `src/superset`.
+
+##### Fixed
+- Sidecar state seeding when the canvas path is a symlink.
+- PDF export blank second page from nested `100vh` min-heights.
+
 ## [1.5.0]
 #### 2026-10-15
 

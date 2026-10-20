@@ -1,6 +1,6 @@
 {
   "name": "@flesler/open-canvas",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Agent-friendly canvas visuals (charts, tables, UI) from .canvas.tsx to HTML, PNG, PDF, JPG, or IDE-ready canvas",
   "type": "module",
   "license": "MIT",
@@ -9,8 +9,8 @@
     "open-canvas": "./bin/open-canvas.js"
   },
   "engines": {
-    "node": "^24.11.1",
-    "npm": "^11.0.0"
+    "node": ">=22.12.0",
+    "npm": ">=10.0.0"
   },
   "scripts": {
     "build": "npm run build:cli",
@@ -44,7 +44,7 @@
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
   "dependencies": {
-    "@flesler/cursor-canvas-web": "^1.1.2",
+    "@flesler/cursor-canvas-web": "^1.2.0",
     "@mantine/charts": "^8.3.18",
     "@mantine/core": "^8.3.18",
     "@types/react": "^19.3.0",
