@@ -23,7 +23,7 @@ Same `.canvas.tsx` in the IDE and in `open-canvas generate`. Diffs are shim bugs
 npm run example:screenshot
 ```
 
-Then `pnpm test` in `cursor-canvas-web`. Confirm both `docs/showcase-light.png` and `docs/showcase-dark.png`.
+Then `npm test` in `cursor-canvas-web`. Confirm both `docs/showcase-light.png` and `docs/showcase-dark.png`.
 
 Known mappings: [references/parity.md](references/parity.md).
 

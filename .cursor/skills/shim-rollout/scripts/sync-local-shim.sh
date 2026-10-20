@@ -44,7 +44,7 @@ if [[ ! -d "$SHIM_ROOT" ]]; then
 fi
 
 if [[ $DRY_RUN -eq 1 ]]; then
-	echo "would: (cd $SHIM_ROOT && pnpm run build:lib)"
+	echo "would: (cd $SHIM_ROOT && npm run build:lib)"
 	echo "would: cp -a $SHIM_ROOT/dist/. -> $TARGET/"
 	exit 0
 fi
@@ -54,7 +54,7 @@ if [[ ! -d "$OPEN_CANVAS_ROOT/node_modules/@flesler/cursor-canvas-web" ]]; then
 	exit 1
 fi
 
-(cd "$SHIM_ROOT" && pnpm run build:lib)
+(cd "$SHIM_ROOT" && npm run build:lib)
 mkdir -p "$TARGET"
 cp -a "$SHIM_ROOT/dist/." "$TARGET/"
 cp "$SHIM_ROOT/package.json" "$SHIM_PKG/package.json"

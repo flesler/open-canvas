@@ -10,7 +10,7 @@ description: Read when the shim is updated and how to roll it out.
 |`cursor/canvas` render/API|`cursor-canvas-web` `src/shim/`|
 |verify, generate, pack, skill|`open-canvas` `src/`|
 
-**SDK + `/canvas` skill:** `pnpm run sync:sdk` → `src/vendor/canvas-sdk/` + `src/vendor/canvas/SKILL.md`. `open-canvas skill` copies those into the agent skill dir.
+**SDK + `/canvas` skill:** `npm run sync:sdk` (shim repo) → `src/vendor/canvas-sdk/` + `src/vendor/canvas/SKILL.md`. `open-canvas skill` copies those into the agent skill dir.
 
 **Order:** shim `ci:local` → `.cursor/skills/shim-rollout/scripts/sync-local-shim.sh` → open-canvas `ci:local` → publish shim → open-canvas `^` shim version → publish open-canvas.
 
