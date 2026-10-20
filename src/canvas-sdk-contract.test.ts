@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatCanvasSdkContractLine, hashCanvasSdkTree, readCanvasSdkManifest } from './canvas-sdk-contract.js'
-import { canvasSdkTypesDir } from './paths.js'
+import { shimCanvasSdkDir } from './paths.js'
 
 describe('canvas-sdk contract', () => {
 	it('reads manifest from shim vendor', () => {
@@ -10,7 +10,7 @@ describe('canvas-sdk contract', () => {
 
 	it('manifest contentHash matches vendored .d.ts tree', () => {
 		const m = readCanvasSdkManifest()
-		const dir = canvasSdkTypesDir()
+		const dir = shimCanvasSdkDir()
 		expect(m?.contentHash).toBe(hashCanvasSdkTree(dir))
 	})
 
