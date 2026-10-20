@@ -1,8 +1,6 @@
 ---
 name: open-canvas
-description: >-
-  Export `.canvas.tsx` outside Cursor. Read this file, then `./references/canvas.md`
-  (Cursor canvas workflow), then types as that doc directs.
+description: Read when generating canvas visuals from .canvas.tsx files.
 ---
 
 # open-canvas
