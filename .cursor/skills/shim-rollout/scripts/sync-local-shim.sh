@@ -8,6 +8,8 @@ SHIM_PKG="$OPEN_CANVAS_ROOT/node_modules/@flesler/cursor-canvas-web"
 TARGET="$SHIM_PKG/dist"
 VENDOR_SRC="$SHIM_ROOT/src/vendor"
 VENDOR_DST="$SHIM_PKG/src/vendor"
+SUPERSET_SRC="$SHIM_ROOT/src/superset"
+SUPERSET_DST="$SHIM_PKG/src/superset"
 DRY_RUN=0
 
 usage() {
@@ -60,5 +62,10 @@ if [[ -d "$VENDOR_SRC" ]]; then
 	rm -rf "$VENDOR_DST"
 	cp -a "$VENDOR_SRC" "$VENDOR_DST"
 	echo "synced src/vendor -> $VENDOR_DST"
+fi
+if [[ -d "$SUPERSET_SRC" ]]; then
+	rm -rf "$SUPERSET_DST"
+	cp -a "$SUPERSET_SRC" "$SUPERSET_DST"
+	echo "synced src/superset -> $SUPERSET_DST"
 fi
 echo "synced shim dist -> $TARGET"
