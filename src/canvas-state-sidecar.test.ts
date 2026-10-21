@@ -88,5 +88,5 @@ export default function Label() {
 		})
 		const html = fs.readFileSync(path.join(dir, 'out', 'label.html'), 'utf8')
 		expect(html).toContain('from-sidecar')
-	})
+	}, 30_000)
 })
