@@ -18,6 +18,17 @@ type PhaseRssMb = {
 const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`
 const shimDep = pkg.dependencies['@flesler/cursor-canvas-web']
 
+/** GitHub Pages demo: light export links to dark.html; dark → index (same as `useHostTheme().kind`). */
+function ExportThemeToggleLink() {
+	const { kind } = useHostTheme()
+	const light = kind === 'light'
+	return (
+		<Link href={light ? './dark.html' : './'}>
+			{light ? 'Dark mode' : 'Light mode'}
+		</Link>
+	)
+}
+
 /** Bar/line height in the charts grid; pie `size` matches for visual parity. */
 const SHOWCASE_CHART_HEIGHT = 200
 
@@ -551,6 +562,7 @@ export default function ShowcaseCanvas() {
 			<Row gap={12} align="center">
 				<H1>Cursor Canvas SDK showcase</H1>
 				<Spacer />
+				<ExportThemeToggleLink />
 				<Link href={repoUrl}>open-canvas</Link>
 				<Pill tone="info" active={live}>
 					{live ? 'live' : 'paused'}
