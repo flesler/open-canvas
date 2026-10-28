@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. Dates are d
 #### 2026-10-28
 
 ##### Added
+- `open-canvas vendor-path`: absolute path to shim `src/vendor` (same resolver as verify/generate).
 - `generate --cursor-out <path>`: write `--formats cursor` output outside `out/<stem>.canvas.tsx` (smoke-tested).
 - Showcase sequence diagram section (SVG, host theme tokens).
 
@@ -13,6 +14,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - CLI: `--height` renamed to `--override-height` (Playwright viewport height; default `900` unchanged).
 - Export shell drops `min-height: 100vh`; PDF page height follows content `scrollHeight` without a DOM min-height workaround.
 - PNG/JPG/PDF and README screenshots use document-sized exports (fixed viewport height no longer forced in `example:screenshot`).
+- Skill install writes **SKILL.md** only; agents use `open-canvas vendor-path` (no copied `assets/` / `references/`).
 - Skill bundle documents generate flags (`--width`, `--override-height`, `--cursor-out`, selectors, render options).
 
 ##### Fixed

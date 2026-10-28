@@ -27,10 +27,10 @@ open-canvas generate path/to/report.canvas.tsx
 ### Agent skill
 
 ```bash
-open-canvas skill ~/.cursor/skills/open-canvas
+open-canvas skill ~/.cursor/skills/open-canvas   # SKILL.md only — read after open-canvas is on PATH
 ```
 
-Installs the open-canvas skill, Cursor canvas reference, and SDK types from `@flesler/cursor-canvas-web`.
+The skill points agents at **`open-canvas vendor-path`** → shim `canvas/SKILL.md` + `canvas-sdk/*.d.ts` (same tree as `verify` / `generate`).
 
 ## Author a `.canvas.tsx`
 
@@ -54,7 +54,8 @@ open-canvas verify path/to/report.canvas.tsx
 |---|---|
 |`generate <canvas>`|HTML, PNG, PDF (default) into `./out`|
 |`verify <canvas>`|Typecheck `cursor/canvas` and data imports|
-|`skill [dir]`|Print or install the agent skill bundle|
+|`skill [dir]`|Print or install agent `SKILL.md`|
+|`vendor-path`|Print shim `src/vendor` (canvas reference + SDK types)|
 
 |Flag|Default|
 |---|---|
@@ -69,6 +70,8 @@ open-canvas verify path/to/report.canvas.tsx
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 
 Exports read `.canvas.data.json` when present. `--formats cursor` inlines `./data/*` into one file for the IDE; add `--inline-state` to include saved UI state too.
+
+Theme in canvas code: **`useHostTheme()`** (same in Cursor and export). `generate --theme` / `--brand` only affect how the export shell seeds the host bridge.
 
 ## License
 
