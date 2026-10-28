@@ -20,18 +20,24 @@ function localShimRoot(): string | undefined {
 	return root ? path.resolve(root) : undefined
 }
 
-function shimPackageRoot(): string {
+/** Shim package root (npm install or `CURSOR_CANVAS_WEB_ROOT`). */
+function shimRoot(): string {
 	return localShimRoot() ?? cursorCanvasDir()
+}
+
+/** Cursor `/canvas` reference + SDK `.d.ts` tree (`canvas/`, `canvas-sdk/`). */
+export function shimVendorDir(): string {
+	return path.join(shimRoot(), 'src', 'vendor')
 }
 
 /** Vendored Cursor `/canvas` skill. */
 export function shimCanvasReferencePath(): string {
-	return path.join(shimPackageRoot(), 'src', 'vendor', 'canvas', 'SKILL.md')
+	return path.join(shimVendorDir(), 'canvas', 'SKILL.md')
 }
 
 /** Vendored `cursor/canvas` declarations. */
 export function shimCanvasSdkDir(): string {
-	return path.join(shimPackageRoot(), 'src', 'vendor', 'canvas-sdk')
+	return path.join(shimVendorDir(), 'canvas-sdk')
 }
 
 function typeRootsUpward(start: string): string[] {
@@ -50,7 +56,7 @@ function typeRootsUpward(start: string): string[] {
 
 /** `cursor/canvas` typings: the shim's superset (SDK + `extra` props). */
 export function canvasTypesPath(): string {
-	return path.join(shimPackageRoot(), 'src', 'superset', 'index.d.ts')
+	return path.join(shimRoot(), 'src', 'superset', 'index.d.ts')
 }
 
 /** TypeScript `paths` / `typeRoots` for verify (canvas file may be anywhere). */

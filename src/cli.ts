@@ -1,6 +1,7 @@
 import { Command, Option } from 'commander'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
+import { runVendorPath } from './commands/vendor-path.js'
 import { runVerify } from './commands/verify.js'
 import { cliName, description, version } from './pkg.js'
 import { DEFAULT_FORMAT_LIST, DEFAULT_FORMATS } from './util.js'
@@ -11,9 +12,21 @@ const program = new Command()
 	.version(version, '-v, --version', 'print version')
 
 program
+	.command('vendor-path')
+	.description('Print absolute path to shim src/vendor (canvas/SKILL.md, canvas-sdk/)')
+	.action(() => {
+		try {
+			runVendorPath()
+		} catch (e) {
+			console.error(e instanceof Error ? e.message : e)
+			process.exit(1)
+		}
+	})
+
+program
 	.command('skill')
 	.description('Print or install agent SKILL.md')
-	.argument('[dir]', 'install directory (copies skill-bundle contents)')
+	.argument('[dir]', 'install directory (writes SKILL.md only)')
 	.action((path?: string) => {
 		runSkill(path)
 	})
