@@ -6,23 +6,22 @@ description: Read when generating canvas visuals from .canvas.tsx files.
 # open-canvas
 
 ```bash
-npm install -g @flesler/open-canvas
-open-canvas skill ~/.cursor/skills/open-canvas
+VENDOR=$(open-canvas vendor-path)
+ls "$VENDOR/canvas-sdk"
 ```
 
-**Next:** read **[`./references/canvas.md`](./references/canvas.md)** in full (same as Cursor `/canvas`): when to use a canvas, design, SDK types, intro/troubleshooting.
+Read **`$VENDOR/canvas/SKILL.md`** in full — workflow, design, pre-delivery checks. Read **`$VENDOR/canvas-sdk/index.d.ts`** and sibling **`.d.ts`** files when you need exact exports or prop shapes. Do not duplicate that guidance here.
 
-**open-canvas overrides** (below beat the reference’s **Location** and **File rules** for path, data imports, and verify/generate): use any `.canvas.tsx` path, sibling `./data/*` imports, and the CLI commands in this file. Keep everything else from the reference.
+## Where open-canvas differs from the vendor reference
 
-## CLI (not in canvas reference)
-
-|IDE|open-canvas|
+|Topic|open-canvas|
 |---|---|
-|`…/canvases/*.canvas.tsx`|any path|
-|data inline only|`import` sibling `./data/*` (json, yaml, tsv, csv)|
-|`.canvas.data.json` host state|beside the canvas; `generate` inlines into the bundle; `cursor --inline-state` for one file|
-|IDE typecheck|`open-canvas verify <file>`|
-|IDE preview|`open-canvas generate <file>` → `out/`|
+|Canvas file path|Any `*.canvas.tsx` — not only IDE `…/canvases/`|
+|Data|Sibling `./data/*` imports (json, yaml, tsv, csv); optional `<stem>.canvas.data.json` beside the canvas|
+|Typecheck|`open-canvas verify <file>`|
+|Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
+
+When not in the Cursor IDE, skip **Location**, **Introducing the canvas**, and **Troubleshooting** (managed `canvases/` path) in `$VENDOR/canvas/SKILL.md`.
 
 ```bash
 open-canvas verify path/to/x.canvas.tsx
@@ -36,13 +35,9 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |`--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
 |`--theme`|`light`|
 |`--width`|Playwright viewport width (default `1280`)|
-|`--override-height`|Playwright viewport height in px (default `900`). PNG/JPG use `fullPage`; PDF page height is content `scrollHeight`.|
-|`--cursor-out`|With `--formats cursor`, write the inlined IDE file here instead of `out/<stem>.canvas.tsx`|
-|`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf`|
-|`--selector`|CSS selector(s); export matched nodes only|
+|`--override-height`|Playwright viewport height in px (default `900`)|
+|`--cursor-out`|With `--formats cursor`, write the IDE file here instead of `out/<stem>.canvas.tsx`|
+|`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
+|`--selector`|Export matched nodes only|
 
-**Formats:** `jpg` / `pdf` do not require listing `html` — Vite still builds under `out/_build/` for Playwright; `out/<stem>.html` is kept only when `html` is in `--formats`.
-
-**Shim:** npm install includes `@flesler/cursor-canvas-web`. Do not set `CURSOR_CANVAS_WEB_ROOT` unless developing that package locally (overrides npm with a checkout).
-
-`--formats cursor` → IDE-style single file with data inlined (default path under `--out`, or `--cursor-out`).
+`jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. `--formats cursor` inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
