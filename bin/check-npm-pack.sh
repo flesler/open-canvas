@@ -39,10 +39,6 @@ while IFS= read -r path; do
 			echo "check-npm-pack: forbidden in tarball: $path" >&2
 			fail=1
 			;;
-		src/vendor/skill-bundle/assets/sdk/*)
-			echo "check-npm-pack: forbidden in tarball: $path" >&2
-			fail=1
-			;;
 		tsconfig*.json)
 			echo "check-npm-pack: forbidden in tarball: $path" >&2
 			fail=1

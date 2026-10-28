@@ -58,11 +58,28 @@ stage_external() {
 	cp "$ROOT/package.json" "$dest/package.json"
 }
 
+run_agent_skill_smoke() {
+	local label="$1"
+	shift
+	local -a OC=("$@")
+
+	echo "== smoke ($label): skill + vendor-path (agent docs) =="
+	local skill_dir vendor
+	skill_dir="$(mktemp -d /tmp/open-canvas-smoke-skill-XXXXXX)"
+	"${OC[@]}" skill "$skill_dir" >/dev/null
+	test -f "$skill_dir/SKILL.md"
+	vendor="$("${OC[@]}" vendor-path 2>/dev/null | tr -d '\n')"
+	test -f "$vendor/canvas/SKILL.md"
+	test -f "$vendor/canvas-sdk/index.d.ts"
+	rm -rf "$skill_dir"
+}
+
 run_with_open_canvas() {
 	local label="$1"
 	shift
 	local -a OC=("$@")
 
+	run_agent_skill_smoke "$label" "${OC[@]}"
 	echo "== smoke ($label): verify + generate (canvas in /tmp) =="
 	local external
 	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
