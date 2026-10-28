@@ -89,8 +89,8 @@ export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
 			viteSingleFile(),
 		],
 		define: {
-			__OPEN_CANVAS_THEME__: JSON.stringify(input.theme),
-			__OPEN_CANVAS_BRAND__: JSON.stringify(input.brand),
+			'process.env.OPEN_CANVAS_THEME': JSON.stringify(input.theme),
+			'process.env.OPEN_CANVAS_BRAND': JSON.stringify(input.brand),
 		},
 		resolve: {
 			alias: canvasResolve.alias,

@@ -1,11 +1,11 @@
-declare const __OPEN_CANVAS_THEME__: 'light' | 'dark'
-declare const __OPEN_CANVAS_BRAND__: 'cursor' | 'grok'
-
-/** IDE-style host bridge; open-canvas shell seeds this for `useHostTheme()`. */
+/** Host bridge; the Cursor IDE sets this. Export may set `state.theme.brand` when `--brand grok`. */
 interface Window {
 	__cursorCanvas?: {
 		state?: {
-			theme?: { kind: 'light' | 'dark'; brand: 'cursor' | 'grok' }
+			theme?: {
+				kind?: 'light' | 'dark';
+				brand?: 'cursor' | 'grok'
+			}
 		}
 	}
 }

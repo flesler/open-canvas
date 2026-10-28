@@ -170,8 +170,8 @@ describe('buildExportViteConfig', () => {
 			defaultInput({ theme, brand }),
 		)
 		expect(config.define).toEqual({
-			__OPEN_CANVAS_THEME__: JSON.stringify(theme),
-			__OPEN_CANVAS_BRAND__: JSON.stringify(brand),
+			'process.env.OPEN_CANVAS_THEME': JSON.stringify(theme),
+			'process.env.OPEN_CANVAS_BRAND': JSON.stringify(brand),
 		})
 	})
 
