@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.7.0]
+#### 2026-10-28
+
+##### Added
+- `generate --cursor-out <path>`: write `--formats cursor` output outside `out/<stem>.canvas.tsx` (smoke-tested).
+- Showcase sequence diagram section (SVG, host theme tokens).
+
+##### Changed
+- CLI: `--height` renamed to `--override-height` (Playwright viewport height; default `900` unchanged).
+- Export shell drops `min-height: 100vh`; PDF page height follows content `scrollHeight` without a DOM min-height workaround.
+- PNG/JPG/PDF and README screenshots use document-sized exports (fixed viewport height no longer forced in `example:screenshot`).
+- Skill bundle documents generate flags (`--width`, `--override-height`, `--cursor-out`, selectors, render options).
+
+##### Fixed
+- Sidecar HTML generate integration test timeout under CI load (`30s`).
+
 ## [1.6.0]
 #### 2026-10-20
 
