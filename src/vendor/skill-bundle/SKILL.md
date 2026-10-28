@@ -32,7 +32,17 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |Flag|Default|
 |---|---|
 |`--out`|`./out` next to canvas|
+|`--name`|Output basename without extension (default: canvas stem, else slug of `--title`)|
 |`--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
 |`--theme`|`light`|
+|`--width`|Playwright viewport width (default `1280`)|
+|`--override-height`|Playwright viewport height in px (default `900`). PNG/JPG use `fullPage`; PDF page height is content `scrollHeight`.|
+|`--cursor-out`|With `--formats cursor`, write the inlined IDE file here instead of `out/<stem>.canvas.tsx`|
+|`--render-options`|Optional JSON file; Playwright `launch` / `page` / `screenshot` / `pdf`|
+|`--selector`|CSS selector(s); export matched nodes only|
 
-`--formats cursor` → IDE-style single file with data inlined.
+**Formats:** `jpg` / `pdf` do not require listing `html` — Vite still builds under `out/_build/` for Playwright; `out/<stem>.html` is kept only when `html` is in `--formats`.
+
+**Shim:** npm install includes `@flesler/cursor-canvas-web`. Do not set `CURSOR_CANVAS_WEB_ROOT` unless developing that package locally (overrides npm with a checkout).
+
+`--formats cursor` → IDE-style single file with data inlined (default path under `--out`, or `--cursor-out`).

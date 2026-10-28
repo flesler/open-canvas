@@ -64,7 +64,6 @@ node dist/cli.js generate example/showcase.canvas.tsx \
 	--formats jpg \
 	--theme light \
 	--width 1280 \
-	--height 900 \
 	--selector '#section-charts'
 cp example/out/showcase.jpg "$FULL"
 magick "$FULL" -crop "$CROP_GEOM" +repage -quality 88 "$CROP"

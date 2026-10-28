@@ -45,12 +45,15 @@ program
 			.argParser(v => v.split(',').map(s => s.trim()))
 			.default(DEFAULT_FORMAT_LIST, DEFAULT_FORMATS),
 	)
-	.option('--width <px>', 'Playwright viewport width', Number, 1280)
+	.option('--width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
 	.option(
-		'--height <px>',
-		'Playwright viewport height (PDF uses content height; PNG/JPG use fullPage)',
-		Number,
-		900,
+		'--override-height <px>',
+		'Playwright viewport height in px (default 900)',
+		(v: string) => Number(v),
+	)
+	.option(
+		'--cursor-out <path>',
+		'with --formats cursor: write the IDE-ready .canvas.tsx here instead of out/<stem>.canvas.tsx',
 	)
 	.option(
 		'--render-options <file|json>',
@@ -77,10 +80,11 @@ program
 				brand: opts.brand as 'cursor' | 'grok',
 				formats: opts.formats,
 				viewportWidth: opts.width,
-				viewportHeight: opts.height,
+				viewportHeight: opts.overrideHeight,
 				renderOptions: opts.renderOptions,
 				selectors: opts.selector,
 				inlineState: Boolean(opts.inlineState),
+				cursorOut: opts.cursorOut,
 			})
 		} catch (e) {
 			console.error(e instanceof Error ? e.message : e)

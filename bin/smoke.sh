@@ -70,6 +70,10 @@ run_with_open_canvas() {
 	"${OC[@]}" verify "$external/run/$SHOWCASE"
 	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats html --theme light
 	test -f "$external/run/out/showcase.html"
+	local cursor_dest="$external/cursor-dest/showcase.canvas.tsx"
+	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor --cursor-out "$cursor_dest"
+	test -f "$cursor_dest"
+	test ! -f "$external/run/out/showcase.canvas.tsx"
 	rm -rf "$external"
 }
 

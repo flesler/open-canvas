@@ -17,7 +17,7 @@ if (typeof window !== 'undefined') {
 
 mountCanvas(
 	'root',
-	<Box component="main" p={24} pb={32} mih="100vh">
+	<Box component="main" p={24} pb={32}>
 		<Canvas />
 	</Box>,
 	{ defaultColorScheme: theme },

@@ -62,7 +62,9 @@ open-canvas verify path/to/report.canvas.tsx
 |`--theme`|`light` or `dark`|
 |`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
 |`--name`|Output basename (default: canvas stem)|
-|`--width` / `--height`|Viewport (`1280`×`900`); exports use full page height|
+|`--width`|Playwright viewport width (default `1280`)|
+|`--override-height`|Playwright viewport height in px (default `900`)|
+|`--cursor-out`|With `--formats cursor`: write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--selector`|Export only matched sections|
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 

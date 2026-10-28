@@ -25,7 +25,9 @@ export type GenerateOptions = {
 	renderOptions?: string;
 	selectors?: string | string[];
 	/** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
-	inlineState?: boolean
+	inlineState?: boolean;
+	/** With `--formats cursor`, write here instead of `out/<stem>.canvas.tsx`. */
+	cursorOut?: string
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
@@ -76,7 +78,10 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 	const renderCtx = { outDir, stem, options, selectors }
 
 	if (formats.includes('cursor')) {
-		const cursorOut = path.join(outDir, `${stem}.canvas.tsx`)
+		const cursorOut = opts.cursorOut
+			? path.resolve(opts.cursorOut)
+			: path.join(outDir, `${stem}.canvas.tsx`)
+		fs.mkdirSync(path.dirname(cursorOut), { recursive: true })
 		emitCursorCanvas(canvasPath, cursorOut, {
 			inlineState: opts.inlineState,
 		})
