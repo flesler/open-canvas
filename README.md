@@ -71,7 +71,7 @@ open-canvas verify path/to/report.canvas.tsx
 
 Exports read `.canvas.data.json` when present. `--formats cursor` inlines `./data/*` into one file for the IDE; add `--inline-state` to include saved UI state too.
 
-Theme in canvas code: **`useHostTheme()`** (same in Cursor and export). `generate --theme` / `--brand` only affect how the export shell seeds the host bridge.
+Theme in canvas code: **`useHostTheme()`** — same hook and return value in Cursor and in export. Use **`generate --theme`** / **`--brand`** when you need a fixed light/dark or Cursor/Grok look in png/html/pdf.
 
 ## License
 
