@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.8.0]
+#### 2026-10-29
+
+##### Added
+- `open-canvas vendor-path` and slim agent skill (read shim vendor via CLI; no copied SDK tree).
+- Showcase GitHub Pages header: same-tab light/dark toggle (`./` / `./dark.html`); repo link stays SDK `Link`.
+
+##### Changed
+- Export shell seeds host `kind` + `brand` via Vite `__THEME__` / `__BRAND__` for `useHostTheme()` parity with Cursor.
+- `@flesler/cursor-canvas-web@^1.2.1`; README theme note; skill `--brand` flag.
+- Refreshed `docs/showcase-*.png`.
+
 ## [1.7.0]
 #### 2026-10-28
 
