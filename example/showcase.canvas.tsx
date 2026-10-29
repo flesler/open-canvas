@@ -3,7 +3,7 @@
  *
  * Single example for verify, smoke, contract, and the README screenshot.
  */
-import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, IconButton, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, canvasPaletteGrokDark, canvasPaletteGrokLight, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TableRowTone, type TodoItem } from 'cursor/canvas'
+import { BarChart, Button, Callout, Card, CardBody, CardHeader, Checkbox, Code, CollapsibleSection, DiffStats, DiffView, Divider, Grid, H1, H2, H3, LineChart, Link, PieChart, Pill, Row, Select, Spacer, Stack, Stat, Swatch, Table, Text, TextArea, TextInput, TodoList, TodoListCard, Toggle, UsageBar, canvasPaletteGrokDark, canvasPaletteGrokLight, computeDAGLayout, mergeStyle, usageColorSequence, useCanvasAction, useCanvasState, useEffect, useHostTheme, useMemo, useRef, useState, type ChartSeries, type Color, type DiffLineData, type StackProps, type TableRowTone, type TodoItem } from 'cursor/canvas'
 import pkg from '../package.json'
 import daily from './data/daily.tsv'
 import deployEvents from './data/deploy-events.jsonl'
@@ -18,14 +18,18 @@ type PhaseRssMb = {
 const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`
 const shimDep = pkg.dependencies['@flesler/cursor-canvas-web']
 
-/** GitHub Pages demo: light export links to dark.html; dark → index (same as `useHostTheme().kind`). */
+/** GitHub Pages: dark export → `./`; light (or anything else) → `./dark.html`. */
 function ExportThemeToggleLink() {
-	const { kind } = useHostTheme()
-	const light = kind === 'light'
+	const { kind, text } = useHostTheme()
+	const dark = kind === 'dark'
 	return (
-		<Link href={light ? './dark.html' : './'}>
-			{light ? 'Dark mode' : 'Light mode'}
-		</Link>
+		<a
+			href={dark ? './' : './dark.html'}
+			target="_self"
+			style={{ color: text.link }}
+		>
+			{dark ? 'Light mode' : 'Dark mode'}
+		</a>
 	)
 }
 
@@ -564,20 +568,6 @@ export default function ShowcaseCanvas() {
 				<Spacer />
 				<ExportThemeToggleLink />
 				<Link href={repoUrl}>open-canvas</Link>
-				<Pill tone="info" active={live}>
-					{live ? 'live' : 'paused'}
-				</Pill>
-				<IconButton
-					title="Ask about this canvas in chat"
-					onClick={() =>
-						dispatch({
-							type: 'newComposerChat',
-							userPrompt: 'Explain this canvas',
-						})
-					}
-				>
-					?
-				</IconButton>
 			</Row>
 
 			<Text tone="secondary">
