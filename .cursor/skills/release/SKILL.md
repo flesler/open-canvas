@@ -9,7 +9,7 @@ Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 
 |Who|Does|
 |---|---|
-|**Agent**|Product commits, `npm run ci:local`, version bump commit, annotated tag, `git push origin main vX.Y.Z` (one push for branch + tag).|
+|**Agent**|Product commits, `npm run ci:local`, version bump commit, annotated tag, GitHub release, `git push origin main vX.Y.Z` (one push for branch + tag).|
 |**User**|`npm publish` only (npm 2FA). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`.|
 
 - **Never** `npm publish` in the agent — user publishes to npm only.
@@ -54,7 +54,7 @@ node -p "require('./package.json').version"
 
 Ship when `ci:local` is green, changelog matches the diff since the **previous git tag**, and the tree is clean except the version-only commit you are about to make.
 
-## Tag and push (agent)
+## Tag, GitHub release, and push (agent)
 
 NEVER run bare `git tag` (opens an editor). Pass name and message on the CLI:
 
@@ -66,13 +66,14 @@ git push origin main "v${VERSION}"
 
 One push for branch + tag (avoids running pre-push twice).
 
-Optional GitHub release (only if the user asks):
+Then create the GitHub release for that tag (tags alone are not enough):
 
 ```bash
-gh release create "v${VERSION}" --notes-file CHANGELOG.md --title "v${VERSION}"
+# Write /tmp/open-canvas-release-notes/v${VERSION}.md = that version’s CHANGELOG section only
+gh release create "v${VERSION}" --title "v${VERSION}" --notes-file "/tmp/open-canvas-release-notes/v${VERSION}.md"
 ```
 
-Trim notes to that version’s section if the file lists multiple releases.
+Use `--latest` on the newest semver when backfilling older tags without bumping “Latest”. Trim notes to one `## [X.Y.Z]` section if the file lists multiple releases.
 
 ## Publish (user only)
 
@@ -90,7 +91,8 @@ After publish, user may confirm: `npm view @flesler/open-canvas version`.
 2. `npm run ci:local` green.
 3. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`.
 4. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`.
-5. Tell the user to `npm publish --access public --tag latest` when git is on the tag they expect.
+5. `gh release create vX.Y.Z` with notes from that version’s CHANGELOG section.
+6. Tell the user to `npm publish --access public --tag latest` when git is on the tag they expect.
 
 ## Checklist (user)
 
