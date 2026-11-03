@@ -4,7 +4,14 @@ import path from 'node:path'
 import type { IndexHtmlTransformContext, Plugin, TransformResult, UserConfig } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
-import { buildExportViteConfig, canvasStateSeedPlugin, dataImportsPlugin, escapeHtmlForExportTitle, htmlTitlePlugin, type ExportViteBuildInput } from './export-vite-config.js'
+import { buildExportViteConfig, forTests, type ExportViteBuildInput } from './export-vite-config.js'
+
+const {
+  canvasStateSeedPlugin,
+  dataImportsPlugin,
+  escapeHtmlForExportTitle,
+  htmlTitlePlugin,
+} = forTests
 import { pathInPkg } from './paths.js'
 
 const SHOWCASE = pathInPkg('example', 'showcase.canvas.tsx')

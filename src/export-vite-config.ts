@@ -18,60 +18,6 @@ export type ExportViteBuildInput = {
   basePath?: string
 }
 
-/** HTML-escape for `<title>` in the export shell. */
-export function escapeHtmlForExportTitle(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
-}
-
-export function htmlTitlePlugin(title: string): Plugin {
-  return {
-    name: 'html-title',
-    transformIndexHtml(html) {
-      return html.replace(
-        '<title>Canvas</title>',
-        `<title>${escapeHtmlForExportTitle(title)}</title>`,
-      )
-    },
-  }
-}
-
-export function dataImportsPlugin(): Plugin {
-  return {
-    name: 'canvas-data-imports',
-    transform(src, id) {
-      const mod = viteDataModule(id, src)
-      if (!mod) {
-        return
-      }
-      return { ...mod, map: null }
-    },
-  }
-}
-
-export function canvasStateSeedPlugin(
-  canvasPath: string,
-  state: CanvasStateSidecar,
-): Plugin {
-  const preamble = canvasStateSeedPreamble(state)
-  const absCanvas = path.resolve(canvasPath)
-  /** Vite ids are real paths, e.g. `/private/var/…` for a `/var/…` (macOS tmp) canvas. */
-  const canvasIds = new Set([absCanvas, fs.existsSync(absCanvas) ? fs.realpathSync(absCanvas) : absCanvas])
-  return {
-    name: 'canvas-state-seed',
-    enforce: 'pre',
-    transform(src, id) {
-      if (!preamble) {
-        return
-      }
-      const file = id.split('?')[0] ?? id
-      if (!canvasIds.has(path.resolve(file))) {
-        return
-      }
-      return { code: preamble + src, map: null }
-    },
-  }
-}
-
 /** Vite config for bundling `src/shell` + the user canvas (html/png/pdf/jpg export). */
 export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
   const shellDir = pathInPkg('src', 'shell')
@@ -113,6 +59,66 @@ export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
           preset: 'smallest',
         },
       },
+    },
+  }
+}
+
+export const forTests = {
+  escapeHtmlForExportTitle,
+  htmlTitlePlugin,
+  dataImportsPlugin,
+  canvasStateSeedPlugin,
+}
+
+function escapeHtmlForExportTitle(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+}
+
+function htmlTitlePlugin(title: string): Plugin {
+  return {
+    name: 'html-title',
+    transformIndexHtml(html) {
+      return html.replace(
+        '<title>Canvas</title>',
+        `<title>${escapeHtmlForExportTitle(title)}</title>`,
+      )
+    },
+  }
+}
+
+function dataImportsPlugin(): Plugin {
+  return {
+    name: 'canvas-data-imports',
+    transform(src, id) {
+      const mod = viteDataModule(id, src)
+      if (!mod) {
+        return
+      }
+      return { ...mod, map: null }
+    },
+  }
+}
+
+function canvasStateSeedPlugin(
+  canvasPath: string,
+  state: CanvasStateSidecar,
+): Plugin {
+  const preamble = canvasStateSeedPreamble(state)
+  const absCanvas = path.resolve(canvasPath)
+  /** Vite ids are real paths, e.g. `/private/var/…` for a `/var/…` (macOS tmp) canvas. */
+  const canvasIds = new Set([absCanvas, fs.existsSync(absCanvas) ? fs.realpathSync(absCanvas) : absCanvas])
+  return {
+    name: 'canvas-state-seed',
+    enforce: 'pre',
+    transform(src, id) {
+      if (!preamble) {
+        return
+      }
+      const file = id.split('?')[0] ?? id
+      if (!canvasIds.has(path.resolve(file))) {
+        return
+      }
+      return { code: preamble + src, map: null }
     },
   }
 }

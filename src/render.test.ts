@@ -1,6 +1,8 @@
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { isolateSelectors } from './render.js'
+import { forTests } from './render.js'
+
+const { isolateSelectors } = forTests
 
 describe('isolateSelectors', () => {
   let browser: Awaited<ReturnType<typeof chromium.launch>>

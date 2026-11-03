@@ -149,7 +149,7 @@ function htmlPath(ctx: RenderContext): string {
   return path.join(ctx.outDir, '_build', 'index.html')
 }
 
-export async function isolateSelectors(
+async function isolateSelectors(
   page: Page,
   selectors: string[],
 ): Promise<void> {
@@ -197,4 +197,8 @@ export async function isolateSelectors(
   if (!found) {
     throw new Error(`selector not matched: ${selectors.join(', ')}`)
   }
+}
+
+export const forTests = {
+  isolateSelectors,
 }

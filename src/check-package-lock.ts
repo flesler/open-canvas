@@ -49,8 +49,8 @@ export function checkPackageLock(root: string = pkgRoot): void {
   const rootDep = lockRoot.dependencies?.[SHIM_PKG]
   if (
     !rootDep ||
-		(rootDep.startsWith('file:') && rootDep !== ALLOWED_FILE_SHIM) ||
-		rootDep.includes('/tmp/')
+    (rootDep.startsWith('file:') && rootDep !== ALLOWED_FILE_SHIM) ||
+    rootDep.includes('/tmp/')
   ) {
     fail(
       `lockfile root dependency must be a registry range, not: ${rootDep ?? '(missing)'}`,
