@@ -809,7 +809,7 @@ export default function ShowcaseCanvas() {
 									'ship',
 								]}
 								series={[
-									{ name: 'Depth', data: [40, 85, 170, 255], tone: 'warning' },
+									{ name: 'Depth', data: [40, 85, 170, 255] },
 								]}
 								height={200}
 								horizontal
