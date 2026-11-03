@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.10.0]
+#### 2026-11-03
+
+##### Added
+- Export bundle shrink: resolve shim from `src/shim` when present, Rollup `treeshake.preset: smallest`, optional PostCSS-validated CSS purge on inline export HTML (`OPEN_CANVAS_PURGE_CSS=0` to disable).
+- `npm run check:lock` in CI (registry integrity for `@flesler/cursor-canvas-web`).
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.5.0` (split tree-shakeable shim modules).
+- ESLint formatting aligned with typescript-starter (2-space indent).
+- README links to [cursor-canvas-web](https://github.com/flesler/cursor-canvas-web) near the top.
+
 ## [1.9.0]
 #### 2026-11-03
 
