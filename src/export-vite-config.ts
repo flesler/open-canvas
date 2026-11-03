@@ -9,110 +9,110 @@ import { pathInPkg, viteResolveForCanvas } from './paths.js'
 import { viteDataModule } from './util.js'
 
 export type ExportViteBuildInput = {
-	canvasPath: string;
-	outDir: string;
-	theme: 'light' | 'dark';
-	brand: 'cursor' | 'grok';
-	title: string;
-	canvasState: CanvasStateSidecar;
-	basePath?: string
+  canvasPath: string;
+  outDir: string;
+  theme: 'light' | 'dark';
+  brand: 'cursor' | 'grok';
+  title: string;
+  canvasState: CanvasStateSidecar;
+  basePath?: string
 }
 
 /** HTML-escape for `<title>` in the export shell. */
 export function escapeHtmlForExportTitle(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
 }
 
 export function htmlTitlePlugin(title: string): Plugin {
-	return {
-		name: 'html-title',
-		transformIndexHtml(html) {
-			return html.replace(
-				'<title>Canvas</title>',
-				`<title>${escapeHtmlForExportTitle(title)}</title>`,
-			)
-		},
-	}
+  return {
+    name: 'html-title',
+    transformIndexHtml(html) {
+      return html.replace(
+        '<title>Canvas</title>',
+        `<title>${escapeHtmlForExportTitle(title)}</title>`,
+      )
+    },
+  }
 }
 
 export function dataImportsPlugin(): Plugin {
-	return {
-		name: 'canvas-data-imports',
-		transform(src, id) {
-			const mod = viteDataModule(id, src)
-			if (!mod) {
-				return
-			}
-			return { ...mod, map: null }
-		},
-	}
+  return {
+    name: 'canvas-data-imports',
+    transform(src, id) {
+      const mod = viteDataModule(id, src)
+      if (!mod) {
+        return
+      }
+      return { ...mod, map: null }
+    },
+  }
 }
 
 export function canvasStateSeedPlugin(
-	canvasPath: string,
-	state: CanvasStateSidecar,
+  canvasPath: string,
+  state: CanvasStateSidecar,
 ): Plugin {
-	const preamble = canvasStateSeedPreamble(state)
-	const absCanvas = path.resolve(canvasPath)
-	/** Vite ids are real paths, e.g. `/private/var/…` for a `/var/…` (macOS tmp) canvas. */
-	const canvasIds = new Set([absCanvas, fs.existsSync(absCanvas) ? fs.realpathSync(absCanvas) : absCanvas])
-	return {
-		name: 'canvas-state-seed',
-		enforce: 'pre',
-		transform(src, id) {
-			if (!preamble) {
-				return
-			}
-			const file = id.split('?')[0] ?? id
-			if (!canvasIds.has(path.resolve(file))) {
-				return
-			}
-			return { code: preamble + src, map: null }
-		},
-	}
+  const preamble = canvasStateSeedPreamble(state)
+  const absCanvas = path.resolve(canvasPath)
+  /** Vite ids are real paths, e.g. `/private/var/…` for a `/var/…` (macOS tmp) canvas. */
+  const canvasIds = new Set([absCanvas, fs.existsSync(absCanvas) ? fs.realpathSync(absCanvas) : absCanvas])
+  return {
+    name: 'canvas-state-seed',
+    enforce: 'pre',
+    transform(src, id) {
+      if (!preamble) {
+        return
+      }
+      const file = id.split('?')[0] ?? id
+      if (!canvasIds.has(path.resolve(file))) {
+        return
+      }
+      return { code: preamble + src, map: null }
+    },
+  }
 }
 
 /** Vite config for bundling `src/shell` + the user canvas (html/png/pdf/jpg export). */
 export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
-	const shellDir = pathInPkg('src', 'shell')
-	const absCanvas = path.resolve(input.canvasPath)
-	const viteBuildDir = path.join(input.outDir, '_build')
-	const canvasResolve = viteResolveForCanvas(absCanvas)
+  const shellDir = pathInPkg('src', 'shell')
+  const absCanvas = path.resolve(input.canvasPath)
+  const viteBuildDir = path.join(input.outDir, '_build')
+  const canvasResolve = viteResolveForCanvas(absCanvas)
 
-	return {
-		base: input.basePath ?? './',
-		plugins: [
-			canvasStateSeedPlugin(absCanvas, input.canvasState),
-			react(),
-			dataImportsPlugin(),
-			htmlTitlePlugin(input.title),
-			viteSingleFile(),
-		],
-		define: {
-			__THEME__: JSON.stringify(input.theme),
-			__BRAND__: JSON.stringify(input.brand),
-		},
-		resolve: {
-			alias: canvasResolve.alias,
-			modules: canvasResolve.modules,
-		} as UserConfig['resolve'],
-		server: {
-			fs: {
-				allow: canvasResolve.fsAllow,
-			},
-		},
-		root: shellDir,
-		build: {
-			outDir: viteBuildDir,
-			emptyOutDir: true,
-			assetsInlineLimit: 100_000_000,
-			reportCompressedSize: false,
-			target: 'es2022',
-			rollupOptions: {
-				treeshake: {
-					preset: 'smallest',
-				},
-			},
-		},
-	}
+  return {
+    base: input.basePath ?? './',
+    plugins: [
+      canvasStateSeedPlugin(absCanvas, input.canvasState),
+      react(),
+      dataImportsPlugin(),
+      htmlTitlePlugin(input.title),
+      viteSingleFile(),
+    ],
+    define: {
+      __THEME__: JSON.stringify(input.theme),
+      __BRAND__: JSON.stringify(input.brand),
+    },
+    resolve: {
+      alias: canvasResolve.alias,
+      modules: canvasResolve.modules,
+    } as UserConfig['resolve'],
+    server: {
+      fs: {
+        allow: canvasResolve.fsAllow,
+      },
+    },
+    root: shellDir,
+    build: {
+      outDir: viteBuildDir,
+      emptyOutDir: true,
+      assetsInlineLimit: 100_000_000,
+      reportCompressedSize: false,
+      target: 'es2022',
+      rollupOptions: {
+        treeshake: {
+          preset: 'smallest',
+        },
+      },
+    },
+  }
 }

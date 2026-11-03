@@ -9,156 +9,156 @@ import { render } from '../render.js'
 import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
 
 function generateDebug(): boolean {
-	const v = process.env.OPEN_CANVAS_DEBUG
-	return v === '1' || v === 'true'
+  const v = process.env.OPEN_CANVAS_DEBUG
+  return v === '1' || v === 'true'
 }
 
 export type GenerateOptions = {
-	canvas: string;
-	out?: string;
-	name?: string;
-	title?: string;
-	theme?: 'light' | 'dark';
-	brand?: 'cursor' | 'grok';
-	formats?: string[];
-	viewportWidth?: number;
-	viewportHeight?: number;
-	renderOptions?: string;
-	selectors?: string | string[];
-	/** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
-	inlineState?: boolean;
-	/** With `--formats cursor`, write here instead of `out/<stem>.canvas.tsx`. */
-	cursorOut?: string
+  canvas: string;
+  out?: string;
+  name?: string;
+  title?: string;
+  theme?: 'light' | 'dark';
+  brand?: 'cursor' | 'grok';
+  formats?: string[];
+  viewportWidth?: number;
+  viewportHeight?: number;
+  renderOptions?: string;
+  selectors?: string | string[];
+  /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
+  inlineState?: boolean;
+  /** With `--formats cursor`, write here instead of `out/<stem>.canvas.tsx`. */
+  cursorOut?: string
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
-	const canvasPath = path.resolve(opts.canvas)
-	if (!fs.existsSync(canvasPath)) {
-		throw new Error(`canvas not found: ${canvasPath}`)
-	}
+  const canvasPath = path.resolve(opts.canvas)
+  if (!fs.existsSync(canvasPath)) {
+    throw new Error(`canvas not found: ${canvasPath}`)
+  }
 
-	const canvasDir = path.dirname(canvasPath)
-	const fileStem = canvasStem(canvasPath)
-	const title = opts.title ?? titleCaseFromStem(fileStem)
-	const outDir = path.resolve(canvasDir, opts.out ?? 'out')
-	const stem = outputSlug({
-		name: opts.name,
-		canvasStem: fileStem,
-		title,
-	})
-	const theme = opts.theme ?? 'light'
-	if (theme !== 'light' && theme !== 'dark') {
-		throw new Error(`--theme must be light or dark (got ${theme})`)
-	}
-	const brand = opts.brand ?? 'cursor'
-	if (brand !== 'cursor' && brand !== 'grok') {
-		throw new Error(`--brand must be cursor or grok (got ${brand})`)
-	}
+  const canvasDir = path.dirname(canvasPath)
+  const fileStem = canvasStem(canvasPath)
+  const title = opts.title ?? titleCaseFromStem(fileStem)
+  const outDir = path.resolve(canvasDir, opts.out ?? 'out')
+  const stem = outputSlug({
+    name: opts.name,
+    canvasStem: fileStem,
+    title,
+  })
+  const theme = opts.theme ?? 'light'
+  if (theme !== 'light' && theme !== 'dark') {
+    throw new Error(`--theme must be light or dark (got ${theme})`)
+  }
+  const brand = opts.brand ?? 'cursor'
+  if (brand !== 'cursor' && brand !== 'grok') {
+    throw new Error(`--brand must be cursor or grok (got ${brand})`)
+  }
 
-	const formats = parseFormats(opts.formats ?? DEFAULT_FORMAT_LIST)
-	const needsHtml = formats.some(
-		f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg',
-	)
-	const needsRender = formats.some(
-		f => f === 'png' || f === 'pdf' || f === 'jpg',
-	)
-	const selectors = parseSelectors(opts.selectors)
-	const needsBrowser =
-		needsRender || (Boolean(selectors) && formats.includes('html'))
+  const formats = parseFormats(opts.formats ?? DEFAULT_FORMAT_LIST)
+  const needsHtml = formats.some(
+    f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg',
+  )
+  const needsRender = formats.some(
+    f => f === 'png' || f === 'pdf' || f === 'jpg',
+  )
+  const selectors = parseSelectors(opts.selectors)
+  const needsBrowser =
+    needsRender || (Boolean(selectors) && formats.includes('html'))
 
-	fs.mkdirSync(outDir, { recursive: true })
+  fs.mkdirSync(outDir, { recursive: true })
 
-	const canvasStateForBuild = readCanvasStateSidecar(canvasPath) ?? {}
+  const canvasStateForBuild = readCanvasStateSidecar(canvasPath) ?? {}
 
-	const options = resolveRenderOptions({
-		theme,
-		viewportWidth: opts.viewportWidth,
-		viewportHeight: opts.viewportHeight,
-		renderOptions: opts.renderOptions,
-	})
-	const renderCtx = { outDir, stem, options, selectors }
+  const options = resolveRenderOptions({
+    theme,
+    viewportWidth: opts.viewportWidth,
+    viewportHeight: opts.viewportHeight,
+    renderOptions: opts.renderOptions,
+  })
+  const renderCtx = { outDir, stem, options, selectors }
 
-	if (formats.includes('cursor')) {
-		const cursorOut = opts.cursorOut
-			? path.resolve(opts.cursorOut)
-			: path.join(outDir, `${stem}.canvas.tsx`)
-		fs.mkdirSync(path.dirname(cursorOut), { recursive: true })
-		emitCursorCanvas(canvasPath, cursorOut, {
-			inlineState: opts.inlineState,
-		})
-		console.log(`→ ${cursorOut}`)
-	}
+  if (formats.includes('cursor')) {
+    const cursorOut = opts.cursorOut
+      ? path.resolve(opts.cursorOut)
+      : path.join(outDir, `${stem}.canvas.tsx`)
+    fs.mkdirSync(path.dirname(cursorOut), { recursive: true })
+    emitCursorCanvas(canvasPath, cursorOut, {
+      inlineState: opts.inlineState,
+    })
+    console.log(`→ ${cursorOut}`)
+  }
 
-	const viteBuildDir = path.join(outDir, '_build')
-	const stagedHtml = path.join(viteBuildDir, 'index.html')
-	const deliveredHtml = path.join(outDir, `${stem}.html`)
-	let viteFailed = false
+  const viteBuildDir = path.join(outDir, '_build')
+  const stagedHtml = path.join(viteBuildDir, 'index.html')
+  const deliveredHtml = path.join(outDir, `${stem}.html`)
+  let viteFailed = false
 
-	try {
-		if (needsHtml) {
-			const debug = generateDebug()
-			try {
-				await build({
-					...buildExportViteConfig({
-						canvasPath,
-						outDir,
-						theme,
-						brand,
-						title,
-						canvasState: canvasStateForBuild,
-						basePath: process.env.BASE_PATH,
-					}),
-					logLevel: debug ? 'info' : 'silent',
-				})
-			} catch (e) {
-				viteFailed = true
-				if (debug) {
-					console.error(e)
-				}
-			}
-			if (!viteFailed && exportCssPurgeEnabled() && fs.existsSync(stagedHtml)) {
-				const { before, after } = await purgeExportHtmlStyles(stagedHtml)
-				if (debug && before !== after) {
-					console.error(
-						`export CSS purge: ${before} → ${after} chars (−${before - after})`,
-					)
-				}
-			}
-		}
+  try {
+    if (needsHtml) {
+      const debug = generateDebug()
+      try {
+        await build({
+          ...buildExportViteConfig({
+            canvasPath,
+            outDir,
+            theme,
+            brand,
+            title,
+            canvasState: canvasStateForBuild,
+            basePath: process.env.BASE_PATH,
+          }),
+          logLevel: debug ? 'info' : 'silent',
+        })
+      } catch (e) {
+        viteFailed = true
+        if (debug) {
+          console.error(e)
+        }
+      }
+      if (!viteFailed && exportCssPurgeEnabled() && fs.existsSync(stagedHtml)) {
+        const { before, after } = await purgeExportHtmlStyles(stagedHtml)
+        if (debug && before !== after) {
+          console.error(
+            `export CSS purge: ${before} → ${after} chars (−${before - after})`,
+          )
+        }
+      }
+    }
 
-		if (!viteFailed) {
-			if (needsBrowser) {
-				await render(renderCtx, {
-					png: formats.includes('png'),
-					pdf: formats.includes('pdf'),
-					jpg: formats.includes('jpg'),
-					html: Boolean(selectors) && formats.includes('html'),
-				})
-			}
-			if (formats.includes('html') && !selectors && fs.existsSync(stagedHtml)) {
-				fs.renameSync(stagedHtml, deliveredHtml)
-			}
-		}
-	} finally {
-		fs.rmSync(viteBuildDir, { recursive: true, force: true })
-	}
+    if (!viteFailed) {
+      if (needsBrowser) {
+        await render(renderCtx, {
+          png: formats.includes('png'),
+          pdf: formats.includes('pdf'),
+          jpg: formats.includes('jpg'),
+          html: Boolean(selectors) && formats.includes('html'),
+        })
+      }
+      if (formats.includes('html') && !selectors && fs.existsSync(stagedHtml)) {
+        fs.renameSync(stagedHtml, deliveredHtml)
+      }
+    }
+  } finally {
+    fs.rmSync(viteBuildDir, { recursive: true, force: true })
+  }
 
-	if (viteFailed) {
-		process.exit(1)
-	}
+  if (viteFailed) {
+    process.exit(1)
+  }
 
-	for (const f of formats) {
-		if (f === 'html') {
-			console.log(`→ ${path.join(outDir, `${stem}.html`)}`)
-		}
-		if (f === 'png') {
-			console.log(`→ ${path.join(outDir, `${stem}.png`)}`)
-		}
-		if (f === 'pdf') {
-			console.log(`→ ${path.join(outDir, `${stem}.pdf`)}`)
-		}
-		if (f === 'jpg') {
-			console.log(`→ ${path.join(outDir, `${stem}.jpg`)}`)
-		}
-	}
+  for (const f of formats) {
+    if (f === 'html') {
+      console.log(`→ ${path.join(outDir, `${stem}.html`)}`)
+    }
+    if (f === 'png') {
+      console.log(`→ ${path.join(outDir, `${stem}.png`)}`)
+    }
+    if (f === 'pdf') {
+      console.log(`→ ${path.join(outDir, `${stem}.pdf`)}`)
+    }
+    if (f === 'jpg') {
+      console.log(`→ ${path.join(outDir, `${stem}.jpg`)}`)
+    }
+  }
 }
