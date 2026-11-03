@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.8.1]
+#### 2026-11-03
+
+##### Fixed
+- PNG and JPG exports size to the canvas (`main`) instead of the Playwright viewport height.
+
+##### Changed
+- `--override-height` help text notes PNG/JPG resize to the canvas after the viewport pass.
+
 ## [1.8.0]
 #### 2026-10-29
 
