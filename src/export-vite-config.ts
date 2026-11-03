@@ -107,6 +107,12 @@ export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
 			emptyOutDir: true,
 			assetsInlineLimit: 100_000_000,
 			reportCompressedSize: false,
+			target: 'es2022',
+			rollupOptions: {
+				treeshake: {
+					preset: 'smallest',
+				},
+			},
 		},
 	}
 }

@@ -209,6 +209,12 @@ describe('buildExportViteConfig', () => {
 		expect(names).toContain('vite:singlefile')
 	})
 
+	it('uses aggressive Rollup treeshake for export bundles', () => {
+		const config = buildExportViteConfig(defaultInput())
+		const treeshake = config.build?.rollupOptions?.treeshake
+		expect(treeshake).toMatchObject({ preset: 'smallest' })
+	})
+
 	it('wires html-title from input title', () => {
 		const config = buildExportViteConfig(
 			defaultInput({ title: 'Quarterly KPIs' }),

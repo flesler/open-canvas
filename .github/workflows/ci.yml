@@ -14,7 +14,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: bash bin/check-package-lock.sh
+      - run: npm run check:lock
       - run: npm ci
       - run: npx playwright install chromium
       - run: npm run build:cli

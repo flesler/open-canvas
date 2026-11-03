@@ -1,5 +1,4 @@
 import { mountCanvas } from '@flesler/cursor-canvas-web/runtime'
-import '@mantine/charts/styles.css'
 import { Box } from '@mantine/core'
 import '@mantine/core/styles.css'
 import Canvas from '@open-canvas/user-canvas'

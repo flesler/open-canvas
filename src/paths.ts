@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import fs from 'node:fs'
 import path from 'node:path'
 import { pkgRoot } from './pkg.js'
 
@@ -78,13 +79,21 @@ export function verifyTypeScriptPaths(_canvasPath: string): {
 }
 
 /** Runtime entries for `cursor/canvas` and the shim host runtime. */
+function shimSourceEntry(root: string): string {
+	return path.join(root, 'src', 'shim', 'cursor-canvas.tsx')
+}
+
+function shimUsesSource(root: string): boolean {
+	return fs.existsSync(shimSourceEntry(root))
+}
+
 function shimModulePaths(): { canvas: string; runtime: string; root: string } {
-	const local = localShimRoot()
-	if (local) {
+	const root = shimRoot()
+	if (shimUsesSource(root)) {
 		return {
-			canvas: path.join(local, 'src', 'shim', 'cursor-canvas.tsx'),
-			runtime: path.join(local, 'src', 'runtime', 'index.tsx'),
-			root: local,
+			canvas: shimSourceEntry(root),
+			runtime: path.join(root, 'src', 'runtime', 'index.tsx'),
+			root,
 		}
 	}
 	const cc = cursorCanvasDir()

@@ -14,6 +14,7 @@
   },
   "scripts": {
     "build": "npm run build:cli",
+    "check:lock": "node --experimental-strip-types src/check-package-lock.ts",
     "build:cli": "tsc -b tsconfig.cli.json --clean && tsc -b tsconfig.cli.json && find dist -name '*.d.ts' -delete && rm -rf dist/scripts dist/canvas-sdk-hash.js",
     "build:github-pages": "npm run build:cli && bash bin/build-github-pages.sh",
     "prepublishOnly": "npm run build:cli",
@@ -53,6 +54,8 @@
     "commander": "^13.1.0",
     "d3-dsv": "^3.0.1",
     "playwright": "^1.64.0",
+    "postcss": "^8.5.32",
+    "purgecss": "^7.0.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "recharts": "^3.10.1",

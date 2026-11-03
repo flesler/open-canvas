@@ -3,6 +3,7 @@ import path from 'node:path'
 import { build } from 'vite'
 import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
 import { buildExportViteConfig } from '../export-vite-config.js'
+import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export-css-purge.js'
 import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
 import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
@@ -113,6 +114,14 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 				viteFailed = true
 				if (debug) {
 					console.error(e)
+				}
+			}
+			if (!viteFailed && exportCssPurgeEnabled() && fs.existsSync(stagedHtml)) {
+				const { before, after } = await purgeExportHtmlStyles(stagedHtml)
+				if (debug && before !== after) {
+					console.error(
+						`export CSS purge: ${before} → ${after} chars (−${before - after})`,
+					)
 				}
 			}
 		}
