@@ -19,20 +19,13 @@ npm install -g @flesler/open-canvas
 
 PNG, PDF, and JPG use headless Chromium (installed on first `generate`).
 
-To develop against a local `@flesler/cursor-canvas-web` checkout without changing `package.json`:
-
-```bash
-export CURSOR_CANVAS_WEB_ROOT=/path/to/cursor-canvas-web
-open-canvas generate path/to/report.canvas.tsx
-```
-
 ### Agent skill
 
 ```bash
 open-canvas skill ~/.cursor/skills/open-canvas   # SKILL.md only — read after open-canvas is on PATH
 ```
 
-The skill points agents at **`open-canvas vendor-path`** → shim `canvas/SKILL.md` + `canvas-sdk/*.d.ts` (same tree as `verify` / `generate`).
+Installs agent guidance for authoring and exporting `.canvas.tsx` files with open-canvas.
 
 ## Author a `.canvas.tsx`
 
@@ -57,7 +50,7 @@ open-canvas verify path/to/report.canvas.tsx
 |`generate <canvas>`|HTML, PNG, PDF (default) into `./out`|
 |`verify <canvas>`|Typecheck `cursor/canvas` and data imports|
 |`skill [dir]`|Print or install agent `SKILL.md`|
-|`vendor-path`|Print shim `src/vendor` (canvas reference + SDK types)|
+|`vendor-path`|Print bundled `cursor/canvas` reference and SDK types|
 
 |Flag|Default|
 |---|---|
