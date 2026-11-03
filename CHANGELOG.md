@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.9.0]
+#### 2026-11-03
+
+##### Added
+- Showcase Lane depth bar chart uses single-series per-category colors (shim bar fill parity).
+- Agent skill lists superset typings to read beside `vendor-path`.
+
+##### Changed
+- `@flesler/cursor-canvas-web@^1.4.0` (bar chart colors, value-axis labels/grid, `extra.categoryAxis.width`).
+- `.prettierrc.json` with `requirePragma` so external format hooks skip sources; refreshed `docs/showcase-*.png`.
+
 ## [1.8.1]
 #### 2026-11-03
 
