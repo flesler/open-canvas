@@ -2,6 +2,8 @@
 
 **Charts, tables, and structured visuals agents can one-shot** — from a single `.canvas.tsx` file to HTML, PNG, PDF, JPG, or an IDE-ready canvas. Same `cursor/canvas` primitives as Cursor Canvas; **no Cursor app required** to build or export.
 
+Web rendering uses the Mantine shim: **[cursor-canvas-web](https://github.com/flesler/cursor-canvas-web)** (`@flesler/cursor-canvas-web` on npm).
+
 **Live example:** [light](https://flesler.github.io/open-canvas/) · [dark](https://flesler.github.io/open-canvas/dark.html)
 
 <p>
