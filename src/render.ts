@@ -81,13 +81,17 @@ export async function render(
 		if (ctx.selectors?.length) {
 			await isolateSelectors(page, ctx.selectors)
 		}
+		if (formats.png || formats.jpg) {
+			await fitViewportToContent(page, ctx.options.page.viewport.width)
+		}
+		const shot = {
+			...ctx.options.screenshot,
+			fullPage: Boolean(ctx.selectors?.length),
+		}
 		if (formats.html) {
 			const out = path.join(ctx.outDir, `${ctx.stem}.html`)
 			fs.writeFileSync(out, await page.content(), 'utf8')
 		}
-		const shot = ctx.selectors?.length
-			? { ...ctx.options.screenshot, fullPage: true }
-			: ctx.options.screenshot
 		if (formats.png) {
 			await page.screenshot({
 				...shot,
@@ -108,6 +112,18 @@ export async function render(
 	} finally {
 		await browser.close()
 	}
+}
+
+async function fitViewportToContent(page: Page, width: number): Promise<void> {
+	const height = await page.evaluate(() => {
+		const main = document.querySelector('main')
+		if (!(main instanceof HTMLElement)) {
+			throw new Error('export shell has no main')
+		}
+		const rect = main.getBoundingClientRect()
+		return Math.ceil(rect.bottom + window.scrollY)
+	})
+	await page.setViewportSize({ width, height })
 }
 
 async function writePdf(

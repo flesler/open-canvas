@@ -61,7 +61,7 @@ program
 	.option('--width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
 	.option(
 		'--override-height <px>',
-		'Playwright viewport height in px (default 900)',
+		'Playwright viewport height in px (default 900). PNG and JPG then resize to the canvas',
 		(v: string) => Number(v),
 	)
 	.option(
