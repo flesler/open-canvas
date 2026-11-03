@@ -7,10 +7,12 @@ description: Read when generating canvas visuals from .canvas.tsx files.
 
 ```bash
 VENDOR=$(open-canvas vendor-path)
-ls "$VENDOR/canvas-sdk"
+SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
 ```
 
-Read **`$VENDOR/canvas/SKILL.md`** in full — workflow, design, pre-delivery checks. Read **`$VENDOR/canvas-sdk/index.d.ts`** and sibling **`.d.ts`** files when you need exact exports or prop shapes. Do not duplicate that guidance here.
+1. Read **`$VENDOR/canvas/SKILL.md`**
+2. Read **`$VENDOR/canvas-sdk/index.d.ts`** and sibling **`.d.ts`** files
+3. Read **`$SUPERSET/index.d.ts`** and **`$SUPERSET/chart-extra.d.ts`**
 
 ## Where open-canvas differs from the vendor reference
 
