@@ -39,13 +39,16 @@ export function canvasStateSeedPreamble(state: CanvasStateSidecar): string {
   }
   const json = JSON.stringify(state)
   return `const __canvasJsonState = ${json} as Record<string, unknown>
-if (typeof localStorage !== 'undefined') {
+;(globalThis as { __canvasJsonState?: Record<string, unknown> }).__canvasJsonState = __canvasJsonState
+try {
 	for (const [key, value] of Object.entries(__canvasJsonState)) {
 		const storageKey = 'canvas:' + key
 		if (localStorage.getItem(storageKey) === null) {
 			localStorage.setItem(storageKey, JSON.stringify(value))
 		}
 	}
+} catch {
+  // Sandboxed iframe without allow-same-origin; useCanvasState reads globalThis.__canvasJsonState.
 }
 
 `

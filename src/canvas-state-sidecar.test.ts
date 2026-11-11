@@ -57,6 +57,8 @@ describe('canvasStateSeedPreamble', () => {
     const code = canvasStateSeedPreamble({ label: 'from-sidecar' })
     expect(code).toContain('__canvasJsonState')
     expect(code).toContain('getItem(storageKey) === null')
+    expect(code).toContain('globalThis')
+    expect(code).toContain('} catch {')
     expect(code).toContain('"from-sidecar"')
   })
 })

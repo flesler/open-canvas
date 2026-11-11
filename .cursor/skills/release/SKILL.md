@@ -87,7 +87,7 @@ After publish, user may confirm: `npm view @flesler/open-canvas version`.
 
 ## Checklist (agent)
 
-1. Product commits on `main` (including shim dependency + lockfile when needed).
+1. Product commits on `main` (including shim dependency bump with `package-lock.json` in the **same** commit — `npm update @flesler/cursor-canvas-web` once the new shim is on npm).
 2. `npm run ci:local` green.
 3. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`.
 4. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`.
