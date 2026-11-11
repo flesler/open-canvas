@@ -100,6 +100,36 @@ describe('writePdf', () => {
     await page.close()
   })
 
+  it('raises paginated PDF sheet height when min-height exceeds content', async () => {
+    const widthPx = 1280
+    const minHeightPx = 2000
+    const breakHtml = '<div style="break-before:page;height:0"></div>'
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <style>@media print { body { box-decoration-break: clone; } }</style>
+      <body style="margin:0;padding:24px 32px">
+        <p>P1</p>${breakHtml}<p>P2</p>${breakHtml}<p>P3</p>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'min-h.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'min-h',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 }, minHeight: minHeightPx },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const heights = pdfPageMediaBoxHeights(fs.readFileSync(out))
+    const targetPt = pxToPt(minHeightPx)
+    for (const h of heights) {
+      expect(Math.round(h)).toBe(targetPt)
+    }
+    await page.close()
+  })
+
   it('does not add full vertical body padding twice on the first segment', async () => {
     const widthPx = 800
     const pad = 24

@@ -82,7 +82,11 @@ export async function render(
       await isolateSelectors(page, ctx.selectors)
     }
     if (formats.png || formats.jpg) {
-      await fitViewportToContent(page, ctx.options.page.viewport.width)
+      await fitViewportToContent(
+        page,
+        ctx.options.page.viewport.width,
+        ctx.options.page.minHeight,
+      )
     }
     const shot = {
       ...ctx.options.screenshot,
@@ -114,14 +118,21 @@ export async function render(
   }
 }
 
-async function fitViewportToContent(page: Page, width: number): Promise<void> {
-  const height = await page.evaluate(() => {
+async function fitViewportToContent(
+  page: Page,
+  width: number,
+  minHeight?: number,
+): Promise<void> {
+  let height = await page.evaluate(() => {
     const root = document.getElementById('root')
     const doc = document.documentElement.scrollHeight
     const body = document.body?.scrollHeight ?? 0
     const rootH = root?.scrollHeight ?? 0
     return Math.ceil(Math.max(doc, body, rootH))
   })
+  if (minHeight !== undefined) {
+    height = Math.max(height, minHeight)
+  }
   await page.setViewportSize({ width, height })
 }
 
@@ -131,7 +142,8 @@ const PDF_SHEET_HEIGHT_RATIO = 297 / 210
 function preparePdfLayout(opts: {
   widthPx: number;
   sheetRatio: number;
-  bodyPaddingFallback: number
+  bodyPaddingFallback: number;
+  minHeightPx?: number
 }): {
   paginate: boolean;
   scrollHeight: number;
@@ -170,7 +182,11 @@ function preparePdfLayout(opts: {
     }
   }
   if (!paginate) {
-    return { paginate, scrollHeight, sheetHeightPx: scrollHeight }
+    const sheetHeightPx =
+      opts.minHeightPx !== undefined
+        ? Math.max(scrollHeight, opts.minHeightPx)
+        : scrollHeight
+    return { paginate, scrollHeight, sheetHeightPx }
   }
   const breakTops: number[] = []
   for (const el of document.querySelectorAll('*')) {
@@ -212,7 +228,11 @@ function preparePdfLayout(opts: {
     maxPrintPage = Math.max(maxPrintPage, seg + extraPad)
   }
   const defaultSheet = Math.round(widthPx * sheetRatio)
-  const sheetHeightPx = Math.max(defaultSheet, maxPrintPage)
+  const sheetFloor =
+    opts.minHeightPx !== undefined
+      ? Math.max(defaultSheet, opts.minHeightPx)
+      : defaultSheet
+  const sheetHeightPx = Math.max(sheetFloor, maxPrintPage)
   return { paginate, scrollHeight, sheetHeightPx }
 }
 
@@ -227,6 +247,7 @@ async function writePdf(
     widthPx,
     sheetRatio: PDF_SHEET_HEIGHT_RATIO,
     bodyPaddingFallback: 48,
+    minHeightPx: ctx.options.page.minHeight,
   })
   const pdf = { ...ctx.options.pdf }
   if (!pdf.width) {

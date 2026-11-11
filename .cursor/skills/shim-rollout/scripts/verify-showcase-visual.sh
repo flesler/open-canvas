@@ -7,7 +7,7 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CACHE="$OPEN_CANVAS_ROOT/.cache"
 FULL="$CACHE/showcase-verify-full.jpg"
 CROP="$CACHE/showcase-charts-verify.jpg"
-# 1280×900 viewport, charts tab band (update if showcase layout moves)
+# 1280px width; charts tab band (update if showcase layout moves)
 CROP_GEOM="${SHOWCASE_CROP_GEOM:-1240x380+20+340}"
 
 SKIP_SYNC=0

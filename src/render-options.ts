@@ -6,6 +6,7 @@ type PagePdfOptions = NonNullable<Parameters<Page['pdf']>[0]>
 
 export type RenderPageOptions = {
   viewport: { width: number; height: number };
+  minHeight?: number;
   deviceScaleFactor?: number;
   colorScheme?: 'light' | 'dark' | 'no-preference'
 }
@@ -24,9 +25,11 @@ export type RenderOptionsInput = {
   theme?: 'light' | 'dark'
 }
 
+export const BOOTSTRAP_VIEWPORT_HEIGHT = 1
+
 const DEFAULTS: RenderOptions = {
   page: {
-    viewport: { width: 1280, height: 1 },
+    viewport: { width: 1280, height: BOOTSTRAP_VIEWPORT_HEIGHT },
     deviceScaleFactor: 1,
   },
   screenshot: {
@@ -45,15 +48,25 @@ export function resolveRenderOptions(input: RenderOptionsInput): RenderOptions {
     fileConfig = loadRenderOptionsJson(input.renderOptions)
   }
 
+  const jsonMinHeight =
+    fileConfig.page?.minHeight
+    ?? (fileConfig.page?.viewport?.height !== undefined
+      && fileConfig.page.viewport.height > BOOTSTRAP_VIEWPORT_HEIGHT
+      ? fileConfig.page.viewport.height
+      : undefined)
+  const minHeight = input.minHeight ?? jsonMinHeight
   const page: RenderPageOptions = {
     ...DEFAULTS.page,
     ...fileConfig.page,
     viewport: {
       width: input.viewportWidth ?? fileConfig.page?.viewport?.width ?? DEFAULTS.page.viewport.width,
-      height: input.minHeight ?? fileConfig.page?.viewport?.height ?? DEFAULTS.page.viewport.height,
+      height: BOOTSTRAP_VIEWPORT_HEIGHT,
     },
     deviceScaleFactor: fileConfig.page?.deviceScaleFactor ?? DEFAULTS.page.deviceScaleFactor,
     colorScheme: input.theme ?? fileConfig.page?.colorScheme ?? DEFAULTS.page.colorScheme,
+  }
+  if (minHeight !== undefined) {
+    page.minHeight = minHeight
   }
 
   return {

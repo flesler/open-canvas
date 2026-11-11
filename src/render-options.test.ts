@@ -5,6 +5,7 @@ describe('resolveRenderOptions', () => {
   it('defaults viewport', () => {
     const cfg = resolveRenderOptions({ theme: 'light' })
     expect(cfg.page.viewport).toEqual({ width: 1280, height: 1 })
+    expect(cfg.page.minHeight).toBeUndefined()
     expect(cfg.page.deviceScaleFactor).toBe(1)
     expect(cfg.page.colorScheme).toBe('light')
     expect(cfg.screenshot.quality).toBeUndefined()
@@ -16,7 +17,8 @@ describe('resolveRenderOptions', () => {
       minHeight: 1200,
       theme: 'dark',
     })
-    expect(cfg.page.viewport).toEqual({ width: 1920, height: 1200 })
+    expect(cfg.page.viewport).toEqual({ width: 1920, height: 1 })
+    expect(cfg.page.minHeight).toBe(1200)
     expect(cfg.page.colorScheme).toBe('dark')
   })
 

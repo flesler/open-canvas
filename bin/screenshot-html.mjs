@@ -20,7 +20,7 @@ if (!fs.existsSync(html)) {
 
 const browser = await chromium.launch()
 try {
-  const page = await browser.newPage({ viewport: { width, height: 900 } })
+  const page = await browser.newPage({ viewport: { width, height: 1 } })
   const errors = []
   page.on('pageerror', e => errors.push(e.message))
   await page.goto(pathToFileURL(html).href, { waitUntil: 'networkidle' })
