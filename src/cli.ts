@@ -48,17 +48,17 @@ program
   .command('generate', { isDefault: true })
   .description('Build artifacts from a canvas file')
   .argument('<canvas>', 'path to *.canvas.tsx')
-  .option('--out <dir>', 'output directory relative to canvas', 'out')
-  .option('--name <slug>', 'output basename without extension (default: canvas stem, else title slug)')
+  .option('-o, --out <dir>', 'output directory relative to canvas', 'out')
+  .option('-n, --name <slug>', 'output basename without extension (default: canvas stem, else title slug)')
   .option('--title <text>', 'HTML document title')
-  .option('--theme <mode>', 'light or dark', 'light')
+  .option('-t, --theme <mode>', 'light or dark', 'light')
   .option('--brand <name>', 'cursor or grok (host theme brand)', 'cursor')
   .addOption(
-    new Option('--formats <list>', 'comma-separated: html,png,pdf,jpg,cursor')
+    new Option('-f, --formats <list>', 'comma-separated: html,png,pdf,jpg,cursor')
       .argParser(v => v.split(',').map(s => s.trim()))
       .default(DEFAULT_FORMAT_LIST, DEFAULT_FORMATS),
   )
-  .option('--width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
+  .option('-w, --width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
   .option(
     '--override-height <px>',
     'Playwright viewport height in px (default 900). PNG and JPG then resize to the canvas',

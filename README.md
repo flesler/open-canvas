@@ -54,11 +54,11 @@ open-canvas verify path/to/report.canvas.tsx
 
 |Flag|Default|
 |---|---|
-|`--out`|`./out` beside the canvas|
-|`--theme`|`light` or `dark`|
-|`--formats`|`html,png,pdf` — also `jpg`, `cursor`|
-|`--name`|Output basename (default: canvas stem)|
-|`--width`|Playwright viewport width (default `1280`)|
+|`-o`, `--out`|`./out` beside the canvas|
+|`-t`, `--theme`|`light` or `dark`|
+|`-f`, `--formats`|`html,png,pdf` — also `jpg`, `cursor`|
+|`-n`, `--name`|Output basename (default: canvas stem)|
+|`-w`, `--width`|Playwright viewport width (default `1280`)|
 |`--override-height`|Playwright viewport height in px (default `900`)|
 |`--cursor-out`|With `--formats cursor`: write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--selector`|Export only matched sections|

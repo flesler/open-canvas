@@ -33,13 +33,13 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 
 |Flag|Default|
 |---|---|
-|`--out`|`./out` next to canvas|
-|`--name`|Output basename without extension (default: canvas stem, else slug of `--title`)|
-|`--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
-|`--theme`|`light`|
+|`-o`, `--out`|`./out` next to canvas|
+|`-n`, `--name`|Output basename without extension (default: canvas stem, else slug of `--title`)|
+|`-f`, `--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
+|`-t`, `--theme`|`light`|
 |`--brand`|`cursor`|
 
-|`--width`|Playwright viewport width (default `1280`)|
+|`-w`, `--width`|Playwright viewport width (default `1280`)|
 |`--override-height`|Playwright viewport height in px (default `900`)|
 |`--cursor-out`|With `--formats cursor`, write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
