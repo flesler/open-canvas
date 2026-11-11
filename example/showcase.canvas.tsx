@@ -18,18 +18,22 @@ type PhaseRssMb = {
 const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`
 const shimDep = pkg.dependencies['@flesler/cursor-canvas-web']
 
-/** GitHub Pages: dark export → `./`; light (or anything else) → `./dark.html`. */
+/** GitHub Pages: paired `index` / `dark` html + pdf in `.cache/github-pages`. */
 function ExportThemeToggleLink() {
   const { kind, text } = useHostTheme()
   const dark = kind === 'dark'
+  const link = { color: text.link }
   return (
-    <a
-      href={dark ? './' : './dark.html'}
-      target="_self"
-      style={{ color: text.link }}
-    >
-      {dark ? 'Light mode' : 'Dark mode'}
-    </a>
+    <div className="export-screen-only">
+      <Row gap={12} align="center">
+        <a href={dark ? './' : './dark.html'} target="_self" style={link}>
+          {dark ? 'Light mode' : 'Dark mode'}
+        </a>
+        <a href={dark ? './dark.pdf' : './index.pdf'} download style={link}>
+          Download PDF
+        </a>
+      </Row>
+    </div>
   )
 }
 
@@ -893,6 +897,8 @@ export default function ShowcaseCanvas() {
         </Grid>
       </Section>
 
+      <div aria-hidden style={{ breakBefore: 'page' }} />
+
       {/* Graph ---------------------------------------------------------- */}
       <Section title="Graph layout (computeDAGLayout)">
         <Card>
@@ -1201,6 +1207,8 @@ export default function ShowcaseCanvas() {
           />
         </Stack>
       </Section>
+
+      <div aria-hidden style={{ breakBefore: 'page' }} />
 
       {/* Forms ---------------------------------------------------------- */}
       <Section title="Forms (state persists via useCanvasState)">

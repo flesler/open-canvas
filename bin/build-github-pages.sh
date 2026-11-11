@@ -13,7 +13,7 @@ fi
 OC=(node "$ROOT/dist/cli.js")
 rm -rf "$OUT"
 # --out is relative to the canvas file (example/).
-"${OC[@]}" generate "$CANVAS" --formats html --out ../.cache/github-pages --name index --theme light --title 'Open Canvas — SDK Showcase'
-"${OC[@]}" generate "$CANVAS" --formats html --out ../.cache/github-pages --name dark --theme dark --title 'Open Canvas — SDK Showcase (dark)'
+"${OC[@]}" generate "$CANVAS" --formats html,pdf --out ../.cache/github-pages --name index --theme light --title 'Open Canvas — SDK Showcase'
+"${OC[@]}" generate "$CANVAS" --formats html,pdf --out ../.cache/github-pages --name dark --theme dark --title 'Open Canvas — SDK Showcase (dark)'
 
 echo "github-pages: $OUT"

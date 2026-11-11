@@ -45,3 +45,19 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |`--selector`|Export matched nodes only|
 
 `jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. `--formats cursor` inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
+
+## PDF page breaks
+
+Between sections, add:
+
+```tsx
+<div aria-hidden style={{ breakBefore: "page" }} />
+```
+
+## Hide in PDF only
+
+Wrap browser-only UI (theme toggle, download links). Export shell hides `.export-screen-only` when generating PDF (`@media print`).
+
+```tsx
+<div className="export-screen-only">…</div>
+```
