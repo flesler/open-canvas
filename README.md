@@ -60,12 +60,11 @@ open-canvas verify path/to/report.canvas.tsx
 |`-n`, `--name`|Output basename (default: canvas stem)|
 |`-w`, `--width`|Playwright viewport width (default `1280`)|
 |`--override-height`|Playwright viewport height in px (default `900`)|
-|`--cursor-out`|With `--formats cursor`: write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--selector`|Export only matched sections|
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 |`-q`, `--quiet`|No stdout on success (outputs at `{--out}/{--name or stem}.{ext}`)|
 
-Exports read `.canvas.data.json` when present. `--formats cursor` inlines `./data/*` into one file for the IDE; add `--inline-state` to include saved UI state too.
+Exports read `.canvas.data.json` when present. Run a separate `generate` for the IDE file: `open-canvas generate path/to/x.canvas.tsx --formats cursor` (optionally `-o` / `-n` for `{dir}/{stem}.canvas.tsx`). `--formats cursor` inlines `./data/*`; add `--inline-state` to include saved UI state too.
 
 Theme in canvas code: **`useHostTheme()`** — same hook and return value in Cursor and in export. Use **`generate --theme`** / **`--brand`** when you need a fixed light/dark or Cursor/Grok look in png/html/pdf.
 

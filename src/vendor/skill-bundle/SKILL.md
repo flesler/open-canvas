@@ -41,12 +41,11 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 
 |`-w`, `--width`|Playwright viewport width (default `1280`)|
 |`--override-height`|Playwright viewport height in px (default `900`)|
-|`--cursor-out`|With `--formats cursor`, write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
 |`--selector`|Export matched nodes only|
 |`-q`, `--quiet`|No stdout on success; writes `{--out}/{--name or stem}.{ext}`|
 
-`jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. `--formats cursor` inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
+`jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. IDE emit: `generate <canvas> --formats cursor` (use `-o` / `-n` when the file should not land in `./out`). Inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
 
 ## PDF page breaks
 

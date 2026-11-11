@@ -27,8 +27,6 @@ export type GenerateOptions = {
   selectors?: string | string[];
   /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
   inlineState?: boolean;
-  /** With `--formats cursor`, write here instead of `out/<stem>.canvas.tsx`. */
-  cursorOut?: string;
   /** No stdout on success (paths are `outDir` + `--name` + format ext). */
   quiet?: boolean
 }
@@ -86,14 +84,11 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
   }
 
   if (formats.includes('cursor')) {
-    const cursorOut = opts.cursorOut
-      ? path.resolve(opts.cursorOut)
-      : path.join(outDir, `${stem}.canvas.tsx`)
-    fs.mkdirSync(path.dirname(cursorOut), { recursive: true })
-    emitCursorCanvas(canvasPath, cursorOut, {
+    const cursorPath = path.join(outDir, `${stem}.canvas.tsx`)
+    emitCursorCanvas(canvasPath, cursorPath, {
       inlineState: opts.inlineState,
     })
-    logOut(cursorOut)
+    logOut(cursorPath)
   }
 
   const viteBuildDir = path.join(outDir, '_build')

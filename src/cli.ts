@@ -65,10 +65,6 @@ program
     (v: string) => Number(v),
   )
   .option(
-    '--cursor-out <path>',
-    'with --formats cursor: write the IDE-ready .canvas.tsx here instead of out/<stem>.canvas.tsx',
-  )
-  .option(
     '--render-options <file|json>',
     'Playwright options JSON (launch / page / screenshot / pdf) — https://playwright.dev/docs/api/class-page',
   )
@@ -98,7 +94,6 @@ program
         renderOptions: opts.renderOptions,
         selectors: opts.selector,
         inlineState: Boolean(opts.inlineState),
-        cursorOut: opts.cursorOut,
         quiet: Boolean(opts.quiet),
       })
     } catch (e) {

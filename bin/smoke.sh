@@ -110,9 +110,8 @@ if (!uniform) {
 }
 console.error('smoke: showcase.pdf', n, 'pages; page heights (pt):', rounded.join(', '));
 "
-	local cursor_dest="$external/cursor-dest/showcase.canvas.tsx"
-	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor --cursor-out "$cursor_dest"
-	test -f "$cursor_dest"
+	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor -o "$external/cursor-dest"
+	test -f "$external/cursor-dest/showcase.canvas.tsx"
 	test ! -f "$external/run/out/showcase.canvas.tsx"
 	rm -rf "$external"
 }
