@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.11.1]
+#### 2026-11-11
+
+##### Changed
+- PDF print hiding is canvas-owned (`hide-for-pdf` + `@media print` in skill); export shell no longer ships `.export-screen-only` styles.
+
 ## [1.11.0]
 #### 2026-11-11
 
