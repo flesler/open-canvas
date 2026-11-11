@@ -7,6 +7,28 @@ import { forTests } from './render.js'
 
 const { isolateSelectors, writePdf } = forTests
 
+function pdfPageCount(buf: Buffer): number {
+  const match = buf.toString('latin1').match(/\/Count\s+(\d+)/)
+  if (!match) {
+    throw new Error('PDF page count not found')
+  }
+  return Number(match[1])
+}
+
+function pdfPageMediaBoxHeights(buf: Buffer): number[] {
+  const text = buf.toString('latin1')
+  const heights: number[] = []
+  for (const match of text.matchAll(
+    /\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/g,
+  )) {
+    heights.push(Number(match[4]))
+  }
+  if (heights.length === 0) {
+    throw new Error('PDF MediaBox heights not found')
+  }
+  return heights
+}
+
 describe('writePdf', () => {
   let browser: Awaited<ReturnType<typeof chromium.launch>>
 
@@ -32,10 +54,66 @@ describe('writePdf', () => {
     await writePdf(page, {
       outDir: dir,
       stem: 'out',
-      options: { page: { viewport: { width: 800, height: 600 } }, screenshot: {}, pdf: { printBackground: true } },
+      options: {
+        page: { viewport: { width: 800, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
     }, out)
-    const pages = fs.readFileSync(out, 'latin1').match(/\/Type\s*\/Page[^s]/g) ?? []
-    expect(pages).toHaveLength(1)
+    expect(pdfPageCount(fs.readFileSync(out))).toBe(1)
+    await page.close()
+  })
+
+  it('paginates when break-before markers exist', async () => {
+    const widthPx = 800
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <body style="margin:0">
+        <section style="height:220px">A</section>
+        <div style="break-before:page;height:0"></div>
+        <section style="height:480px">B</section>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'p.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'p',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const bytes = fs.readFileSync(out)
+    expect(pdfPageCount(bytes)).toBeGreaterThanOrEqual(2)
+    const heights = pdfPageMediaBoxHeights(bytes)
+    const max = Math.max(...heights)
+    const min = Math.min(...heights)
+    expect(min / max).toBeGreaterThan(0.99)
+    await page.close()
+  })
+
+  it('keeps one tall page without break markers', async () => {
+    const widthPx = 800
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <body style="margin:0">
+        <section style="height:400px">only</section>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'single.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'single',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    expect(pdfPageCount(fs.readFileSync(out))).toBe(1)
     await page.close()
   })
 })

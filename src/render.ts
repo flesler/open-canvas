@@ -126,6 +126,74 @@ async function fitViewportToContent(page: Page, width: number): Promise<void> {
   await page.setViewportSize({ width, height })
 }
 
+/** A-series page height at a given width (same proportions as A4, not a fixed paper format). */
+const PDF_SHEET_HEIGHT_RATIO = 297 / 210
+
+function preparePdfLayout(opts: {
+  widthPx: number;
+  sheetRatio: number
+}): {
+  paginate: boolean;
+  scrollHeight: number;
+  sheetHeightPx: number
+} {
+  const { widthPx, sheetRatio } = opts
+  for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
+    if (el.style.minHeight.includes('vh')) {
+      el.style.minHeight = '0'
+    }
+  }
+  const scrollHeight = Math.ceil(
+    document.documentElement.getBoundingClientRect().height,
+  )
+  let paginate = false
+  for (const el of document.querySelectorAll('*')) {
+    if (!(el instanceof HTMLElement)) {
+      continue
+    }
+    const s = getComputedStyle(el)
+    if (
+      s.breakBefore === 'page'
+      || s.breakAfter === 'page'
+      || s.pageBreakBefore === 'always'
+      || s.pageBreakAfter === 'always'
+    ) {
+      paginate = true
+      break
+    }
+  }
+  const defaultSheet = Math.round(widthPx * sheetRatio)
+  if (!paginate) {
+    return { paginate, scrollHeight, sheetHeightPx: scrollHeight }
+  }
+  const breakTops: number[] = []
+  for (const el of document.querySelectorAll('*')) {
+    if (!(el instanceof HTMLElement)) {
+      continue
+    }
+    const s = getComputedStyle(el)
+    const isBreak =
+      s.breakBefore === 'page'
+      || s.breakAfter === 'page'
+      || s.pageBreakBefore === 'always'
+      || s.pageBreakAfter === 'always'
+    if (!isBreak) {
+      continue
+    }
+    breakTops.push(
+      Math.round(el.getBoundingClientRect().top + window.scrollY),
+    )
+  }
+  breakTops.sort((a, b) => a - b)
+  const bounds = [0, ...breakTops, scrollHeight]
+  let maxSeg = 0
+  for (let i = 0; i < bounds.length - 1; i++) {
+    maxSeg = Math.max(maxSeg, bounds[i + 1] - bounds[i])
+  }
+  const sheetHeightPx = Math.max(defaultSheet, maxSeg)
+  return { paginate, scrollHeight, sheetHeightPx }
+}
+
 async function writePdf(
   page: Page,
   ctx: RenderContext,
@@ -133,21 +201,16 @@ async function writePdf(
 ): Promise<void> {
   const widthPx = ctx.options.page.viewport.width
   await page.emulateMedia({ media: 'print' })
-  // In print, vh resolves to the PDF page height, which is derived from content height.
-  const height = await page.evaluate(() => {
-    for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
-      if (el.style.minHeight.includes('vh')) {
-        el.style.minHeight = '0'
-      }
-    }
-    return Math.ceil(document.documentElement.getBoundingClientRect().height)
+  const layout = await page.evaluate(preparePdfLayout, {
+    widthPx,
+    sheetRatio: PDF_SHEET_HEIGHT_RATIO,
   })
   const pdf = { ...ctx.options.pdf }
   if (!pdf.width) {
     pdf.width = `${widthPx}px`
   }
   if (!pdf.height) {
-    pdf.height = `${height}px`
+    pdf.height = `${layout.sheetHeightPx}px`
   }
   await page.pdf({ ...pdf, path: outPath })
 }

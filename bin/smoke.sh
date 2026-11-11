@@ -85,8 +85,31 @@ run_with_open_canvas() {
 	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
 	stage_external "$external"
 	"${OC[@]}" verify "$external/run/$SHOWCASE"
-	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats html --theme light
+	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats html,pdf --theme light
 	test -f "$external/run/out/showcase.html"
+	test -f "$external/run/out/showcase.pdf"
+	node -e "
+const fs = require('node:fs');
+const pdf = fs.readFileSync('$external/run/out/showcase.pdf');
+const text = pdf.toString('latin1');
+const n = Number(text.match(/\\/Count\\s+(\\d+)/)?.[1] ?? 0);
+if (n < 2) {
+  console.error('smoke: expected showcase.pdf with multiple pages, got', n);
+  process.exit(1);
+}
+const heights = [...text.matchAll(/\\/MediaBox\\s*\\[\\s*[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)\\s*\\]/g)].map((m) => Number(m[1]));
+if (heights.length < 2) {
+  console.error('smoke: expected MediaBox heights in showcase.pdf');
+  process.exit(1);
+}
+const rounded = heights.map((h) => Math.round(h));
+const uniform = rounded.every((h) => Math.abs(h - rounded[0]) <= 2);
+if (!uniform) {
+  console.error('smoke: showcase.pdf page heights (pt) differ:', rounded.join(', '));
+  process.exit(1);
+}
+console.error('smoke: showcase.pdf', n, 'pages; page heights (pt):', rounded.join(', '));
+"
 	local cursor_dest="$external/cursor-dest/showcase.canvas.tsx"
 	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor --cursor-out "$cursor_dest"
 	test -f "$cursor_dest"
