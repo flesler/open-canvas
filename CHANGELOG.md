@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.13.0]
+#### 2026-11-11
+
+##### Added
+- `generate --min-height` optional floor for PNG/JPG (after content fit) and paginated PDF sheet height.
+
+##### Changed
+- Playwright bootstrap viewport `1px` (was `900`) so short PNG/JPG exports skip empty `100vh` padding.
+- `generate --override-height` renamed to `--min-height` (no documented default).
+- Removed `generate --cursor-out`; IDE emit uses `generate --formats cursor` with `-o` / `-n`.
+- Repo scripts and editor config: tab indentation → spaces; refreshed `docs/showcase-*.png`.
+
 ## [1.12.0]
 #### 2026-11-11
 
