@@ -56,8 +56,9 @@ Between sections, add:
 
 ## Hide in PDF only
 
-Wrap browser-only UI (theme toggle, download links). Export shell hides `.export-screen-only` when generating PDF (`@media print`).
+PDF uses print styles. Add once; wrap links or toggles:
 
 ```tsx
-<div className="export-screen-only">…</div>
+<style>{`@media print { .hide-for-pdf { display: none !important; } }`}</style>
+<div className="hide-for-pdf">…</div>
 ```

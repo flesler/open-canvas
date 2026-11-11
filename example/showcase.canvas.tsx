@@ -24,7 +24,7 @@ function ExportThemeToggleLink() {
   const dark = kind === 'dark'
   const link = { color: text.link }
   return (
-    <div className="export-screen-only">
+    <div className="hide-for-pdf">
       <Row gap={12} align="center">
         <a href={dark ? './' : './dark.html'} target="_self" style={link}>
           {dark ? 'Light mode' : 'Dark mode'}
@@ -566,6 +566,7 @@ export default function ShowcaseCanvas() {
 
   return (
     <Stack gap={20}>
+      <style>{'@media print { .hide-for-pdf { display: none !important; } }'}</style>
       {/* Header --------------------------------------------------------- */}
       <Row gap={12} align="center">
         <H1>Cursor Canvas SDK showcase</H1>
