@@ -43,12 +43,12 @@ describe('writePdf', () => {
   it('fits a 100vh root with padding on one page', async () => {
     const page = await browser.newPage({ viewport: { width: 800, height: 600 } })
     await page.setContent(`
-			<body style="margin:0">
-				<div style="min-height:100vh;padding:28px 32px 40px">
-					<div style="height:1500px">tall content</div>
-				</div>
-			</body>
-		`)
+      <body style="margin:0">
+        <div style="min-height:100vh;padding:28px 32px 40px">
+          <div style="height:1500px">tall content</div>
+        </div>
+      </body>
+    `)
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
     const out = path.join(dir, 'out.pdf')
     await writePdf(page, {
@@ -203,15 +203,15 @@ describe('isolateSelectors', () => {
   it('leaves only the matched subtree on body', async () => {
     const page = await browser.newPage()
     await page.setContent(`
-			<head><style>body { font-family: sans-serif; }</style></head>
-			<body>
-				<div id="root">
-					<header>nav</header>
-					<main id="target"><p>keep</p></main>
-					<footer>foot</footer>
-				</div>
-			</body>
-		`)
+      <head><style>body { font-family: sans-serif; }</style></head>
+      <body>
+        <div id="root">
+          <header>nav</header>
+          <main id="target"><p>keep</p></main>
+          <footer>foot</footer>
+        </div>
+      </body>
+    `)
     await isolateSelectors(page, ['#target'])
     const bodyHtml = await page.evaluate(() => document.body.innerHTML)
     expect(bodyHtml).toContain('keep')
@@ -223,14 +223,14 @@ describe('isolateSelectors', () => {
   it('includes every match for a class selector', async () => {
     const page = await browser.newPage()
     await page.setContent(`
-			<body>
-				<div id="root">
-					<p class="bit">one</p>
-					<p class="bit">two</p>
-					<p>three</p>
-				</div>
-			</body>
-		`)
+      <body>
+        <div id="root">
+          <p class="bit">one</p>
+          <p class="bit">two</p>
+          <p>three</p>
+        </div>
+      </body>
+    `)
     await isolateSelectors(page, ['.bit'])
     const text = await page.evaluate(() => document.body.innerText)
     expect(text).toContain('one')
@@ -242,14 +242,14 @@ describe('isolateSelectors', () => {
   it('merges multiple selectors in document order', async () => {
     const page = await browser.newPage()
     await page.setContent(`
-			<body>
-				<div id="root">
-					<div id="a">A</div>
-					<div id="b">B</div>
-					<div id="c">C</div>
-				</div>
-			</body>
-		`)
+      <body>
+        <div id="root">
+          <div id="a">A</div>
+          <div id="b">B</div>
+          <div id="c">C</div>
+        </div>
+      </body>
+    `)
     await isolateSelectors(page, ['#c', '#a'])
     const order = await page.evaluate(() =>
       Array.from(document.body.querySelectorAll('#a,#b,#c')).map(

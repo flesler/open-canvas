@@ -74,8 +74,8 @@ describe('generate inlines canvas state into html', () => {
       canvas,
       `import { Text, useCanvasState } from 'cursor/canvas'
 export default function Label() {
-	const [label] = useCanvasState('label', 'default-label')
-	return <Text>{label}</Text>
+  const [label] = useCanvasState('label', 'default-label')
+  return <Text>{label}</Text>
 }
 `,
     )

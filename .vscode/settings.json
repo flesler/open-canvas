@@ -1,26 +1,26 @@
 {
-	"prettier.enable": false,
-	"editor.detectIndentation": false,
-	"editor.insertSpaces": true,
-	"editor.tabSize": 2,
-	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
-	"editor.formatOnSaveMode": "modifications",
-	"editor.formatOnSave": true,
-	"editor.formatOnPaste": true,
-	"editor.codeActionsOnSave": {
-		"source.organizeImports": "explicit",
-		"source.fixAll.eslint": "explicit"
-	},
-	"search.exclude": {
-		"**/node_modules": true,
-		"**/.vscode": true,
-		"**/dist": true
-	},
-	"typescript.validate.enable": true,
-	"typescript.tsdk": "./node_modules/typescript/lib",
-	"typescript.preferences.importModuleSpecifier": "non-relative",
-	"typescript.preferences.importModuleSpecifierEnding": "minimal",
-	"[typescript]": {
-		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
-	}
+  "prettier.enable": false,
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.formatOnSaveMode": "modifications",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.vscode": true,
+    "**/dist": true
+  },
+  "typescript.validate.enable": true,
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  }
 }

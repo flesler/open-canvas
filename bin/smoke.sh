@@ -13,7 +13,7 @@ MODE=pack
 SHOWCASE=showcase.canvas.tsx
 
 usage() {
-	cat <<EOF
+  cat <<EOF
 Usage: $(basename "$0") [--pack | --global | --both]
 
   --pack    Local dist/cli.js + npm pack install (default)
@@ -23,72 +23,72 @@ EOF
 }
 
 while [[ $# -gt 0 ]]; do
-	case "$1" in
-		--pack)
-			MODE=pack
-			shift
-			;;
-		--global)
-			MODE=global
-			shift
-			;;
-		--both)
-			MODE=both
-			shift
-			;;
-		-h | --help)
-			usage
-			exit 0
-			;;
-		*)
-			echo "smoke: unknown option: $1" >&2
-			usage >&2
-			exit 1
-			;;
-	esac
+  case "$1" in
+    --pack)
+      MODE=pack
+      shift
+      ;;
+    --global)
+      MODE=global
+      shift
+      ;;
+    --both)
+      MODE=both
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "smoke: unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
 done
 
 stage_external() {
-	local dest="$1"
-	local run_dir="$dest/run"
-	mkdir -p "$run_dir"
-	cp "$ROOT/example/$SHOWCASE" "$run_dir/"
-	cp "$ROOT/example/showcase.canvas.data.json" "$run_dir/"
-	cp -r "$ROOT/example/data" "$run_dir/data"
-	cp "$ROOT/package.json" "$dest/package.json"
+  local dest="$1"
+  local run_dir="$dest/run"
+  mkdir -p "$run_dir"
+  cp "$ROOT/example/$SHOWCASE" "$run_dir/"
+  cp "$ROOT/example/showcase.canvas.data.json" "$run_dir/"
+  cp -r "$ROOT/example/data" "$run_dir/data"
+  cp "$ROOT/package.json" "$dest/package.json"
 }
 
 run_agent_skill_smoke() {
-	local label="$1"
-	shift
-	local -a OC=("$@")
+  local label="$1"
+  shift
+  local -a OC=("$@")
 
-	echo "== smoke ($label): skill + vendor-path (agent docs) =="
-	local skill_dir vendor
-	skill_dir="$(mktemp -d /tmp/open-canvas-smoke-skill-XXXXXX)"
-	"${OC[@]}" skill "$skill_dir" >/dev/null
-	test -f "$skill_dir/SKILL.md"
-	vendor="$("${OC[@]}" vendor-path 2>/dev/null | tr -d '\n')"
-	test -f "$vendor/canvas/SKILL.md"
-	test -f "$vendor/canvas-sdk/index.d.ts"
-	rm -rf "$skill_dir"
+  echo "== smoke ($label): skill + vendor-path (agent docs) =="
+  local skill_dir vendor
+  skill_dir="$(mktemp -d /tmp/open-canvas-smoke-skill-XXXXXX)"
+  "${OC[@]}" skill "$skill_dir" >/dev/null
+  test -f "$skill_dir/SKILL.md"
+  vendor="$("${OC[@]}" vendor-path 2>/dev/null | tr -d '\n')"
+  test -f "$vendor/canvas/SKILL.md"
+  test -f "$vendor/canvas-sdk/index.d.ts"
+  rm -rf "$skill_dir"
 }
 
 run_with_open_canvas() {
-	local label="$1"
-	shift
-	local -a OC=("$@")
+  local label="$1"
+  shift
+  local -a OC=("$@")
 
-	run_agent_skill_smoke "$label" "${OC[@]}"
-	echo "== smoke ($label): verify + generate (canvas in /tmp) =="
-	local external
-	external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
-	stage_external "$external"
-	"${OC[@]}" verify "$external/run/$SHOWCASE"
-	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats html,pdf --theme light
-	test -f "$external/run/out/showcase.html"
-	test -f "$external/run/out/showcase.pdf"
-	node -e "
+  run_agent_skill_smoke "$label" "${OC[@]}"
+  echo "== smoke ($label): verify + generate (canvas in /tmp) =="
+  local external
+  external="$(mktemp -d /tmp/open-canvas-smoke-external-XXXXXX)"
+  stage_external "$external"
+  "${OC[@]}" verify "$external/run/$SHOWCASE"
+  "${OC[@]}" generate "$external/run/$SHOWCASE" --formats html,pdf --theme light
+  test -f "$external/run/out/showcase.html"
+  test -f "$external/run/out/showcase.pdf"
+  node -e "
 const fs = require('node:fs');
 const pdf = fs.readFileSync('$external/run/out/showcase.pdf');
 const text = pdf.toString('latin1');
@@ -110,98 +110,98 @@ if (!uniform) {
 }
 console.error('smoke: showcase.pdf', n, 'pages; page heights (pt):', rounded.join(', '));
 "
-	"${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor -o "$external/cursor-dest"
-	test -f "$external/cursor-dest/showcase.canvas.tsx"
-	test ! -f "$external/run/out/showcase.canvas.tsx"
-	rm -rf "$external"
+  "${OC[@]}" generate "$external/run/$SHOWCASE" --formats cursor -o "$external/cursor-dest"
+  test -f "$external/cursor-dest/showcase.canvas.tsx"
+  test ! -f "$external/run/out/showcase.canvas.tsx"
+  rm -rf "$external"
 }
 
 run_local_dist() {
-	if [[ ! -f "$ROOT/dist/cli.js" ]]; then
-		echo "smoke: missing dist/cli.js — run npm run build:cli first" >&2
-		exit 1
-	fi
-	run_with_open_canvas "local dist" node "$ROOT/dist/cli.js"
+  if [[ ! -f "$ROOT/dist/cli.js" ]]; then
+    echo "smoke: missing dist/cli.js — run npm run build:cli first" >&2
+    exit 1
+  fi
+  run_with_open_canvas "local dist" node "$ROOT/dist/cli.js"
 }
 
 run_pack_install() {
-	echo "== smoke: npm pack + install (--omit=dev) =="
-	local tarball_dir tarball pack_dir
-	tarball_dir="$(mktemp -d /tmp/open-canvas-smoke-pack-XXXXXX)"
-	npm pack --pack-destination "$tarball_dir" --silent
-	tarball="$(ls "$tarball_dir"/flesler-open-canvas-*.tgz | head -1)"
+  echo "== smoke: npm pack + install (--omit=dev) =="
+  local tarball_dir tarball pack_dir
+  tarball_dir="$(mktemp -d /tmp/open-canvas-smoke-pack-XXXXXX)"
+  npm pack --pack-destination "$tarball_dir" --silent
+  tarball="$(ls "$tarball_dir"/flesler-open-canvas-*.tgz | head -1)"
 
-	pack_dir="$(mktemp -d /tmp/open-canvas-smoke-install-XXXXXX)"
-	(
-		cd "$pack_dir"
-		npm init -y >/dev/null
-		local shim_root="${CURSOR_CANVAS_WEB_ROOT:-$ROOT/../cursor-canvas-web}"
-		local shim_spec
-		shim_spec="$(node -e "const v=require('$ROOT/package.json').dependencies['@flesler/cursor-canvas-web'];process.stdout.write(v||'')")"
-		if [[ -f "$shim_root/package.json" ]] && [[ "$shim_spec" != file:* ]]; then
-			if ! npm view "@flesler/cursor-canvas-web@${shim_spec#^}" version &>/dev/null; then
-				local shim_name shim_tgz
-				shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
-				shim_tgz="$tarball_dir/$shim_name"
-				npm install "$shim_tgz" --omit=dev
-			fi
-		fi
-		if [[ "$shim_spec" == file:* ]]; then
-			local shim_name shim_tgz
-			shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
-			shim_tgz="$tarball_dir/$shim_name"
-			npm install "$shim_tgz" --omit=dev
-		fi
-		npm install "$tarball" --omit=dev
+  pack_dir="$(mktemp -d /tmp/open-canvas-smoke-install-XXXXXX)"
+  (
+    cd "$pack_dir"
+    npm init -y >/dev/null
+    local shim_root="${CURSOR_CANVAS_WEB_ROOT:-$ROOT/../cursor-canvas-web}"
+    local shim_spec
+    shim_spec="$(node -e "const v=require('$ROOT/package.json').dependencies['@flesler/cursor-canvas-web'];process.stdout.write(v||'')")"
+    if [[ -f "$shim_root/package.json" ]] && [[ "$shim_spec" != file:* ]]; then
+      if ! npm view "@flesler/cursor-canvas-web@${shim_spec#^}" version &>/dev/null; then
+        local shim_name shim_tgz
+        shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
+        shim_tgz="$tarball_dir/$shim_name"
+        npm install "$shim_tgz" --omit=dev
+      fi
+    fi
+    if [[ "$shim_spec" == file:* ]]; then
+      local shim_name shim_tgz
+      shim_name="$(npm pack "$shim_root" --pack-destination "$tarball_dir" --silent)"
+      shim_tgz="$tarball_dir/$shim_name"
+      npm install "$shim_tgz" --omit=dev
+    fi
+    npm install "$tarball" --omit=dev
 
-		printf '%s\n' \
-			'import { Stack } from "cursor/canvas"' \
-			'export default function T() { return <Stack /> }' \
-			> smoke.canvas.tsx
-		npx --yes open-canvas verify smoke.canvas.tsx
+    printf '%s\n' \
+      'import { Stack } from "cursor/canvas"' \
+      'export default function T() { return <Stack /> }' \
+      > smoke.canvas.tsx
+    npx --yes open-canvas verify smoke.canvas.tsx
 
-		local ext
-		ext="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
-		stage_external "$ext"
-		npx --yes open-canvas verify "$ext/run/$SHOWCASE"
-		npx --yes open-canvas generate "$ext/run/$SHOWCASE" --formats html --theme light
-		test -f "$ext/run/out/showcase.html"
-		rm -rf "$ext"
-	)
+    local ext
+    ext="$(mktemp -d /tmp/open-canvas-smoke-pack-ext-XXXXXX)"
+    stage_external "$ext"
+    npx --yes open-canvas verify "$ext/run/$SHOWCASE"
+    npx --yes open-canvas generate "$ext/run/$SHOWCASE" --formats html --theme light
+    test -f "$ext/run/out/showcase.html"
+    rm -rf "$ext"
+  )
 
-	rm -rf "$tarball_dir" "$pack_dir"
+  rm -rf "$tarball_dir" "$pack_dir"
 }
 
 run_global_latest() {
-	echo "== smoke: npm install -g @flesler/open-canvas@latest (isolated prefix) =="
-	local prefix_dir
-	prefix_dir="$(mktemp -d /tmp/open-canvas-smoke-global-XXXXXX)"
-	npm install -g @flesler/open-canvas@latest --prefix "$prefix_dir" --silent
+  echo "== smoke: npm install -g @flesler/open-canvas@latest (isolated prefix) =="
+  local prefix_dir
+  prefix_dir="$(mktemp -d /tmp/open-canvas-smoke-global-XXXXXX)"
+  npm install -g @flesler/open-canvas@latest --prefix "$prefix_dir" --silent
 
-	local oc="$prefix_dir/bin/open-canvas"
-	if [[ ! -x "$oc" ]]; then
-		echo "smoke: expected global bin at $oc" >&2
-		rm -rf "$prefix_dir"
-		exit 1
-	fi
+  local oc="$prefix_dir/bin/open-canvas"
+  if [[ ! -x "$oc" ]]; then
+    echo "smoke: expected global bin at $oc" >&2
+    rm -rf "$prefix_dir"
+    exit 1
+  fi
 
-	run_with_open_canvas "npm @latest" "$oc"
-	rm -rf "$prefix_dir"
+  run_with_open_canvas "npm @latest" "$oc"
+  rm -rf "$prefix_dir"
 }
 
 case "$MODE" in
-	pack)
-		run_local_dist
-		run_pack_install
-		;;
-	global)
-		run_global_latest
-		;;
-	both)
-		run_local_dist
-		run_pack_install
-		run_global_latest
-		;;
+  pack)
+    run_local_dist
+    run_pack_install
+    ;;
+  global)
+    run_global_latest
+    ;;
+  both)
+    run_local_dist
+    run_pack_install
+    run_global_latest
+    ;;
 esac
 
 echo "smoke OK"

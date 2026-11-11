@@ -6,8 +6,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/.cache/github-pages"
 CANVAS="$ROOT/example/showcase.canvas.tsx"
 if [[ ! -f "$ROOT/dist/cli.js" ]]; then
-	echo "build-github-pages: run npm run build:cli first" >&2
-	exit 1
+  echo "build-github-pages: run npm run build:cli first" >&2
+  exit 1
 fi
 
 OC=(node "$ROOT/dist/cli.js")

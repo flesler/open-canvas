@@ -8,8 +8,8 @@ cd "$ROOT"
 npm run check:lock
 
 if [[ ! -f dist/cli.js ]]; then
-	echo "check-npm-pack: run npm run build:cli first" >&2
-	exit 1
+  echo "check-npm-pack: run npm run build:cli first" >&2
+  exit 1
 fi
 
 tmpdir="$(mktemp -d)"
@@ -20,46 +20,46 @@ list="$(tar -tzf "$tgz" | sed 's|^package/||')"
 
 fail=0
 while IFS= read -r path; do
-	case "$path" in
-		bin/*)
-			if [[ "$path" != bin/open-canvas.js ]]; then
-				echo "check-npm-pack: forbidden in tarball: $path" >&2
-				fail=1
-			fi
-			;;
-		scripts/* | example/* | docs/* | .github/* | .cursor/*)
-			echo "check-npm-pack: forbidden in tarball: $path" >&2
-			fail=1
-			;;
-		dist/scripts/* | dist/canvas-sdk-hash.js)
-			echo "check-npm-pack: forbidden in tarball: $path" >&2
-			fail=1
-			;;
-		dist/*.test.js)
-			echo "check-npm-pack: forbidden in tarball: $path" >&2
-			fail=1
-			;;
-		tsconfig*.json)
-			echo "check-npm-pack: forbidden in tarball: $path" >&2
-			fail=1
-			;;
-	esac
+  case "$path" in
+    bin/*)
+      if [[ "$path" != bin/open-canvas.js ]]; then
+        echo "check-npm-pack: forbidden in tarball: $path" >&2
+        fail=1
+      fi
+      ;;
+    scripts/* | example/* | docs/* | .github/* | .cursor/*)
+      echo "check-npm-pack: forbidden in tarball: $path" >&2
+      fail=1
+      ;;
+    dist/scripts/* | dist/canvas-sdk-hash.js)
+      echo "check-npm-pack: forbidden in tarball: $path" >&2
+      fail=1
+      ;;
+    dist/*.test.js)
+      echo "check-npm-pack: forbidden in tarball: $path" >&2
+      fail=1
+      ;;
+    tsconfig*.json)
+      echo "check-npm-pack: forbidden in tarball: $path" >&2
+      fail=1
+      ;;
+  esac
 done <<< "$list"
 
 required=(
-	bin/open-canvas.js
-	dist/cli.js
-	dist/export-vite-config.js
-	src/vendor/skill-bundle/SKILL.md
+  bin/open-canvas.js
+  dist/cli.js
+  dist/export-vite-config.js
+  src/vendor/skill-bundle/SKILL.md
 )
 for path in "${required[@]}"; do
-	if ! grep -qxF "$path" <<< "$list"; then
-		echo "check-npm-pack: missing required: $path" >&2
-		fail=1
-	fi
+  if ! grep -qxF "$path" <<< "$list"; then
+    echo "check-npm-pack: missing required: $path" >&2
+    fail=1
+  fi
 done
 
 if [[ "$fail" -ne 0 ]]; then
-	exit 1
+  exit 1
 fi
 echo "check-npm-pack OK ($(wc -l <<< "$list") files)"

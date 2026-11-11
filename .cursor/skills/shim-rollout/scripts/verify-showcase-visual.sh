@@ -14,7 +14,7 @@ SKIP_SYNC=0
 DRY_RUN=0
 
 usage() {
-	cat <<EOF
+  cat <<EOF
 Usage: $(basename "$0") [--skip-sync] [--dry-run]
 
   Writes $CROP (and full JPG). Agent: Read the crop and confirm charts look correct.
@@ -24,47 +24,47 @@ EOF
 }
 
 while [[ $# -gt 0 ]]; do
-	case "$1" in
-		--skip-sync)
-			SKIP_SYNC=1
-			shift
-			;;
-		--dry-run)
-			DRY_RUN=1
-			shift
-			;;
-		-h | --help)
-			usage
-			exit 0
-			;;
-		*)
-			echo "unknown option: $1" >&2
-			usage >&2
-			exit 1
-			;;
-	esac
+  case "$1" in
+    --skip-sync)
+      SKIP_SYNC=1
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
 done
 
 if [[ $DRY_RUN -eq 1 ]]; then
-	echo "would: sync-local-shim (unless --skip-sync)"
-	echo "would: build:cli + generate jpg -> $FULL"
-	echo "would: magick -crop $CROP_GEOM -> $CROP"
-	exit 0
+  echo "would: sync-local-shim (unless --skip-sync)"
+  echo "would: build:cli + generate jpg -> $FULL"
+  echo "would: magick -crop $CROP_GEOM -> $CROP"
+  exit 0
 fi
 
 if [[ $SKIP_SYNC -eq 0 ]]; then
-	"$SKILL_DIR/scripts/sync-local-shim.sh"
+  "$SKILL_DIR/scripts/sync-local-shim.sh"
 fi
 
 mkdir -p "$CACHE"
 cd "$OPEN_CANVAS_ROOT"
 npm run build:cli
 node dist/cli.js generate example/showcase.canvas.tsx \
-	--title 'Open Canvas — SDK Showcase' \
-	--formats jpg \
-	--theme light \
-	--width 1280 \
-	--selector '#section-charts'
+  --title 'Open Canvas — SDK Showcase' \
+  --formats jpg \
+  --theme light \
+  --width 1280 \
+  --selector '#section-charts'
 cp example/out/showcase.jpg "$FULL"
 magick "$FULL" -crop "$CROP_GEOM" +repage -quality 88 "$CROP"
 echo "→ $CROP (read this for visual verify)"
