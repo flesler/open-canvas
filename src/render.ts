@@ -132,9 +132,16 @@ async function writePdf(
   outPath: string,
 ): Promise<void> {
   const widthPx = ctx.options.page.viewport.width
-  const height = await page.evaluate(
-    () => document.documentElement.scrollHeight,
-  )
+  await page.emulateMedia({ media: 'print' })
+  // In print, vh resolves to the PDF page height, which is derived from content height.
+  const height = await page.evaluate(() => {
+    for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
+      if (el.style.minHeight.includes('vh')) {
+        el.style.minHeight = '0'
+      }
+    }
+    return Math.ceil(document.documentElement.getBoundingClientRect().height)
+  })
   const pdf = { ...ctx.options.pdf }
   if (!pdf.width) {
     pdf.width = `${widthPx}px`
@@ -201,4 +208,5 @@ async function isolateSelectors(
 
 export const forTests = {
   isolateSelectors,
+  writePdf,
 }

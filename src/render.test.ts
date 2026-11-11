@@ -1,8 +1,44 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { forTests } from './render.js'
 
-const { isolateSelectors } = forTests
+const { isolateSelectors, writePdf } = forTests
+
+describe('writePdf', () => {
+  let browser: Awaited<ReturnType<typeof chromium.launch>>
+
+  beforeAll(async () => {
+    browser = await chromium.launch()
+  })
+
+  afterAll(async () => {
+    await browser?.close()
+  })
+
+  it('fits a 100vh root with padding on one page', async () => {
+    const page = await browser.newPage({ viewport: { width: 800, height: 600 } })
+    await page.setContent(`
+			<body style="margin:0">
+				<div style="min-height:100vh;padding:28px 32px 40px">
+					<div style="height:1500px">tall content</div>
+				</div>
+			</body>
+		`)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'out.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'out',
+      options: { page: { viewport: { width: 800, height: 600 } }, screenshot: {}, pdf: { printBackground: true } },
+    }, out)
+    const pages = fs.readFileSync(out, 'latin1').match(/\/Type\s*\/Page[^s]/g) ?? []
+    expect(pages).toHaveLength(1)
+    await page.close()
+  })
+})
 
 describe('isolateSelectors', () => {
   let browser: Awaited<ReturnType<typeof chromium.launch>>
