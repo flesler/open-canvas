@@ -4,19 +4,19 @@ import { resolveRenderOptions } from './render-options.js'
 describe('resolveRenderOptions', () => {
   it('defaults viewport', () => {
     const cfg = resolveRenderOptions({ theme: 'light' })
-    expect(cfg.page.viewport).toEqual({ width: 1280, height: 900 })
+    expect(cfg.page.viewport).toEqual({ width: 1280, height: 1 })
     expect(cfg.page.deviceScaleFactor).toBe(1)
     expect(cfg.page.colorScheme).toBe('light')
     expect(cfg.screenshot.quality).toBeUndefined()
   })
 
-  it('CLI width/height override defaults', () => {
+  it('CLI width and viewport height override', () => {
     const cfg = resolveRenderOptions({
       viewportWidth: 1920,
       viewportHeight: 1200,
       theme: 'dark',
     })
-    expect(cfg.page.viewport.width).toBe(1920)
+    expect(cfg.page.viewport).toEqual({ width: 1920, height: 1200 })
     expect(cfg.page.colorScheme).toBe('dark')
   })
 

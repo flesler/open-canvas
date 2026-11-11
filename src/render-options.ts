@@ -26,7 +26,7 @@ export type RenderOptionsInput = {
 
 const DEFAULTS: RenderOptions = {
   page: {
-    viewport: { width: 1280, height: 900 },
+    viewport: { width: 1280, height: 1 },
     deviceScaleFactor: 1,
   },
   screenshot: {
