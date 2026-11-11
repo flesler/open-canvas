@@ -35,6 +35,16 @@ declare module '*.yml' {
   export default data
 }
 
+declare module '*.txt' {
+  const text: string
+  export default text
+}
+
+declare module '*.md' {
+  const text: string
+  export default text
+}
+
 /** Vite alias at build time → path from OPEN_CANVAS_CANVAS_PATH */
 declare module '@open-canvas/user-canvas' {
   import type { ComponentType } from 'react'

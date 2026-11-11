@@ -6,9 +6,9 @@ import { parse as parseYaml } from 'yaml'
 import { canvasStateSeedPreamble, readCanvasStateSidecar } from './canvas-state-sidecar.js'
 
 /** Relative data imports beside a canvas (json handled by Vite natively). */
-export const DATA_FILE_EXT = /\.(jsonl|json|csv|tsv|ya?ml)$/i
+export const DATA_FILE_EXT = /\.(jsonl|json|csv|tsv|ya?ml|txt|md)$/i
 
-const VITE_DATA_EXT = /\.(jsonl|csv|tsv|ya?ml)$/i
+const VITE_DATA_EXT = /\.(jsonl|csv|tsv|ya?ml|txt|md)$/i
 
 export function parseJsonl(raw: string): unknown[] {
   const lines = raw.split(/\r?\n/).filter(line => line.trim() !== '')
@@ -34,6 +34,9 @@ export function parseDataContent(ext: string, raw: string): unknown {
     case '.yaml':
     case '.yml':
       return parseYaml(raw)
+    case '.txt':
+    case '.md':
+      return raw
     default:
       throw new Error(`unsupported data file extension: ${ext}`)
   }

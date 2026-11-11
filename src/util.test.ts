@@ -23,6 +23,11 @@ describe('parseDataContent', () => {
     const rows = parseDataContent('.csv', 'a,b\n1,2\n') as Record<string, string>[]
     expect(rows[0].a).toBe('1')
   })
+
+  it('returns txt and md as strings', () => {
+    expect(parseDataContent('.txt', 'hello')).toBe('hello')
+    expect(parseDataContent('.md', '# Title\n\nbody')).toBe('# Title\n\nbody')
+  })
 })
 
 describe('canvasStem', () => {
@@ -108,6 +113,19 @@ describe('formatCursorCanvasEmit', () => {
 })
 
 describe('emitCursorCanvas', () => {
+  it('inlines md as a string const', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-emit-'))
+    fs.writeFileSync(path.join(dir, 'note.md'), '# Hi\n')
+    const canvas = path.join(dir, 'mini.canvas.tsx')
+    fs.writeFileSync(
+      canvas,
+      'import note from \'./note.md\'\nexport default function Mini() { return note }\n',
+    )
+    const out = path.join(dir, 'mini-out.canvas.tsx')
+    emitCursorCanvas(canvas, out)
+    expect(fs.readFileSync(out, 'utf8')).toContain('const note = "# Hi\\n"')
+  })
+
   it('inlines json and places cursor import first', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-emit-'))
     fs.writeFileSync(path.join(dir, 'nums.json'), '{"n":1}')

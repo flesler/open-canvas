@@ -154,6 +154,15 @@ describe('dataImportsPlugin', () => {
     expect(out?.code).toContain('export default')
     expect(out?.map).toBeNull()
   })
+
+  it('rewrites txt to a default string export', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-data-plugin-'))
+    const txt = path.join(dir, 'copy.txt')
+    fs.writeFileSync(txt, 'export copy')
+    const plugin = dataImportsPlugin()
+    const out = runTransform(plugin, 'export copy', txt)
+    expect(out?.code).toBe('export default "export copy"')
+  })
 })
 
 describe('buildExportViteConfig', () => {

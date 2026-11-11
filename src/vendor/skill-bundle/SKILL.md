@@ -19,7 +19,7 @@ SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
 |Topic|open-canvas|
 |---|---|
 |Canvas file path|Any `*.canvas.tsx` — not only IDE `…/canvases/`|
-|Data|Sibling `./data/*` imports (json, yaml, tsv, csv); optional `<stem>.canvas.data.json` beside the canvas|
+|Data|Sibling `./data/*` imports (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json` beside the canvas|
 |Typecheck|`open-canvas verify <file>`|
 |Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
 
