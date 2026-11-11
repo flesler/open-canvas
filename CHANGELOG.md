@@ -2,16 +2,29 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.12.0]
+#### 2026-11-11
+
+##### Added
+- CLI short flags for common `generate` options (`-o`, `-n`, `-f`, `-w`, `-t`); `-q` / `--quiet` suppresses success paths on stdout.
+- Shim-visual parity workflow: published-fixture compare (`bin/compare-image.py`), HTML screenshot helper (`bin/screenshot-html.mjs`).
+
+##### Changed
+- Export shell aligned with published Cursor canvas (theme surfaces, scroll chrome, `print-theme.ts`, host `editorBackground`; viewport height from `max(doc, body, #root)`); refreshed `docs/showcase-*.png`.
+- Sandboxed export seeds canvas state without `localStorage`.
+- `@flesler/cursor-canvas-web` `^1.6.0`.
+
+##### Fixed
+- Paginated PDF sheet height no longer double-counts vertical padding (`body` + `box-decoration-break: clone`).
+
 ## [1.11.2]
 #### 2026-11-11
 
 ##### Changed
 - Export shell gutter matches published Cursor canvas (`24px` vertical, `32px` horizontal); documented in agent skill.
-- Published-parity shell: theme surfaces on `html`/`body`/`#root`, scroll chrome, print light scheme (`print-theme.ts`), host `editorBackground`; viewport height from `max(doc, body, #root)`.
-- Bump `@flesler/cursor-canvas-web` to `^1.5.3`; refresh `docs/showcase-*.png`.
 
 ##### Fixed
-- PDF multi-page export repeats body padding on each page (`box-decoration-break: clone`; sheet height includes measured vertical padding).
+- PDF multi-page export repeats `main` padding on each page (`box-decoration-break: clone`; sheet height includes measured vertical padding).
 
 ## [1.11.1]
 #### 2026-11-11
