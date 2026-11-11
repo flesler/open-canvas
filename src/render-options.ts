@@ -19,7 +19,7 @@ export type RenderOptions = {
 
 export type RenderOptionsInput = {
   viewportWidth?: number;
-  viewportHeight?: number;
+  minHeight?: number;
   renderOptions?: string;
   theme?: 'light' | 'dark'
 }
@@ -50,7 +50,7 @@ export function resolveRenderOptions(input: RenderOptionsInput): RenderOptions {
     ...fileConfig.page,
     viewport: {
       width: input.viewportWidth ?? fileConfig.page?.viewport?.width ?? DEFAULTS.page.viewport.width,
-      height: input.viewportHeight ?? fileConfig.page?.viewport?.height ?? DEFAULTS.page.viewport.height,
+      height: input.minHeight ?? fileConfig.page?.viewport?.height ?? DEFAULTS.page.viewport.height,
     },
     deviceScaleFactor: fileConfig.page?.deviceScaleFactor ?? DEFAULTS.page.deviceScaleFactor,
     colorScheme: input.theme ?? fileConfig.page?.colorScheme ?? DEFAULTS.page.colorScheme,

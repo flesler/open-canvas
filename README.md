@@ -59,7 +59,7 @@ open-canvas verify path/to/report.canvas.tsx
 |`-f`, `--formats`|`html,png,pdf` — also `jpg`, `cursor`|
 |`-n`, `--name`|Output basename (default: canvas stem)|
 |`-w`, `--width`|Playwright viewport width (default `1280`)|
-|`--override-height`|Playwright viewport height in px (default `900`)|
+|`--min-height`|Optional minimum page height in px|
 |`--selector`|Export only matched sections|
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 |`-q`, `--quiet`|No stdout on success (outputs at `{--out}/{--name or stem}.{ext}`)|

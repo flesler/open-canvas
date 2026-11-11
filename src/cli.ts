@@ -60,8 +60,8 @@ program
   )
   .option('-w, --width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
   .option(
-    '--override-height <px>',
-    'Playwright viewport height in px (default 900). PNG and JPG then resize to the canvas',
+    '--min-height <px>',
+    'optional minimum page height in px (PNG/JPG clamp; paginated PDF sheet floor)',
     (v: string) => Number(v),
   )
   .option(
@@ -90,7 +90,7 @@ program
         brand: opts.brand as 'cursor' | 'grok',
         formats: opts.formats,
         viewportWidth: opts.width,
-        viewportHeight: opts.overrideHeight,
+        minHeight: opts.minHeight,
         renderOptions: opts.renderOptions,
         selectors: opts.selector,
         inlineState: Boolean(opts.inlineState),

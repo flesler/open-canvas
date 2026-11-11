@@ -10,10 +10,10 @@ describe('resolveRenderOptions', () => {
     expect(cfg.screenshot.quality).toBeUndefined()
   })
 
-  it('CLI width and viewport height override', () => {
+  it('CLI width and min-height override', () => {
     const cfg = resolveRenderOptions({
       viewportWidth: 1920,
-      viewportHeight: 1200,
+      minHeight: 1200,
       theme: 'dark',
     })
     expect(cfg.page.viewport).toEqual({ width: 1920, height: 1200 })

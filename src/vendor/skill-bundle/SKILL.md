@@ -40,7 +40,7 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |`--brand`|`cursor`|
 
 |`-w`, `--width`|Playwright viewport width (default `1280`)|
-|`--override-height`|Playwright viewport height in px (default `900`)|
+|`--min-height`|Optional minimum page height in px|
 |`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
 |`--selector`|Export matched nodes only|
 |`-q`, `--quiet`|No stdout on success; writes `{--out}/{--name or stem}.{ext}`|

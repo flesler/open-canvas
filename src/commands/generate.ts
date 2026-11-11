@@ -22,7 +22,7 @@ export type GenerateOptions = {
   brand?: 'cursor' | 'grok';
   formats?: string[];
   viewportWidth?: number;
-  viewportHeight?: number;
+  minHeight?: number;
   renderOptions?: string;
   selectors?: string | string[];
   /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
@@ -73,7 +73,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
   const options = resolveRenderOptions({
     theme,
     viewportWidth: opts.viewportWidth,
-    viewportHeight: opts.viewportHeight,
+    minHeight: opts.minHeight,
     renderOptions: opts.renderOptions,
   })
   const renderCtx = { outDir, stem, options, selectors }
