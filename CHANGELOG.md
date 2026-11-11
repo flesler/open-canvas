@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.13.1]
+#### 2026-11-11
+
+##### Fixed
+- Export `#root` no longer capped at `72rem`; raster width follows `generate -w` only.
+- Dark theme PDFs and print keep dark surfaces (removed `beforeprint` light swap; print CSS follows `data-export-theme`).
+
+##### Changed
+- Agent skill: PDF colors follow `--theme`; no light-paper override on dark export.
+
 ## [1.13.0]
 #### 2026-11-11
 
