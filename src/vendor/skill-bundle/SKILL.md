@@ -22,6 +22,7 @@ SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
 |Data|Sibling `./data/*` imports (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json` beside the canvas|
 |Typecheck|`open-canvas verify <file>`|
 |Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
+|Page gutter|`generate` adds **24px / 32px** shell padding (published Cursor canvas; not IDE panel). Not customizable — pad inside your layout if you need more or less.|
 
 When not in the Cursor IDE, skip **Location**, **Introducing the canvas**, and **Troubleshooting** (managed `canvases/` path) in `$VENDOR/canvas/SKILL.md`.
 

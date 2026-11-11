@@ -17,9 +17,10 @@ if (typeof window !== 'undefined') {
   }
 }
 
+// Published Cursor canvas template: body padding 24px 32px; canvas authors tweak in-content.
 mountCanvas(
   'root',
-  <Box component="main" p={24} pb={32}>
+  <Box component="main" py={24} px={32}>
     <Canvas />
   </Box>,
   { defaultColorScheme: kind },
