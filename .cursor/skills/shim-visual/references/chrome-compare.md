@@ -1,6 +1,6 @@
 # Chrome HTML compare
 
-User paste = **served canvas document** (DevTools on the canvas page). Agent opens **export** `*.html` from `open-canvas generate`.
+User paste = **served canvas document** — the **iframe’s** `html` (DevTools on the frame document), not the Cursor parent page with the header above the iframe. Agent opens **export** `*.html` from `open-canvas generate` (standalone top-level doc, same tree as the frame).
 
 ## Panel vs published
 

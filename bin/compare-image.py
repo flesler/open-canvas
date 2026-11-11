@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare a PNG in the working tree to the same path at a git ref (default HEAD).
+"""Compare PNGs: working tree vs git ref (default), or vs another file (--against).
 
 Stdlib only. Same-size pixel diff plus overlap/tail analysis when height differs.
 """
@@ -718,9 +718,149 @@ def print_hints(
             print(f"  • {ln}")
 
 
+def parity_heatmap_path(root: Path, ref: Path, work: Path) -> Path:
+    return root / ".cache" / "heatmap" / "parity" / f"{work.stem}-vs-{ref.stem}.png"
+
+
+def compare_pngs(
+    *,
+    pix_a: bytes,
+    pix_b: bytes,
+    w: int,
+    h0: int,
+    h1: int,
+    ref_label: str,
+    tolerance: int,
+    no_overlap: bool,
+    heatmap_dest: Path | None,
+    heatmap_mode: str,
+    root: Path,
+    size_banner: str | None = None,
+) -> int:
+    tol_label = str(tolerance)
+    any_diff = False
+    overlap_stats: dict | None = None
+    tail_diff_pct: float | None = None
+    dh = h1 - h0
+
+    if size_banner:
+        print(size_banner)
+
+    meta_a = image_metadata(pix_a, w, h0)
+    meta_b = image_metadata(pix_b, w, h1)
+    print(f"dimensions: {ref_label} {w}×{h0}, working {w}×{h1}")
+    print_metadata(ref_label, meta_a)
+    print_metadata("working", meta_b)
+    dl = meta_b["mean_luma"] - meta_a["mean_luma"]
+    print(f"  Δ mean luma {dl:+.1f} (negative = darker)")
+
+    if h0 == h1:
+        stats = diff_stats(pix_a, pix_b, w, h0, tolerance)
+        any_diff = print_diff_section("full image", stats, w, h0, tol_label)
+        overlap_stats = stats
+        h_overlap = h0
+    else:
+        print(f"\nheight mismatch: Δ {dh:+d} px")
+        h_overlap = min(h0, h1)
+        if no_overlap:
+            print("(overlap analysis skipped; use default without --no-overlap)")
+        else:
+            pa = crop_rows(pix_a, w, 0, h_overlap)
+            pb = crop_rows(pix_b, w, 0, h_overlap)
+            overlap_stats = diff_stats(pa, pb, w, h_overlap, tolerance)
+            any_diff = print_diff_section(
+                f"overlap (top {h_overlap}px, same width)",
+                overlap_stats,
+                w,
+                h_overlap,
+                tol_label,
+            )
+
+            if dh > 0:
+                tail = crop_rows(pix_b, w, h0, dh)
+                print(f"\n--- working-only tail (rows {h0}..{h1 - 1}, {w}×{dh}) ---")
+                print_metadata("tail", image_metadata(tail, w, dh))
+                ref_bottom = crop_rows(pix_a, w, h0 - dh, dh) if h0 >= dh else None
+                if ref_bottom is not None:
+                    tail_stats = diff_stats(ref_bottom, tail, w, dh, tolerance)
+                    ttotal = w * dh
+                    tail_diff_pct = 100.0 * tail_stats["changed"] / ttotal if ttotal else 0.0
+                    print(
+                        f"tail vs {ref_label} bottom {dh}px: "
+                        f"{tail_stats['changed']}/{ttotal} pixels ({tail_diff_pct:.2f}% diff)",
+                    )
+                    if tail_stats["changed"] > 0 and tail_diff_pct > 20:
+                        print_diff_section(
+                            f"tail vs {ref_label} bottom",
+                            tail_stats,
+                            w,
+                            dh,
+                            tol_label,
+                        )
+            elif dh < 0:
+                extra = abs(dh)
+                strip = crop_rows(pix_a, w, h1, extra)
+                print(f"\n--- {ref_label}-only strip (rows {h1}..{h0 - 1}, {w}×{extra}) ---")
+                print_metadata(f"{ref_label} strip", image_metadata(strip, w, extra))
+                cur_bottom = crop_rows(pix_b, w, h1 - extra, extra) if h1 >= extra else None
+                if cur_bottom is not None:
+                    tail_stats = diff_stats(strip, cur_bottom, w, extra, tolerance)
+                    ttotal = w * extra
+                    tail_diff_pct = 100.0 * tail_stats["changed"] / ttotal if ttotal else 0.0
+                    print(
+                        f"{ref_label} strip vs working bottom {extra}px: "
+                        f"{tail_stats['changed']}/{ttotal} ({tail_diff_pct:.2f}% diff)",
+                    )
+
+        if not no_overlap:
+            print_hints(ref_label, h0, h1, overlap_stats, w, h_overlap, tail_diff_pct, dh)
+
+    if heatmap_dest is not None:
+        heatmap_dest.parent.mkdir(parents=True, exist_ok=True)
+        written, row_counts = write_heatmap(
+            pix_a,
+            pix_b,
+            w,
+            h0,
+            h1,
+            tolerance,
+            heatmap_dest,
+            heatmap_mode,
+        )
+        try:
+            rel = written.relative_to(root)
+        except ValueError:
+            rel = written
+        print(f"\nheatmap ({heatmap_mode}): {rel}")
+        if row_counts is not None:
+            print(
+                "  row alignment: "
+                f"{row_counts['equal']} equal, {row_counts['replace']} replaced, "
+                f"{row_counts['insert']} inserted, {row_counts['delete']} deleted (ref-only)",
+            )
+        if heatmap_mode == "rows":
+            print(
+                "  top = working: unchanged = grayed out; heat = in-place edit; "
+                "green bar/ tint = new row",
+            )
+            print(
+                "  bottom strip (if any) = ref-only removed rows (magenta bar / purple wash)",
+            )
+        else:
+            print("  dim = match at same (x,y); color = Δ (misleading if layout shifted)")
+
+    return 1 if any_diff or dh != 0 else 0
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("image", type=Path, help="PNG path (under repo)")
+    p.add_argument("image", type=Path, help="working PNG path")
+    p.add_argument(
+        "--against",
+        type=Path,
+        metavar="PNG",
+        help="baseline file (skip git); default baseline is same path at --ref",
+    )
     p.add_argument("--ref", default="HEAD", help="git ref for baseline (default HEAD)")
     p.add_argument(
         "--tolerance",
@@ -754,17 +894,27 @@ def main() -> None:
     )
     args = p.parse_args()
     root = repo_root()
-    relpath = rel_to_repo(args.image, root)
     current = args.image if args.image.is_absolute() else root / args.image
     if not current.is_file():
         raise SystemExit(f"missing file: {current}")
 
-    raw_ref = git_png_bytes(root, args.ref, relpath)
-    raw_cur = current.read_bytes()
-    ref_label = args.ref
-    print(
-        f"{relpath}: file {len(raw_ref)} B ({ref_label}) vs {len(raw_cur)} B (working)",
-    )
+    if args.against is not None:
+        ref_path = args.against.resolve()
+        if not ref_path.is_file():
+            raise SystemExit(f"missing baseline: {ref_path}")
+        raw_ref = ref_path.read_bytes()
+        raw_cur = current.read_bytes()
+        ref_label = ref_path.name
+        print(f"ref: {ref_path}\nwork: {current}")
+        banner = f"file {len(raw_ref)} B (ref) vs {len(raw_cur)} B (working)"
+    else:
+        relpath = rel_to_repo(current, root)
+        raw_ref = git_png_bytes(root, args.ref, relpath)
+        raw_cur = current.read_bytes()
+        ref_label = args.ref
+        banner = (
+            f"{relpath}: file {len(raw_ref)} B ({ref_label}) vs {len(raw_cur)} B (working)"
+        )
 
     w0, h0, pix_a = decode_png(raw_ref)
     w1, h1, pix_b = decode_png(raw_cur)
@@ -774,119 +924,34 @@ def main() -> None:
             f"width mismatch: {ref_label} {w0} vs working {w1} (not supported)",
         )
 
-    w = w0
-    tol_label = str(args.tolerance)
-    any_diff = False
-    overlap_stats: dict | None = None
-    tail_diff_pct: float | None = None
-    dh = h1 - h0
-
-    meta_a = image_metadata(pix_a, w, h0)
-    meta_b = image_metadata(pix_b, w, h1)
-    print(f"dimensions: {ref_label} {w}×{h0}, working {w}×{h1}")
-    print_metadata(ref_label, meta_a)
-    print_metadata("working", meta_b)
-    dl = meta_b["mean_luma"] - meta_a["mean_luma"]
-    print(f"  Δ mean luma {dl:+.1f} (negative = darker)")
-
-    if h0 == h1:
-        stats = diff_stats(pix_a, pix_b, w, h0, args.tolerance)
-        any_diff = print_diff_section("full image", stats, w, h0, tol_label)
-        overlap_stats = stats
-        h_overlap = h0
-    else:
-        print(f"\nheight mismatch: Δ {dh:+d} px")
-        if args.no_overlap:
-            print("(overlap analysis skipped; use default without --no-overlap)")
-        else:
-            h_overlap = min(h0, h1)
-            pa = crop_rows(pix_a, w, 0, h_overlap)
-            pb = crop_rows(pix_b, w, 0, h_overlap)
-            overlap_stats = diff_stats(pa, pb, w, h_overlap, args.tolerance)
-            any_diff = print_diff_section(
-                f"overlap (top {h_overlap}px, same width)",
-                overlap_stats,
-                w,
-                h_overlap,
-                tol_label,
-            )
-
-            if dh > 0:
-                tail = crop_rows(pix_b, w, h0, dh)
-                print(f"\n--- working-only tail (rows {h0}..{h1 - 1}, {w}×{dh}) ---")
-                print_metadata("tail", image_metadata(tail, w, dh))
-                ref_bottom = crop_rows(pix_a, w, h0 - dh, dh) if h0 >= dh else None
-                if ref_bottom is not None:
-                    tail_stats = diff_stats(ref_bottom, tail, w, dh, args.tolerance)
-                    ttotal = w * dh
-                    tail_diff_pct = 100.0 * tail_stats["changed"] / ttotal if ttotal else 0.0
-                    print(
-                        f"tail vs {ref_label} bottom {dh}px: "
-                        f"{tail_stats['changed']}/{ttotal} pixels ({tail_diff_pct:.2f}% diff)",
-                    )
-                    if tail_stats["changed"] > 0 and tail_diff_pct > 20:
-                        print_diff_section(
-                            f"tail vs {ref_label} bottom",
-                            tail_stats,
-                            w,
-                            dh,
-                            tol_label,
-                        )
-            elif dh < 0:
-                extra = abs(dh)
-                strip = crop_rows(pix_a, w, h1, extra)
-                print(f"\n--- {ref_label}-only strip (rows {h1}..{h0 - 1}, {w}×{extra}) ---")
-                print_metadata(f"{ref_label} strip", image_metadata(strip, w, extra))
-                cur_bottom = crop_rows(pix_b, w, h1 - extra, extra) if h1 >= extra else None
-                if cur_bottom is not None:
-                    tail_stats = diff_stats(strip, cur_bottom, w, extra, args.tolerance)
-                    ttotal = w * extra
-                    tail_diff_pct = 100.0 * tail_stats["changed"] / ttotal if ttotal else 0.0
-                    print(
-                        f"{ref_label} strip vs working bottom {extra}px: "
-                        f"{tail_stats['changed']}/{ttotal} ({tail_diff_pct:.2f}% diff)",
-                    )
-
-        print_hints(ref_label, h0, h1, overlap_stats, w, min(h0, h1), tail_diff_pct, dh)
-
+    hm_dest: Path | None = None
     if not args.no_heatmap:
-        hm_dest = (
-            Path(args.heatmap)
-            if args.heatmap
-            else heatmap_path(root, relpath)
-        )
-        if not hm_dest.is_absolute():
-            hm_dest = root / hm_dest
-        written, row_counts = write_heatmap(
-            pix_a,
-            pix_b,
-            w,
-            h0,
-            h1,
-            args.tolerance,
-            hm_dest,
-            args.heatmap_mode,
-        )
-        print(f"\nheatmap ({args.heatmap_mode}): {written.relative_to(root)}")
-        if row_counts is not None:
-            print(
-                "  row alignment: "
-                f"{row_counts['equal']} equal, {row_counts['replace']} replaced, "
-                f"{row_counts['insert']} inserted, {row_counts['delete']} deleted (ref-only)",
-            )
-        if args.heatmap_mode == "rows":
-            print(
-                "  top = working: unchanged = grayed out; heat = in-place edit; "
-                "green bar/ tint = new row",
-            )
-            print(
-                "  bottom strip (if any) = ref-only removed rows (magenta bar / purple wash)",
-            )
+        if args.heatmap:
+            hm_dest = Path(args.heatmap)
+            if not hm_dest.is_absolute():
+                hm_dest = root / hm_dest
+        elif args.against is not None:
+            hm_dest = parity_heatmap_path(root, args.against.resolve(), current.resolve())
         else:
-            print("  dim = match at same (x,y); color = Δ (misleading if layout shifted)")
+            relpath = rel_to_repo(current, root)
+            hm_dest = root / heatmap_path(root, relpath)
 
-    if any_diff or dh != 0:
-        raise SystemExit(1)
+    code = compare_pngs(
+        pix_a=pix_a,
+        pix_b=pix_b,
+        w=w0,
+        h0=h0,
+        h1=h1,
+        ref_label=ref_label,
+        tolerance=args.tolerance,
+        no_overlap=args.no_overlap,
+        heatmap_dest=hm_dest,
+        heatmap_mode=args.heatmap_mode,
+        root=root,
+        size_banner=banner,
+    )
+    if code:
+        raise SystemExit(code)
 
 
 if __name__ == "__main__":

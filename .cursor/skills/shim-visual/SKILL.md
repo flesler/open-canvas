@@ -46,4 +46,6 @@ Then `npm test` in `cursor-canvas-web`. Confirm both `docs/showcase-light.png` a
 
 Component mappings: [references/parity.md](references/parity.md).
 
+Published showcase baselines (local, gitignored): `.cache/shim-visual/showcase-published-{light,dark}.html`.
+
 Release / publish order: [shim-rollout](../shim-rollout/SKILL.md).
