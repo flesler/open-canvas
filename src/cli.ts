@@ -82,6 +82,7 @@ program
     '--inline-state',
     'with --formats cursor: inline .canvas.data.json and seed localStorage (html/png/pdf always seed at build)',
   )
+  .option('-q, --quiet', 'no stdout on success (artifacts under --out and --name)')
   .action(async (canvas: string, opts) => {
     try {
       await runGenerate({
@@ -98,6 +99,7 @@ program
         selectors: opts.selector,
         inlineState: Boolean(opts.inlineState),
         cursorOut: opts.cursorOut,
+        quiet: Boolean(opts.quiet),
       })
     } catch (e) {
       console.error(e instanceof Error ? e.message : e)

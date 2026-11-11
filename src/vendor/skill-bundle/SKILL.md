@@ -22,7 +22,7 @@ SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
 |Data|Sibling `./data/*` imports (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json` beside the canvas|
 |Typecheck|`open-canvas verify <file>`|
 |Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
-|Page gutter|`generate` adds **24px / 32px** shell padding (published Cursor canvas; not IDE panel). Not customizable — pad inside your layout if you need more or less.|
+|Page margins|Same as a **published** Cursor canvas (**24px / 32px**), not the tighter **IDE panel**. Not a CLI flag — add inset inside the canvas if you need more. **PDF:** dark `--theme` still prints on light paper (matches Cursor).|
 
 When not in the Cursor IDE, skip **Location**, **Introducing the canvas**, and **Troubleshooting** (managed `canvases/` path) in `$VENDOR/canvas/SKILL.md`.
 
@@ -44,6 +44,7 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |`--cursor-out`|With `--formats cursor`, write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
 |`--selector`|Export matched nodes only|
+|`-q`, `--quiet`|No stdout on success; writes `{--out}/{--name or stem}.{ext}`|
 
 `jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. `--formats cursor` inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
 

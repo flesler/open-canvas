@@ -28,7 +28,9 @@ export type GenerateOptions = {
   /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
   inlineState?: boolean;
   /** With `--formats cursor`, write here instead of `out/<stem>.canvas.tsx`. */
-  cursorOut?: string
+  cursorOut?: string;
+  /** No stdout on success (paths are `outDir` + `--name` + format ext). */
+  quiet?: boolean
 }
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
@@ -77,6 +79,11 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     renderOptions: opts.renderOptions,
   })
   const renderCtx = { outDir, stem, options, selectors }
+  const logOut = (p: string) => {
+    if (!opts.quiet) {
+      console.log(`→ ${p}`)
+    }
+  }
 
   if (formats.includes('cursor')) {
     const cursorOut = opts.cursorOut
@@ -86,7 +93,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     emitCursorCanvas(canvasPath, cursorOut, {
       inlineState: opts.inlineState,
     })
-    console.log(`→ ${cursorOut}`)
+    logOut(cursorOut)
   }
 
   const viteBuildDir = path.join(outDir, '_build')
@@ -149,16 +156,16 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
 
   for (const f of formats) {
     if (f === 'html') {
-      console.log(`→ ${path.join(outDir, `${stem}.html`)}`)
+      logOut(path.join(outDir, `${stem}.html`))
     }
     if (f === 'png') {
-      console.log(`→ ${path.join(outDir, `${stem}.png`)}`)
+      logOut(path.join(outDir, `${stem}.png`))
     }
     if (f === 'pdf') {
-      console.log(`→ ${path.join(outDir, `${stem}.pdf`)}`)
+      logOut(path.join(outDir, `${stem}.pdf`))
     }
     if (f === 'jpg') {
-      console.log(`→ ${path.join(outDir, `${stem}.jpg`)}`)
+      logOut(path.join(outDir, `${stem}.jpg`))
     }
   }
 }

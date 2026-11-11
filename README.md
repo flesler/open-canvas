@@ -63,6 +63,7 @@ open-canvas verify path/to/report.canvas.tsx
 |`--cursor-out`|With `--formats cursor`: write the IDE file here instead of `out/<stem>.canvas.tsx`|
 |`--selector`|Export only matched sections|
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
+|`-q`, `--quiet`|No stdout on success (outputs at `{--out}/{--name or stem}.{ext}`)|
 
 Exports read `.canvas.data.json` when present. `--formats cursor` inlines `./data/*` into one file for the IDE; add `--inline-state` to include saved UI state too.
 
