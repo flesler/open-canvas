@@ -132,19 +132,20 @@ const PDF_SHEET_HEIGHT_RATIO = 297 / 210
 function preparePdfLayout(opts: {
   widthPx: number;
   sheetRatio: number;
-  mainPaddingY: number
+  mainPaddingFallback: number
 }): {
   paginate: boolean;
   scrollHeight: number;
   sheetHeightPx: number
 } {
-  const { widthPx, sheetRatio } = opts
-  let { mainPaddingY } = opts
+  const { widthPx, sheetRatio, mainPaddingFallback } = opts
   const main = document.querySelector('main')
+  let padTop = mainPaddingFallback / 2
+  let padBottom = mainPaddingFallback / 2
   if (main instanceof HTMLElement) {
     const pad = getComputedStyle(main)
-    mainPaddingY =
-      (parseFloat(pad.paddingTop) || 0) + (parseFloat(pad.paddingBottom) || 0)
+    padTop = parseFloat(pad.paddingTop) || 0
+    padBottom = parseFloat(pad.paddingBottom) || 0
   }
   for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
     if (el.style.minHeight.includes('vh')) {
@@ -170,7 +171,6 @@ function preparePdfLayout(opts: {
       break
     }
   }
-  const defaultSheet = Math.round(widthPx * sheetRatio)
   if (!paginate) {
     return { paginate, scrollHeight, sheetHeightPx: scrollHeight }
   }
@@ -194,11 +194,27 @@ function preparePdfLayout(opts: {
   }
   breakTops.sort((a, b) => a - b)
   const bounds = [0, ...breakTops, scrollHeight]
-  let maxSeg = 0
-  for (let i = 0; i < bounds.length - 1; i++) {
-    maxSeg = Math.max(maxSeg, bounds[i + 1] - bounds[i])
+  const pageCount = bounds.length - 1
+  /*
+   * Segment spans are continuous layout between breaks (first span already has
+   * main padding-top; last includes padding-bottom). Clone padding per sheet
+   * (box-decoration-break): first +bottom only, last +top only, middle +both.
+   */
+  let maxPrintPage = 0
+  for (let i = 0; i < pageCount; i++) {
+    const seg = bounds[i + 1] - bounds[i]
+    const isFirst = i === 0
+    const isLast = i === pageCount - 1
+    let extraPad = padTop + padBottom
+    if (isFirst) {
+      extraPad = padBottom
+    } else if (isLast) {
+      extraPad = padTop
+    }
+    maxPrintPage = Math.max(maxPrintPage, seg + extraPad)
   }
-  const sheetHeightPx = Math.max(defaultSheet, maxSeg + mainPaddingY)
+  const defaultSheet = Math.round(widthPx * sheetRatio)
+  const sheetHeightPx = Math.max(defaultSheet, maxPrintPage)
   return { paginate, scrollHeight, sheetHeightPx }
 }
 
@@ -212,7 +228,7 @@ async function writePdf(
   const layout = await page.evaluate(preparePdfLayout, {
     widthPx,
     sheetRatio: PDF_SHEET_HEIGHT_RATIO,
-    mainPaddingY: 48,
+    mainPaddingFallback: 48,
   })
   const pdf = { ...ctx.options.pdf }
   if (!pdf.width) {

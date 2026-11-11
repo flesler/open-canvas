@@ -64,6 +64,81 @@ describe('writePdf', () => {
     await page.close()
   })
 
+  function pxToPt(px: number): number {
+    return Math.round((px * 72) / 96)
+  }
+
+  it('uses A4-ratio sheet height for short multi-page canvases', async () => {
+    const widthPx = 1280
+    const defaultSheetPx = Math.round(widthPx * (297 / 210))
+    const breakHtml = '<div style="break-before:page;height:0"></div>'
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <style>@media print { main { box-decoration-break: clone; } }</style>
+      <body style="margin:0">
+        <main style="padding:24px 32px">
+          <p>P1</p>${breakHtml}<p>P2</p>${breakHtml}<p>P3</p>${breakHtml}
+          <p>P4</p>${breakHtml}<p>P5</p>
+        </main>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'probe.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'probe',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const heights = pdfPageMediaBoxHeights(fs.readFileSync(out))
+    expect(pdfPageCount(fs.readFileSync(out))).toBe(5)
+    const targetPt = pxToPt(defaultSheetPx)
+    for (const h of heights) {
+      expect(Math.round(h)).toBe(targetPt)
+    }
+    await page.close()
+  })
+
+  it('does not add full vertical main padding twice on the first segment', async () => {
+    const widthPx = 800
+    const pad = 24
+    const block = 1200
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <style>@media print { main { box-decoration-break: clone; } }</style>
+      <body style="margin:0">
+        <main style="padding:${pad}px 32px">
+          <div style="height:${block}px">big</div>
+          <div style="break-before:page;height:0"></div>
+          <p>tail</p>
+        </main>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'first-seg.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'first-seg',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const heights = pdfPageMediaBoxHeights(fs.readFileSync(out))
+    const sheetPx = block + pad + pad
+    const expectedPt = pxToPt(sheetPx)
+    const doubleCountPt = pxToPt(block + pad + pad + pad)
+    for (const h of heights) {
+      expect(Math.round(h)).toBe(expectedPt)
+      expect(Math.round(h)).not.toBe(doubleCountPt)
+    }
+    await page.close()
+  })
+
   it('paginates when break-before markers exist', async () => {
     const widthPx = 800
     const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
