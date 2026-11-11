@@ -7,9 +7,11 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ##### Changed
 - Export shell gutter matches published Cursor canvas (`24px` vertical, `32px` horizontal); documented in agent skill.
+- Published-parity shell: theme surfaces on `html`/`body`/`#root`, scroll chrome, print light scheme (`print-theme.ts`), host `editorBackground`; viewport height from `max(doc, body, #root)`.
+- Bump `@flesler/cursor-canvas-web` to `^1.5.3`; refresh `docs/showcase-*.png`.
 
 ##### Fixed
-- PDF multi-page export repeats `main` padding on each page (`box-decoration-break: clone`; sheet height includes measured vertical padding).
+- PDF multi-page export repeats body padding on each page (`box-decoration-break: clone`; sheet height includes measured vertical padding).
 
 ## [1.11.1]
 #### 2026-11-11

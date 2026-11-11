@@ -28,4 +28,4 @@ Short table or bullets: `property` · IDE value · export value · file to chang
 
 ## PDF
 
-HTML parity ≠ PDF margins. After shell padding aligns, validate print with `preparePdfLayout` / `box-decoration-break` on export `main` — do not fold PDF-only fixes into IDE comparison.
+HTML parity ≠ PDF margins. After shell padding aligns, validate print with `preparePdfLayout` / `box-decoration-break` on export `body` — do not fold PDF-only fixes into IDE comparison.

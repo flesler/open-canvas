@@ -32,13 +32,11 @@ try {
     throw new Error(errors.join('\n'))
   }
   const height = await page.evaluate(() => {
-    const main = document.querySelector('main')
-    if (!(main instanceof HTMLElement)) {
-      const doc = Math.ceil(document.documentElement.getBoundingClientRect().height)
-      return doc
-    }
-    const rect = main.getBoundingClientRect()
-    return Math.ceil(rect.bottom + window.scrollY)
+    const root = document.getElementById('root')
+    const doc = document.documentElement.scrollHeight
+    const body = document.body?.scrollHeight ?? 0
+    const rootH = root?.scrollHeight ?? 0
+    return Math.ceil(Math.max(doc, body, rootH))
   })
   await page.setViewportSize({ width, height })
   await page.screenshot({ path: png, fullPage: false })

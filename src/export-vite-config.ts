@@ -32,6 +32,7 @@ export function buildExportViteConfig(input: ExportViteBuildInput): UserConfig {
       react(),
       dataImportsPlugin(),
       htmlTitlePlugin(input.title),
+      exportShellThemePlugin(input.theme),
       viteSingleFile(),
     ],
     define: {
@@ -81,6 +82,18 @@ function htmlTitlePlugin(title: string): Plugin {
       return html.replace(
         '<title>Canvas</title>',
         `<title>${escapeHtmlForExportTitle(title)}</title>`,
+      )
+    },
+  }
+}
+
+function exportShellThemePlugin(theme: 'light' | 'dark'): Plugin {
+  return {
+    name: 'export-shell-theme',
+    transformIndexHtml(html) {
+      return html.replace(
+        '<html lang="en">',
+        `<html lang="en" data-export-theme="${theme}">`,
       )
     },
   }

@@ -4,7 +4,8 @@ interface Window {
     state?: {
       theme?: {
         kind?: 'light' | 'dark';
-        brand?: 'cursor' | 'grok'
+        brand?: 'cursor' | 'grok';
+        editorBackground?: string
       }
     }
   }

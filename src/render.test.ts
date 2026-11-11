@@ -74,12 +74,10 @@ describe('writePdf', () => {
     const breakHtml = '<div style="break-before:page;height:0"></div>'
     const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
     await page.setContent(`
-      <style>@media print { main { box-decoration-break: clone; } }</style>
-      <body style="margin:0">
-        <main style="padding:24px 32px">
-          <p>P1</p>${breakHtml}<p>P2</p>${breakHtml}<p>P3</p>${breakHtml}
-          <p>P4</p>${breakHtml}<p>P5</p>
-        </main>
+      <style>@media print { body { box-decoration-break: clone; } }</style>
+      <body style="margin:0;padding:24px 32px">
+        <p>P1</p>${breakHtml}<p>P2</p>${breakHtml}<p>P3</p>${breakHtml}
+        <p>P4</p>${breakHtml}<p>P5</p>
       </body>
     `)
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
@@ -102,19 +100,17 @@ describe('writePdf', () => {
     await page.close()
   })
 
-  it('does not add full vertical main padding twice on the first segment', async () => {
+  it('does not add full vertical body padding twice on the first segment', async () => {
     const widthPx = 800
     const pad = 24
     const block = 1200
     const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
     await page.setContent(`
-      <style>@media print { main { box-decoration-break: clone; } }</style>
-      <body style="margin:0">
-        <main style="padding:${pad}px 32px">
-          <div style="height:${block}px">big</div>
-          <div style="break-before:page;height:0"></div>
-          <p>tail</p>
-        </main>
+      <style>@media print { body { box-decoration-break: clone; } }</style>
+      <body style="margin:0;padding:${pad}px 32px">
+        <div style="height:${block}px">big</div>
+        <div style="break-before:page;height:0"></div>
+        <p>tail</p>
       </body>
     `)
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))

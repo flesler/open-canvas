@@ -5,11 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Canvas</title>
     <style>
-      html,
-      body {
-        margin: 0;
+      html {
+        scrollbar-gutter: stable;
       }
-      /* PDF export: empty markers with inline break-before (see agent skill). */
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        scrollbar-width: thin;
+      }
+
+      html[data-export-theme='light'] {
+        color-scheme: light;
+        scrollbar-color: #14141433 transparent;
+      }
+
+      html[data-export-theme='dark'] {
+        color-scheme: dark;
+        scrollbar-color: #f0f0f033 transparent;
+      }
+
+      html[data-export-theme='light'],
+      html[data-export-theme='light'] body,
+      html[data-export-theme='light'] #root {
+        background: #fcfcfc;
+        color: #141414;
+      }
+
+      html[data-export-theme='dark'],
+      html[data-export-theme='dark'] body,
+      html[data-export-theme='dark'] #root {
+        background: #181818;
+        color: #f0f0f0;
+      }
+
+      html,
+      body,
+      #root {
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      body {
+        padding: 24px 32px;
+        padding-inline: var(--cursor-canvas-gutter, 32px);
+      }
+
+      html[data-export-theme='light'] body {
+        --cursor-canvas-focus-ring-color: #2778c1;
+      }
+
+      html[data-export-theme='dark'] body {
+        --cursor-canvas-focus-ring-color: #f0f0f0;
+      }
+
+      #root {
+        max-width: 72rem;
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        overflow-x: clip;
+        --cursor-canvas-viewport-height: 100vh;
+      }
+
+      #root > :only-child:is(
+        [style^='height:100%;'],
+        [style^='height: 100%;'],
+        [style*=';height:100%;'],
+        [style*='; height: 100%;']
+      ) {
+        min-height: var(--cursor-canvas-viewport-height) !important;
+      }
+
+      #root svg[viewBox][width='100%'] {
+        max-height: none !important;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      html[data-export-theme='light'] ::-webkit-scrollbar-thumb {
+        background: #14141433;
+        border-radius: 4px;
+      }
+
+      html[data-export-theme='light'] ::-webkit-scrollbar-thumb:hover {
+        background: #14141499;
+      }
+
+      html[data-export-theme='dark'] ::-webkit-scrollbar-thumb {
+        background: #f0f0f033;
+        border-radius: 4px;
+      }
+
+      html[data-export-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+        background: #f0f0f099;
+      }
+
+      @property --cursor-scroll-fade-left {
+        syntax: '<length>';
+        inherits: false;
+        initial-value: 0px;
+      }
+
+      @property --cursor-scroll-fade-right {
+        syntax: '<length>';
+        inherits: false;
+        initial-value: 0px;
+      }
+
+      [data-cursor-scroll-fade] {
+        -webkit-mask-image: linear-gradient(
+          90deg,
+          transparent,
+          #000 var(--cursor-scroll-fade-left),
+          #000 calc(100% - var(--cursor-scroll-fade-right)),
+          transparent
+        ) !important;
+        mask-image: linear-gradient(
+          90deg,
+          transparent,
+          #000 var(--cursor-scroll-fade-left),
+          #000 calc(100% - var(--cursor-scroll-fade-right)),
+          transparent
+        ) !important;
+        transition:
+          --cursor-scroll-fade-left 160ms cubic-bezier(0.23, 1, 0.32, 1),
+          --cursor-scroll-fade-right 160ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        [data-cursor-scroll-fade] {
+          transition: none;
+        }
+      }
+
       [style*='break-before: page'],
       [style*='break-before:page'] {
         height: 0;
@@ -18,10 +156,70 @@
         overflow: hidden;
         border: 0;
       }
+
       @media print {
-        main {
+        html,
+        body,
+        #root {
+          background: #fcfcfc !important;
+          color-scheme: light !important;
+          min-height: 0 !important;
+        }
+
+        #root {
+          overflow-x: visible !important;
+          max-width: none !important;
+        }
+
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        #root [data-cursor-scroll-fade],
+        #root [style*='mask-image'] {
+          -webkit-mask-image: none !important;
+          mask-image: none !important;
+        }
+
+        svg[role='img'],
+        div:has(> svg[role='img']) {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        tr,
+        thead {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        thead {
+          break-after: avoid;
+          page-break-after: avoid;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+          break-after: avoid;
+          page-break-after: avoid;
+        }
+
+        div:has(table),
+        div:has(svg[role='img']) {
+          overflow: visible !important;
+        }
+
+        body {
           -webkit-box-decoration-break: clone;
           box-decoration-break: clone;
+        }
+
+        [data-cursor-scroll-fade] {
+          -webkit-mask-image: none !important;
+          mask-image: none !important;
         }
       }
     </style>
