@@ -22,7 +22,7 @@ SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
 |Data|Sibling `./data/*` imports (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json` beside the canvas|
 |Typecheck|`open-canvas verify <file>`|
 |Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
-|Page margins|Same as a **published** Cursor canvas (**24px / 32px**), not the tighter **IDE panel**. Not a CLI flag — add inset inside the canvas if you need more. **PDF:** dark `--theme` still prints on light paper (matches Cursor).|
+|Page margins|Same as a **published** Cursor canvas (**24px / 32px**), not the tighter **IDE panel**. Not a CLI flag — add inset inside the canvas if you need more. **PDF:** print colors follow `--theme` (dark PDF keeps dark surfaces).|
 
 When not in the Cursor IDE, skip **Location**, **Introducing the canvas**, and **Troubleshooting** (managed `canvases/` path) in `$VENDOR/canvas/SKILL.md`.
 

@@ -1,7 +1,6 @@
 import { mountCanvas } from '@flesler/cursor-canvas-web/runtime'
 import '@mantine/core/styles.css'
 import Canvas from '@open-canvas/user-canvas'
-import { installPrintThemeSwap } from './print-theme.js'
 
 declare const __THEME__: 'light' | 'dark'
 declare const __BRAND__: 'cursor' | 'grok'
@@ -16,7 +15,6 @@ if (typeof window !== 'undefined') {
       theme: { kind, brand, editorBackground },
     },
   }
-  installPrintThemeSwap(kind)
 }
 
 mountCanvas('root', <Canvas />, { defaultColorScheme: kind })
