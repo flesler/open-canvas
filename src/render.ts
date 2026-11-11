@@ -131,13 +131,21 @@ const PDF_SHEET_HEIGHT_RATIO = 297 / 210
 
 function preparePdfLayout(opts: {
   widthPx: number;
-  sheetRatio: number
+  sheetRatio: number;
+  mainPaddingY: number
 }): {
   paginate: boolean;
   scrollHeight: number;
   sheetHeightPx: number
 } {
   const { widthPx, sheetRatio } = opts
+  let { mainPaddingY } = opts
+  const main = document.querySelector('main')
+  if (main instanceof HTMLElement) {
+    const pad = getComputedStyle(main)
+    mainPaddingY =
+      (parseFloat(pad.paddingTop) || 0) + (parseFloat(pad.paddingBottom) || 0)
+  }
   for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
     if (el.style.minHeight.includes('vh')) {
       el.style.minHeight = '0'
@@ -190,7 +198,7 @@ function preparePdfLayout(opts: {
   for (let i = 0; i < bounds.length - 1; i++) {
     maxSeg = Math.max(maxSeg, bounds[i + 1] - bounds[i])
   }
-  const sheetHeightPx = Math.max(defaultSheet, maxSeg)
+  const sheetHeightPx = Math.max(defaultSheet, maxSeg + mainPaddingY)
   return { paginate, scrollHeight, sheetHeightPx }
 }
 
@@ -204,6 +212,7 @@ async function writePdf(
   const layout = await page.evaluate(preparePdfLayout, {
     widthPx,
     sheetRatio: PDF_SHEET_HEIGHT_RATIO,
+    mainPaddingY: 48,
   })
   const pdf = { ...ctx.options.pdf }
   if (!pdf.width) {

@@ -18,6 +18,12 @@
         overflow: hidden;
         border: 0;
       }
+      @media print {
+        main {
+          -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+        }
+      }
     </style>
   </head>
   <body>
