@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.11.0]
+#### 2026-11-11
+
+##### Added
+- PDF pagination when canvases use `break-before: page`; agent skill documents markers and `.export-screen-only` print hiding.
+- GitHub Pages builds include PDFs; showcase download links and refreshed README screenshots.
+- Sibling `./data/*.txt` and `*.md` imports as string defaults (generate, verify, `--formats cursor`).
+
+##### Changed
+- Smoke test checks showcase PDF page count and logs page heights (pt).
+- `@flesler/cursor-canvas-web` bump for chart legend order fix.
+
+##### Fixed
+- PDF export height when the canvas root uses `min-height: 100vh` (strip inline `vh` before layout).
+
 ## [1.10.0]
 #### 2026-11-03
 
