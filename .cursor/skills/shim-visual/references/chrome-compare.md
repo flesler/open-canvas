@@ -20,7 +20,7 @@ Cursor’s canvas **template CSS** uses `body { padding: 24px 32px }` (see captu
 3. **Insets** — computed `padding` / `margin` on each ancestor through probe root; note **first box** where horizontal inset appears in each tree.
 4. **Background** — `background-color` on wrappers (editor fill vs host chrome).
 5. **Typography** — `font-family`, `font-size`, `line-height` on probe text vs `H3` defaults.
-6. **Width** — export may set `--width` / max-width; IDE may be fluid panel width (expected; call out separately from padding).
+6. **Width** — export raster width is Playwright viewport (`generate -w`); shell does not cap content in rem. IDE panel width is fluid (expected; compare padding separately).
 
 ## Report format
 

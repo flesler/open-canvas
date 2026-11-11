@@ -61,9 +61,7 @@
       }
 
       #root {
-        max-width: 72rem;
         width: 100%;
-        margin: 0 auto;
         position: relative;
         overflow-x: clip;
         --cursor-canvas-viewport-height: 100vh;
@@ -158,11 +156,20 @@
       }
 
       @media print {
-        html,
-        body,
-        #root {
+        html[data-export-theme='light'],
+        html[data-export-theme='light'] body,
+        html[data-export-theme='light'] #root {
           background: #fcfcfc !important;
           color-scheme: light !important;
+          min-height: 0 !important;
+        }
+
+        html[data-export-theme='dark'],
+        html[data-export-theme='dark'] body,
+        html[data-export-theme='dark'] #root {
+          background: #181818 !important;
+          color: #f0f0f0;
+          color-scheme: dark !important;
           min-height: 0 !important;
         }
 

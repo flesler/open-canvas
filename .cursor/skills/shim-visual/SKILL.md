@@ -21,7 +21,7 @@ Same `.canvas.tsx` in the IDE and in `open-canvas generate`. Classify the diff b
 
 - **Compare the iframe document** (`html` inside the frame), not Cursor’s parent page above the iframe.
 - **IDE panel** uses a **tighter** gutter (16px + `--cursor-canvas-gutter`); **published** uses **body `24px` / `32px`**. Tune export against **published** captures only.
-- **Export shell** (`src/shell/index.html`, `main.tsx`, `print-theme.ts`): body gutter **24/32**, `#root` **max-width 72rem**, theme surfaces on `html/body/#root`, scroll-fade + print CSS, host `theme: { kind, brand, editorBackground }`, dark **beforeprint** → light paper. Canvas mounts **directly in `#root`** (no extra wrapper). PDF: `body { box-decoration-break: clone }` — see `src/render.ts`.
+- **Export shell** (`src/shell/index.html`, `main.tsx`): body gutter **24/32**, `#root` **full width** of the viewport (PNG/PDF width = `generate --width` / Playwright viewport, not a fixed rem cap), theme surfaces on `html/body/#root`, scroll-fade + **theme-aware** print CSS, host `theme: { kind, brand, editorBackground }`. Canvas mounts **directly in `#root`** (no extra wrapper). PDF: `body { box-decoration-break: clone }` — see `src/render.ts`.
 
 ## Workflow
 
