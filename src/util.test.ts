@@ -2,20 +2,15 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { runTestCases } from './test/utils.test.js'
 import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, outputSlug, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem, titleSlug } from './util.js'
 
 describe('parseJsonl', () => {
-  it('parses one object per line', () => {
-    expect(parseJsonl('{"a":1}\n{"a":2}\n')).toEqual([{ a: 1 }, { a: 2 }])
-  })
-
-  it('skips blank lines', () => {
-    expect(parseJsonl('\n{"x":true}\n\n')).toEqual([{ x: true }])
-  })
-
-  it('throws on bad line', () => {
-    expect(() => parseJsonl('not json\n')).toThrow(/line 1/)
-  })
+  runTestCases(parseJsonl, [
+    { desc: 'one object per line', input: '{"a":1}\n{"a":2}\n', expected: [{ a: 1 }, { a: 2 }] },
+    { desc: 'blank lines', input: '\n{"x":true}\n\n', expected: [{ x: true }] },
+    { desc: 'bad line', input: 'not json\n', throws: 'invalid JSONL at line 1' },
+  ])
 })
 
 describe('parseDataContent', () => {
@@ -31,85 +26,68 @@ describe('parseDataContent', () => {
 })
 
 describe('canvasStem', () => {
-  it('strips .canvas.tsx', () => {
-    expect(canvasStem('/foo/my-report.canvas.tsx')).toBe('my-report')
-  })
-
-  it('rejects wrong extension', () => {
-    expect(() => canvasStem('x.tsx')).toThrow()
-  })
+  runTestCases(canvasStem, [
+    { desc: '.canvas.tsx stem', input: '/foo/my-report.canvas.tsx', expected: 'my-report' },
+    { desc: 'wrong extension', input: 'x.tsx', throws: 'canvas must end with .canvas.tsx' },
+  ])
 })
 
 describe('outputSlug', () => {
-  it('prefers --name', () => {
-    expect(
-      outputSlug({ name: 'index', canvasStem: 'showcase', title: 'X' }),
-    ).toBe('index')
-  })
-
-  it('defaults to canvas stem', () => {
-    expect(outputSlug({ canvasStem: 'showcase', title: 'X' })).toBe('showcase')
-  })
-
-  it('falls back to title slug', () => {
-    expect(outputSlug({ canvasStem: '', title: 'Open Canvas — SDK' })).toBe(
-      'open-canvas-sdk',
-    )
-  })
-
-  it('rejects paths in name', () => {
-    expect(() =>
-      outputSlug({ name: 'dark.html', canvasStem: 'a' }),
-    ).toThrow()
-  })
+  runTestCases(outputSlug, [
+    { desc: '--name', input: { name: 'index', canvasStem: 'showcase', title: 'X' }, expected: 'index' },
+    { desc: 'canvas stem default', input: { canvasStem: 'showcase', title: 'X' }, expected: 'showcase' },
+    { desc: 'title slug fallback', input: { canvasStem: '', title: 'Open Canvas — SDK' }, expected: 'open-canvas-sdk' },
+    { desc: 'path in name', input: { name: 'dark.html', canvasStem: 'a' }, throws: 'must be a slug' },
+  ])
 })
 
 describe('titleSlug', () => {
-  it('kebab-cases', () => {
-    expect(titleSlug('My Report')).toBe('my-report')
-  })
+  runTestCases(titleSlug, [
+    { desc: 'kebab-case', input: 'My Report', expected: 'my-report' },
+  ])
 })
 
 describe('parseFormats', () => {
-  it('parses comma list', () => {
-    expect(parseFormats('html,png,cursor')).toEqual(['html', 'png', 'cursor'])
-  })
-
-  it('rejects unknown', () => {
-    expect(() => parseFormats('gif')).toThrow()
-  })
+  runTestCases(parseFormats, [
+    { desc: 'comma list', input: 'html,png,cursor', expected: ['html', 'png', 'cursor'] },
+    { desc: 'unknown format', input: 'gif', throws: 'unknown format' },
+  ])
 })
 
 describe('parseSelectors', () => {
-  it('splits commas and repeated flags', () => {
-    expect(parseSelectors(['#a', '.b, .c'])).toEqual(['#a', '.b', '.c'])
-  })
+  runTestCases(parseSelectors, [
+    { desc: 'commas and repeated flags', input: ['#a', '.b, .c'], expected: ['#a', '.b', '.c'] },
+  ])
 })
 
 describe('titleCaseFromStem', () => {
-  it('hyphenated stem', () => {
-    expect(titleCaseFromStem('build-plane')).toBe('Build Plane')
-  })
+  runTestCases(titleCaseFromStem, [
+    { desc: 'hyphenated stem', input: 'build-plane', expected: 'Build Plane' },
+  ])
 })
 
 describe('formatCursorCanvasEmit', () => {
-  it('puts cursor import first with blank line before inlines', () => {
-    expect(formatCursorCanvasEmit({
-      cursorImports: ["import { Stack } from 'cursor/canvas'"],
-      inlines: ['const data = {"n":1}'],
-      body: 'export default function T() { return <Stack /> }',
-    })).toBe(
-      "import { Stack } from 'cursor/canvas'\n\nconst data = {\"n\":1}\nexport default function T() { return <Stack /> }\n",
-    )
-  })
-
-  it('uses single newlines between inlines and before body', () => {
-    expect(formatCursorCanvasEmit({
-      cursorImports: [],
-      inlines: ['const a = 1', 'const b = 2'],
-      body: 'const c = 3',
-    })).toBe('const a = 1\nconst b = 2\nconst c = 3\n')
-  })
+  runTestCases(formatCursorCanvasEmit, [
+    {
+      desc: 'cursor import before inlines',
+      input: {
+        cursorImports: ["import { Stack } from 'cursor/canvas'"],
+        inlines: ['const data = {"n":1}'],
+        body: 'export default function T() { return <Stack /> }',
+      },
+      expected:
+        "import { Stack } from 'cursor/canvas'\n\nconst data = {\"n\":1}\nexport default function T() { return <Stack /> }\n",
+    },
+    {
+      desc: 'inlines then body',
+      input: {
+        cursorImports: [],
+        inlines: ['const a = 1', 'const b = 2'],
+        body: 'const c = 3',
+      },
+      expected: 'const a = 1\nconst b = 2\nconst c = 3\n',
+    },
+  ])
 })
 
 describe('emitCursorCanvas', () => {

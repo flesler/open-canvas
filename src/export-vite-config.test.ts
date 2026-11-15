@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import type { IndexHtmlTransformContext, Plugin, TransformResult, UserConfig } from 'vite'
 import { describe, expect, it } from 'vitest'
+import { matchTestCases, runTestCases } from './test/utils.test.js'
 import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
 import { buildExportViteConfig, forTests, type ExportViteBuildInput } from './export-vite-config.js'
 
@@ -85,15 +86,13 @@ function runTransformIndexHtml(plugin: Plugin, html: string) {
 }
 
 describe('escapeHtmlForExportTitle', () => {
-  it.each([
-    { raw: 'Plain', out: 'Plain' },
-    { raw: 'A & B', out: 'A &amp; B' },
-    { raw: '1 < 2', out: '1 &lt; 2' },
-    { raw: 'Say "hi"', out: 'Say &quot;hi&quot;' },
-    { raw: '&<"', out: '&amp;&lt;&quot;' },
-  ])('escapes $raw', ({ raw, out }) => {
-    expect(escapeHtmlForExportTitle(raw)).toBe(out)
-  })
+  runTestCases(escapeHtmlForExportTitle, [
+    { desc: 'plain text', input: 'Plain', expected: 'Plain' },
+    { desc: 'ampersand', input: 'A & B', expected: 'A &amp; B' },
+    { desc: 'less-than', input: '1 < 2', expected: '1 &lt; 2' },
+    { desc: 'quotes', input: 'Say "hi"', expected: 'Say &quot;hi&quot;' },
+    { desc: 'mixed entities', input: '&<"', expected: '&amp;&lt;&quot;' },
+  ])
 })
 
 describe('htmlTitlePlugin', () => {
@@ -178,18 +177,21 @@ describe('buildExportViteConfig', () => {
     expect(config.base).toBe('/docs/')
   })
 
-  it.each([
-    { theme: 'light' as const, brand: 'cursor' as const },
-    { theme: 'dark' as const, brand: 'grok' as const },
-  ])('injects theme=$theme brand=$brand', ({ theme, brand }) => {
-    const config = buildExportViteConfig(
-      defaultInput({ theme, brand }),
-    )
-    expect(config.define).toEqual({
-      __THEME__: JSON.stringify(theme),
-      __BRAND__: JSON.stringify(brand),
-    })
-  })
+  matchTestCases(
+    (input: Pick<ExportViteBuildInput, 'theme' | 'brand'>) => buildExportViteConfig(defaultInput(input)),
+    [
+      {
+        desc: 'light cursor theme',
+        input: { theme: 'light', brand: 'cursor' },
+        expected: { define: { __THEME__: '"light"', __BRAND__: '"cursor"' } },
+      },
+      {
+        desc: 'dark grok theme',
+        input: { theme: 'dark', brand: 'grok' },
+        expected: { define: { __THEME__: '"dark"', __BRAND__: '"grok"' } },
+      },
+    ],
+  )
 
   it('roots the build in src/shell', () => {
     const config = buildExportViteConfig(defaultInput())
