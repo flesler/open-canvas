@@ -66,14 +66,20 @@ git push origin main "v${VERSION}"
 
 One push for branch + tag (avoids running pre-push twice).
 
-Then create the GitHub release for that tag (tags alone are not enough):
+Then create the GitHub release for that tag (tags alone are not enough). **`--title` is already the version** — notes must **not** repeat `## [X.Y.Z]` (body starts at `####` date or `#####` groups):
 
 ```bash
-# Write /tmp/open-canvas-release-notes/v${VERSION}.md = that version’s CHANGELOG section only
+VERSION=1.13.1
+mkdir -p "/tmp/open-canvas-release-notes"
+awk -v ver="${VERSION}" '
+  $0 ~ "^## \\[" ver "\\]" { body=1; next }
+  body && /^## / { exit }
+  body { print }
+' CHANGELOG.md > "/tmp/open-canvas-release-notes/v${VERSION}.md"
 gh release create "v${VERSION}" --title "v${VERSION}" --notes-file "/tmp/open-canvas-release-notes/v${VERSION}.md"
 ```
 
-Use `--latest` on the newest semver when backfilling older tags without bumping “Latest”. Trim notes to one `## [X.Y.Z]` section if the file lists multiple releases.
+Use `--latest` on the newest semver when backfilling older tags without bumping “Latest”. Fix shipped duplicates: `gh release edit "v${VERSION}" --notes-file "…"`.
 
 ## Publish (user only)
 
@@ -91,7 +97,7 @@ After publish, user may confirm: `npm view @flesler/open-canvas version`.
 2. `npm run ci:local` green.
 3. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`.
 4. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`.
-5. `gh release create vX.Y.Z` with notes from that version’s CHANGELOG section.
+5. `gh release create vX.Y.Z` with notes = that CHANGELOG section **without** the `## [X.Y.Z]` line.
 6. Tell the user to `npm publish --access public --tag latest` when git is on the tag they expect.
 
 ## Checklist (user)
