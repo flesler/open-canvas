@@ -6,14 +6,14 @@ export default defineConfig((options) => {
   return {
     entry: {
       cli: 'src/cli.ts',
-      // index: 'src/index.ts', — programmatic API + package exports (add with `main` / `types`)
+      index: 'src/index.ts',
     },
     tsconfig: 'tsconfig.cli.json',
     format: ['esm'],
     platform: 'node',
     target: 'node22',
     outDir: 'dist',
-    dts,
+    dts: dts ? { entry: { index: 'src/index.ts' } } : false,
     clean: true,
     treeshake: true,
     minify: true,

@@ -11,25 +11,7 @@ describe('vendor-path', () => {
     expect(fs.existsSync(path.join(vendor, 'canvas-sdk', 'index.d.ts'))).toBe(true)
   })
 
-  it('prints vendor dir on stdout', () => {
-    const stdout = captureStdout(() => {
-      runVendorPath()
-    })
-    expect(stdout.trim()).toBe(path.resolve(shimVendorDir()))
+  it('returns vendor dir', () => {
+    expect(runVendorPath()).toBe(path.resolve(shimVendorDir()))
   })
 })
-
-function captureStdout(fn: () => void): string {
-  const chunks: string[] = []
-  const write = process.stdout.write.bind(process.stdout)
-  process.stdout.write = ((chunk: string | Uint8Array) => {
-    chunks.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8'))
-    return true
-  }) as typeof process.stdout.write
-  try {
-    fn()
-  } finally {
-    process.stdout.write = write
-  }
-  return chunks.join('')
-}

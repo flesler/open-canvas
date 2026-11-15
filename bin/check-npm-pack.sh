@@ -32,10 +32,13 @@ while IFS= read -r path; do
       fail=1
       ;;
     dist/*)
-      if [[ "$path" != dist/cli.js ]]; then
-        echo "check-npm-pack: forbidden in tarball: $path" >&2
-        fail=1
-      fi
+      case "$path" in
+        dist/cli.js | dist/index.js | dist/index.d.ts) ;;
+        *)
+          echo "check-npm-pack: forbidden in tarball: $path" >&2
+          fail=1
+          ;;
+      esac
       ;;
     tsconfig*.json)
       echo "check-npm-pack: forbidden in tarball: $path" >&2
@@ -47,6 +50,8 @@ done <<< "$list"
 required=(
   bin/open-canvas.js
   dist/cli.js
+  dist/index.js
+  dist/index.d.ts
   src/vendor/skill-bundle/SKILL.md
 )
 for path in "${required[@]}"; do

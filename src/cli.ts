@@ -1,10 +1,16 @@
 import { Command, Option } from 'commander'
+import { formatCanvasSdkContractLine } from './canvas-sdk-contract.js'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVendorPath } from './commands/vendor-path.js'
 import { runVerify } from './commands/verify.js'
 import { cliName, description, version } from './pkg.js'
 import { DEFAULT_FORMAT_LIST, DEFAULT_FORMATS } from './util.js'
+
+function cliFail(e: unknown): never {
+  console.error(e instanceof Error ? e.message : e)
+  process.exit(1)
+}
 
 const program = new Command()
   .name(cliName)
@@ -16,10 +22,10 @@ program
   .description('Print absolute path to shim src/vendor (canvas/SKILL.md, canvas-sdk/)')
   .action(() => {
     try {
-      runVendorPath()
+      console.log(runVendorPath())
+      console.error(formatCanvasSdkContractLine())
     } catch (e) {
-      console.error(e instanceof Error ? e.message : e)
-      process.exit(1)
+      cliFail(e)
     }
   })
 
@@ -28,7 +34,23 @@ program
   .description('Print or install agent SKILL.md')
   .argument('[dir]', 'install directory (writes SKILL.md only)')
   .action((path?: string) => {
-    runSkill(path)
+    try {
+      const result = runSkill(path)
+      if (typeof result === 'string') {
+        console.error(
+          'Install with `open-canvas skill <dir>` (writes SKILL.md only). Resolve vendor docs with `open-canvas vendor-path`.\n',
+        )
+        process.stdout.write(result)
+        return
+      }
+      for (const line of result.legacyWarnings) {
+        console.error(line)
+      }
+      console.error(result.status)
+      console.error(formatCanvasSdkContractLine())
+    } catch (e) {
+      cliFail(e)
+    }
   })
 
 program
@@ -37,10 +59,9 @@ program
   .argument('<canvas>', 'path to *.canvas.tsx')
   .action((canvas: string) => {
     try {
-      runVerify(canvas)
+      console.error(runVerify(canvas))
     } catch (e) {
-      console.error(e instanceof Error ? e.message : e)
-      process.exit(1)
+      cliFail(e)
     }
   })
 
@@ -81,7 +102,7 @@ program
   .option('-q, --quiet', 'no stdout on success (artifacts under --out and --name)')
   .action(async (canvas: string, opts) => {
     try {
-      await runGenerate({
+      const paths = await runGenerate({
         canvas,
         out: opts.out,
         name: opts.name,
@@ -96,9 +117,13 @@ program
         inlineState: Boolean(opts.inlineState),
         quiet: Boolean(opts.quiet),
       })
+      if (!opts.quiet) {
+        for (const p of paths) {
+          console.log(`→ ${p}`)
+        }
+      }
     } catch (e) {
-      console.error(e instanceof Error ? e.message : e)
-      process.exit(1)
+      cliFail(e)
     }
   })
 

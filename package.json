@@ -8,6 +8,14 @@
   "bin": {
     "open-canvas": "./bin/open-canvas.js"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "engines": {
     "node": ">=22.12.0",
     "npm": ">=10.0.0"
@@ -15,8 +23,7 @@
   "scripts": {
     "build": "npm run build:cli",
     "check:lock": "node --experimental-strip-types src/check-package-lock.ts",
-    "build:cli": "tsup --no-dts",
-    "build:cli:types": "tsup",
+    "build:cli": "tsup",
     "build:github-pages": "npm run build:cli && bash bin/build-github-pages.sh",
     "prepublishOnly": "npm run build:cli",
     "prepare": "[ \"$CI\" != \"true\" ] && [ -d node_modules/husky ] && husky || true",
@@ -88,6 +95,8 @@
   "files": [
     "bin/open-canvas.js",
     "dist/cli.js",
+    "dist/index.js",
+    "dist/index.d.ts",
     "LICENSE",
     "src/shell",
     "src/types",

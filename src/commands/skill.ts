@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { formatCanvasSdkContractLine } from '../canvas-sdk-contract.js'
 import { cursorCanvasDir, pathInPkg } from '../paths.js'
 import { version } from '../pkg.js'
 
@@ -17,43 +16,42 @@ function shimVersion(): string {
   return json.version ?? 'unknown'
 }
 
-function warnLegacyLayout(targetDir: string): void {
+export type SkillInstallResult = {
+  skillPath: string;
+  status: string;
+  legacyWarnings: string[]
+}
+
+function legacyLayoutWarnings(targetDir: string): string[] {
+  const warnings: string[] = []
   for (const name of ['assets', 'references']) {
     const legacy = path.join(targetDir, name)
     if (fs.existsSync(legacy)) {
-      console.error(
+      warnings.push(
         `Stale ${name}/ in skill dir (removed in open-canvas@${version}); delete it and use \`open-canvas vendor-path\`.`,
       )
     }
   }
+  return warnings
 }
 
-function installSkillMd(targetDir: string): void {
+export function runSkill(targetPath?: string): string | SkillInstallResult {
   if (!fs.existsSync(skillPath)) {
-    console.error('SKILL.md not found in skill-bundle')
-    process.exit(1)
+    throw new Error('SKILL.md not found in skill-bundle')
   }
-  fs.mkdirSync(targetDir, { recursive: true })
-  fs.copyFileSync(skillPath, path.join(targetDir, 'SKILL.md'))
-  warnLegacyLayout(targetDir)
-}
 
-export function runSkill(targetPath?: string): void {
   if (!targetPath) {
-    if (!fs.existsSync(skillPath)) {
-      console.error('SKILL.md not found in skill-bundle')
-      process.exit(1)
-    }
-    process.stderr.write(
-      'Install with `open-canvas skill <dir>` (writes SKILL.md only). Resolve vendor docs with `open-canvas vendor-path`.\n',
-    )
-    process.stdout.write(fs.readFileSync(skillPath, 'utf8'))
-    return
+    return fs.readFileSync(skillPath, 'utf8')
   }
 
   const targetDir = path.resolve(expandHome(targetPath))
-  installSkillMd(targetDir)
+  fs.mkdirSync(targetDir, { recursive: true })
+  const installed = path.join(targetDir, 'SKILL.md')
+  fs.copyFileSync(skillPath, installed)
 
-  console.error(`Installed -> ${targetDir}/SKILL.md (open-canvas@${version}, cursor-canvas-web@${shimVersion()})`)
-  console.error(formatCanvasSdkContractLine())
+  return {
+    skillPath: installed,
+    status: `Installed -> ${installed} (open-canvas@${version}, cursor-canvas-web@${shimVersion()})`,
+    legacyWarnings: legacyLayoutWarnings(targetDir),
+  }
 }

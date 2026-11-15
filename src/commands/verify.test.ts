@@ -9,7 +9,7 @@ const exampleCanvas = pathInPkg('example', 'showcase.canvas.tsx')
 
 describe('runVerify', () => {
   it('accepts the example canvas', () => {
-    expect(() => runVerify(exampleCanvas)).not.toThrow()
+    expect(runVerify(exampleCanvas)).toMatch(/^canvas-sdk contract:/)
   })
 
   it('rejects a syntax error', () => {

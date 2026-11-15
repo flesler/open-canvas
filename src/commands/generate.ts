@@ -27,11 +27,11 @@ export type GenerateOptions = {
   selectors?: string | string[];
   /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
   inlineState?: boolean;
-  /** No stdout on success (paths are `outDir` + `--name` + format ext). */
+  /** CLI only: skip printing artifact paths (library always returns them). */
   quiet?: boolean
 }
 
-export async function runGenerate(opts: GenerateOptions): Promise<void> {
+export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
   const canvasPath = path.resolve(opts.canvas)
   if (!fs.existsSync(canvasPath)) {
     throw new Error(`canvas not found: ${canvasPath}`)
@@ -77,10 +77,9 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     renderOptions: opts.renderOptions,
   })
   const renderCtx = { outDir, stem, options, selectors }
-  const logOut = (p: string) => {
-    if (!opts.quiet) {
-      console.log(`→ ${p}`)
-    }
+  const artifacts: string[] = []
+  const noteArtifact = (p: string) => {
+    artifacts.push(p)
   }
 
   if (formats.includes('cursor')) {
@@ -88,7 +87,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     emitCursorCanvas(canvasPath, cursorPath, {
       inlineState: opts.inlineState,
     })
-    logOut(cursorPath)
+    noteArtifact(cursorPath)
   }
 
   const viteBuildDir = path.join(outDir, '_build')
@@ -119,12 +118,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
         }
       }
       if (!viteFailed && exportCssPurgeEnabled() && fs.existsSync(stagedHtml)) {
-        const { before, after } = await purgeExportHtmlStyles(stagedHtml)
-        if (debug && before !== after) {
-          console.error(
-            `export CSS purge: ${before} → ${after} chars (−${before - after})`,
-          )
-        }
+        await purgeExportHtmlStyles(stagedHtml)
       }
     }
 
@@ -146,21 +140,23 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
   }
 
   if (viteFailed) {
-    process.exit(1)
+    throw new Error('vite build failed')
   }
 
   for (const f of formats) {
     if (f === 'html') {
-      logOut(path.join(outDir, `${stem}.html`))
+      noteArtifact(path.join(outDir, `${stem}.html`))
     }
     if (f === 'png') {
-      logOut(path.join(outDir, `${stem}.png`))
+      noteArtifact(path.join(outDir, `${stem}.png`))
     }
     if (f === 'pdf') {
-      logOut(path.join(outDir, `${stem}.pdf`))
+      noteArtifact(path.join(outDir, `${stem}.pdf`))
     }
     if (f === 'jpg') {
-      logOut(path.join(outDir, `${stem}.jpg`))
+      noteArtifact(path.join(outDir, `${stem}.jpg`))
     }
   }
+
+  return artifacts
 }
