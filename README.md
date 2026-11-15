@@ -19,6 +19,21 @@ npm install -g @flesler/open-canvas
 
 PNG, PDF, and JPG use headless Chromium (installed on first `generate`).
 
+## Library
+
+```bash
+npm install @flesler/open-canvas
+```
+
+```ts
+import openCanvas from '@flesler/open-canvas'
+
+await openCanvas.generate({ canvas: 'report.canvas.tsx', formats: ['html', 'png'] })
+openCanvas.verify('report.canvas.tsx')
+```
+
+Same handlers as the CLI (`generate`, `verify`, `skill`, `vendorPath`): return values on success, throw on failure. Types ship in `dist/index.d.ts`.
+
 ### Agent skill
 
 ```bash
