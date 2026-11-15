@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatCanvasSdkContractLine, hashCanvasSdkTree, readCanvasSdkManifest } from './canvas-sdk-contract.js'
+import { formatCanvasSdkContractLine, readCanvasSdkManifest } from './canvas-sdk-contract.js'
+import { hashCanvasSdkTree } from './canvasSdkHash.js'
 import { shimCanvasSdkDir } from './paths.js'
 
 describe('canvas-sdk contract', () => {
