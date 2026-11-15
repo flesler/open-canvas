@@ -31,13 +31,11 @@ while IFS= read -r path; do
       echo "check-npm-pack: forbidden in tarball: $path" >&2
       fail=1
       ;;
-    dist/scripts/* | dist/canvas-sdk-hash.js)
-      echo "check-npm-pack: forbidden in tarball: $path" >&2
-      fail=1
-      ;;
-    dist/*.test.js)
-      echo "check-npm-pack: forbidden in tarball: $path" >&2
-      fail=1
+    dist/*)
+      if [[ "$path" != dist/cli.js ]]; then
+        echo "check-npm-pack: forbidden in tarball: $path" >&2
+        fail=1
+      fi
       ;;
     tsconfig*.json)
       echo "check-npm-pack: forbidden in tarball: $path" >&2
@@ -49,7 +47,6 @@ done <<< "$list"
 required=(
   bin/open-canvas.js
   dist/cli.js
-  dist/export-vite-config.js
   src/vendor/skill-bundle/SKILL.md
 )
 for path in "${required[@]}"; do
