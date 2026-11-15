@@ -4,9 +4,12 @@
   "description": "Agent-friendly canvas visuals (charts, tables, UI) from .canvas.tsx to HTML, PNG, PDF, JPG, or IDE-ready canvas",
   "type": "module",
   "license": "MIT",
-  "repository": "github:flesler/open-canvas",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flesler/open-canvas.git"
+  },
   "bin": {
-    "open-canvas": "./bin/open-canvas.js"
+    "open-canvas": "bin/open-canvas.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

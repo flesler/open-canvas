@@ -15,7 +15,10 @@ type PhaseRssMb = {
   rows: { phase: string; p90: number }[]
 }
 
-const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`
+const repoSlug = pkg.repository.url
+  .replace(/^git\+https:\/\/github\.com\//, '')
+  .replace(/\.git$/, '')
+const repoUrl = `https://github.com/${repoSlug}`
 const shimDep = pkg.dependencies['@flesler/cursor-canvas-web']
 
 /** GitHub Pages: paired `index` / `dark` html + pdf in `.cache/github-pages`. */
