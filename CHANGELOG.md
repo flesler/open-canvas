@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.14.0]
+#### 2026-11-15
+
+##### Added
+- Programmatic API: default import from `@flesler/open-canvas` with `generate`, `verify`, `skill`, and `vendorPath` (`dist/index.js` + `dist/index.d.ts`).
+- Vitest helpers from typescript-starter (`src/test/utils.test.ts`, shared setup).
+
+##### Changed
+- Publishable CLI is one minified `dist/cli.js` via tsup (runtime deps remain in `node_modules`).
+- Command handlers return values and throw; `cli.ts` maps to stdout/stderr and exit codes.
+- CLI typecheck uses `tsconfig.cli.json` only; incremental build info under `.cache/`.
+- Refreshed `docs/showcase-*.png` for current export height (1280×6400).
+
 ## [1.13.1]
 #### 2026-11-11
 
