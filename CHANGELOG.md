@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.14.1]
+#### 2026-11-15
+
+##### Changed
+- `@flesler/cursor-canvas-web` `^1.7.0` (DomForwardProps / native host attrs on primitives).
+- Bundled agent skill: superset typings, fixed `$SUPERSET` path beside `vendor-path`.
+- Showcase: section landmarks, tab `id`s, leaner intro copy; refreshed `docs/showcase-*.png`.
+
 ## [1.14.0]
 #### 2026-11-15
 
