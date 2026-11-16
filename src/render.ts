@@ -50,6 +50,76 @@ export type RenderFormats = {
   html?: boolean
 }
 
+export type CanvasOutlineMeasure = {
+  widthPx: number;
+  scrollHeight: number;
+  paginate: boolean;
+  pageHeightsPx: number[];
+  segmentHeightsPx: number[];
+  tree: Array<{
+    depth: number;
+    page: number;
+    tag: string;
+    name: string;
+    title: string;
+    w: number;
+    h: number;
+    innerBelow: number;
+    position?: 'fixed' | 'sticky';
+    overlapSibling?: number;
+    sectionScope?: string
+  }>;
+  treeOmitted: number
+}
+
+export type StagedMeasureInput = {
+  htmlPath: string;
+  options: RenderOptions;
+  selectors?: string[];
+  minHeightPx?: number;
+  uniformPageHeight?: boolean;
+  maxTreeNodes?: number;
+  outlineThreshold?: number
+}
+
+export async function measureStagedExport(input: StagedMeasureInput): Promise<CanvasOutlineMeasure> {
+  if (!fs.existsSync(input.htmlPath)) {
+    throw new Error(`HTML artifact missing: ${input.htmlPath}`)
+  }
+  ensureChromium()
+  const { chromium } = await import('playwright')
+  const errors: string[] = []
+  const browser = await chromium.launch(input.options.launch ?? {})
+  try {
+    const page = await browser.newPage(input.options.page)
+    page.on('pageerror', e => errors.push(e.message))
+    await page.goto(`file://${input.htmlPath}`, { waitUntil: 'networkidle' })
+    await page.waitForFunction(
+      () => (document.getElementById('root')?.childElementCount ?? 0) > 0,
+      { timeout: 15_000 },
+    )
+    if (errors.length) {
+      throw new Error(errors.join('\n'))
+    }
+    if (input.selectors?.length) {
+      await isolateSelectors(page, input.selectors)
+    }
+    await page.emulateMedia({ media: 'print' })
+    const widthPx = input.options.page.viewport.width
+    return await page.evaluate(canvasPrintEval, {
+      mode: 'outline' as const,
+      widthPx,
+      bodyPaddingFallback: 48,
+      minHeightPx: input.minHeightPx,
+      uniformPageHeight: input.uniformPageHeight,
+      maxTreeNodes: input.maxTreeNodes,
+      outlineThreshold: input.outlineThreshold,
+    }) as CanvasOutlineMeasure
+  } finally {
+    await browser.close()
+  }
+}
+
 export async function render(
   ctx: RenderContext,
   formats: RenderFormats,
@@ -141,17 +211,225 @@ async function fitViewportToContent(
   await page.setViewportSize({ width, height })
 }
 
-function preparePdfLayout(opts: {
+function canvasPrintEval(opts: {
+  mode: 'outline' | 'pdf';
   widthPx: number;
   bodyPaddingFallback: number;
   minHeightPx?: number;
-  namePages: boolean
-}): {
-  paginate: boolean;
-  scrollHeight: number;
-  sheetHeightPx: number;
-  pageHeightsPx: number[]
-} {
+  uniformPageHeight?: boolean;
+  namePages?: boolean;
+  maxTreeNodes?: number;
+  outlineThreshold?: number
+}) {
+  function pageIndexForTop(bounds: number[], top: number): number {
+    const last = bounds.length - 2
+    for (let i = 0; i <= last; i++) {
+      if (top >= bounds[i] && (i === last || top < bounds[i + 1])) {
+        return i
+      }
+    }
+    return Math.max(0, last)
+  }
+  function isNoiseId(id: string): boolean {
+    return /^mantine-[a-z0-9]{4,}(?:-(?:title|body|root|label|inner))?$/i.test(id) || /^recharts-/i.test(id)
+  }
+  function elementTitle(el: HTMLElement, tag: string): string {
+    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') {
+      return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 56)
+    }
+    if (tag === 'section') {
+      const heading = el.querySelector('h1,h2,h3,h4')?.textContent?.replace(/\s+/g, ' ').trim()
+      if (heading) {
+        return heading.slice(0, 56)
+      }
+    }
+    const aria = (el.getAttribute('aria-label') || '').trim()
+    return aria ? aria.slice(0, 56) : ''
+  }
+  function isLandmark(el: HTMLElement, tag: string, height: number, width: number): boolean {
+    const id = el.id
+    if (id && !isNoiseId(id)) {
+      return true
+    }
+    if (
+      tag === 'section' || tag === 'main' || tag === 'article' || tag === 'header'
+      || tag === 'footer' || tag === 'nav' || tag === 'form' || tag === 'table'
+      || tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4'
+    ) {
+      return true
+    }
+    const role = el.getAttribute('role')
+    if (role === 'region' || role === 'main' || role === 'alert' || role === 'dialog') {
+      return true
+    }
+    if ([...el.classList].some(c => c.includes('recharts-responsive-container'))) {
+      return true
+    }
+    if (tag === 'svg' && height >= 48 && width >= 48) {
+      return true
+    }
+    return false
+  }
+  const INTERACTIVE_LABEL_MAX = 96
+  function outlineSectionScope(el: HTMLElement): string | undefined {
+    let cur: HTMLElement | null = el
+    while (cur) {
+      const tag = cur.tagName.toLowerCase()
+      if (tag === 'section' && cur.id && !isNoiseId(cur.id)) {
+        return `#${cur.id}`
+      }
+      cur = cur.parentElement
+    }
+    return undefined
+  }
+  function elementName(el: HTMLElement): string {
+    const tag = el.tagName.toLowerCase()
+    if (tag === 'a') {
+      const text = (el.textContent || '').replace(/\s+/g, ' ').trim()
+      const href = (el.getAttribute('href') || '').trim()
+      if (text && href) {
+        return `"${text.slice(0, INTERACTIVE_LABEL_MAX)}" → ${href.slice(0, 120)}`
+      }
+      if (text) {
+        return `"${text.slice(0, INTERACTIVE_LABEL_MAX)}"`
+      }
+      if (href) {
+        return `→ ${href.slice(0, 120)}`
+      }
+    }
+    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'button' || tag === 'label') {
+      const text = (el.textContent || '').replace(/\s+/g, ' ').trim()
+      if (text) {
+        return `"${text.slice(0, INTERACTIVE_LABEL_MAX)}"`
+      }
+    }
+    const id = el.id
+    if (id && !isNoiseId(id)) {
+      return `#${id}`
+    }
+    const role = el.getAttribute('role')
+    if (role && role !== 'alert') {
+      return `[role=${role}]`
+    }
+    const cls = [...el.classList]
+      .filter(c => !c.startsWith('m_') && !c.startsWith('mantine-'))
+      .slice(0, 2)
+      .map(c => `.${c}`)
+      .join('')
+    if (cls) {
+      return cls
+    }
+    const aria = (el.getAttribute('aria-label') || '').trim()
+    if (aria) {
+      return `"${aria.slice(0, INTERACTIVE_LABEL_MAX)}"`
+    }
+    return ''
+  }
+  function skipOutlineSubtree(el: HTMLElement): boolean {
+    const style = getComputedStyle(el)
+    return style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0'
+  }
+  function skipOutlineRecord(el: HTMLElement): boolean {
+    const tag = el.tagName.toLowerCase()
+    if (tag === 'script' || tag === 'style' || tag === 'link' || tag === 'meta' || tag === 'noscript') {
+      return true
+    }
+    const r = el.getBoundingClientRect()
+    if (r.width < 3 && r.height < 3) {
+      return true
+    }
+    if (el.getAttribute('aria-hidden') === 'true' && r.height < 8 && r.width < 8) {
+      return true
+    }
+    if (!el.id) {
+      if (tag === 'div' || tag === 'span') {
+        const custom = [...el.classList].filter(c => !c.startsWith('mantine-') && !c.startsWith('m_'))
+        if (!custom.length) {
+          return true
+        }
+      }
+      if (tag === 'path' || tag === 'g' || tag === 'defs' || tag === 'clippath') {
+        return true
+      }
+    }
+    return false
+  }
+  function rectIntersectArea(a: DOMRect, b: DOMRect): number {
+    const w = Math.min(a.right, b.right) - Math.max(a.left, b.left)
+    const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
+    if (w < 1 || h < 1) {
+      return 0
+    }
+    return Math.round(w * h)
+  }
+  function measureInnerBelow(el: HTMLElement): number {
+    const box = el.getBoundingClientRect()
+    let bottom = box.top
+    for (const child of el.children) {
+      if (!(child instanceof HTMLElement)) {
+        continue
+      }
+      const style = getComputedStyle(child)
+      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+        continue
+      }
+      const r = child.getBoundingClientRect()
+      if (r.height >= 1) {
+        bottom = Math.max(bottom, r.bottom)
+      }
+    }
+    if (el.children.length === 0 && box.height >= 1) {
+      bottom = box.bottom
+    }
+    return Math.max(0, Math.floor(box.bottom - bottom))
+  }
+  function namePdfPages(pageHeightsPx: number[]): void {
+    const breakTops: number[] = []
+    const breakEls: HTMLElement[] = []
+    for (const el of document.querySelectorAll('*')) {
+      if (!(el instanceof HTMLElement)) {
+        continue
+      }
+      const s = getComputedStyle(el)
+      const isBreak =
+        s.breakBefore === 'page'
+        || s.breakAfter === 'page'
+        || s.pageBreakBefore === 'always'
+        || s.pageBreakAfter === 'always'
+      if (!isBreak) {
+        continue
+      }
+      breakEls.push(el)
+      breakTops.push(Math.round(el.getBoundingClientRect().top + window.scrollY))
+    }
+    const sheetHeightPx = Math.max(...pageHeightsPx)
+    const segmentOf = (el: Element) => {
+      const top = Math.round(el.getBoundingClientRect().top + window.scrollY)
+      return breakTops.filter(breakTop => breakTop <= top).length
+    }
+    const assign = (parent: Element) => {
+      for (const child of Array.from(parent.children)) {
+        if (!(child instanceof HTMLElement || child instanceof SVGElement)) {
+          continue
+        }
+        const spansBreak = breakEls.some(mark => mark !== child && child.contains(mark))
+        child.style.setProperty('page', `oc-page-${segmentOf(child)}`)
+        if (spansBreak) {
+          assign(child)
+        }
+      }
+    }
+    document.body.style.setProperty('page', 'oc-page-0')
+    assign(document.body)
+    const style = document.createElement('style')
+    style.textContent = [
+      `@page { size: ${opts.widthPx}px ${sheetHeightPx}px; margin: 0 }`,
+      ...pageHeightsPx.map(
+        (height, i) => `@page oc-page-${i} { size: ${opts.widthPx}px ${height}px; margin: 0 }`,
+      ),
+    ].join('\n')
+    document.head.appendChild(style)
+  }
   const { widthPx, bodyPaddingFallback } = opts
   let padTop = bodyPaddingFallback / 2
   let padBottom = bodyPaddingFallback / 2
@@ -167,9 +445,7 @@ function preparePdfLayout(opts: {
       el.style.minHeight = '0'
     }
   }
-  const scrollHeight = Math.ceil(
-    document.documentElement.getBoundingClientRect().height,
-  )
+  const scrollHeight = Math.ceil(document.documentElement.getBoundingClientRect().height)
   let paginate = false
   for (const el of document.querySelectorAll('*')) {
     if (!(el instanceof HTMLElement)) {
@@ -186,94 +462,172 @@ function preparePdfLayout(opts: {
       break
     }
   }
-  if (!paginate) {
-    const sheetHeightPx =
-      opts.minHeightPx !== undefined
-        ? Math.max(scrollHeight, opts.minHeightPx)
-        : scrollHeight
-    return { paginate, scrollHeight, sheetHeightPx, pageHeightsPx: [sheetHeightPx] }
-  }
-  const breakTops: number[] = []
-  const breakEls: HTMLElement[] = []
-  for (const el of document.querySelectorAll('*')) {
-    if (!(el instanceof HTMLElement)) {
-      continue
-    }
-    const s = getComputedStyle(el)
-    const isBreak =
-      s.breakBefore === 'page'
-      || s.breakAfter === 'page'
-      || s.pageBreakBefore === 'always'
-      || s.pageBreakAfter === 'always'
-    if (!isBreak) {
-      continue
-    }
-    breakEls.push(el)
-    breakTops.push(
-      Math.round(el.getBoundingClientRect().top + window.scrollY),
-    )
-  }
-  breakTops.sort((a, b) => a - b)
-  const endMarker = document.createElement('div')
-  document.body.appendChild(endMarker)
-  const contentBottom = Math.ceil(endMarker.getBoundingClientRect().top + window.scrollY + padBottom)
-  endMarker.remove()
-  const bounds = [0, ...breakTops, Math.min(scrollHeight, contentBottom)]
-  const pageCount = bounds.length - 1
-  /*
-   * Segment spans are continuous layout between breaks (first span already has
-   * body padding-top; last includes padding-bottom). Clone padding per sheet
-   * (body box-decoration-break): first +bottom only, last +top only, middle +both.
-   */
   const floor = opts.minHeightPx ?? 0
-  const pageHeightsPx: number[] = []
-  for (let i = 0; i < pageCount; i++) {
-    const seg = bounds[i + 1] - bounds[i]
-    const isFirst = i === 0
-    const isLast = i === pageCount - 1
-    let extraPad = padTop + padBottom
-    if (isFirst) {
-      extraPad = padBottom
-    } else if (isLast) {
-      extraPad = padTop
+  const segmentHeightsPx: number[] = []
+  let bounds: number[]
+  let pageHeightsPx: number[] = []
+  if (!paginate) {
+    segmentHeightsPx.push(scrollHeight)
+    pageHeightsPx.push(Math.max(floor, scrollHeight))
+    bounds = [0, scrollHeight]
+  } else {
+    const breakTops: number[] = []
+    for (const el of document.querySelectorAll('*')) {
+      if (!(el instanceof HTMLElement)) {
+        continue
+      }
+      const s = getComputedStyle(el)
+      const isBreak =
+        s.breakBefore === 'page'
+        || s.breakAfter === 'page'
+        || s.pageBreakBefore === 'always'
+        || s.pageBreakAfter === 'always'
+      if (!isBreak) {
+        continue
+      }
+      breakTops.push(Math.round(el.getBoundingClientRect().top + window.scrollY))
     }
-    pageHeightsPx.push(Math.max(floor, Math.ceil(seg + extraPad)))
+    breakTops.sort((a, b) => a - b)
+    const endMarker = document.createElement('div')
+    document.body.appendChild(endMarker)
+    const contentBottom = Math.ceil(endMarker.getBoundingClientRect().top + window.scrollY + padBottom)
+    endMarker.remove()
+    bounds = [0, ...breakTops, Math.min(scrollHeight, contentBottom)]
+    const pageCount = bounds.length - 1
+    for (let i = 0; i < pageCount; i++) {
+      const seg = bounds[i + 1] - bounds[i]
+      const isFirst = i === 0
+      const isLast = i === pageCount - 1
+      let extraPad = padTop + padBottom
+      if (isFirst) {
+        extraPad = padBottom
+      } else if (isLast) {
+        extraPad = padTop
+      }
+      const painted = Math.max(floor, Math.ceil(seg + extraPad))
+      segmentHeightsPx.push(Math.ceil(seg + extraPad))
+      pageHeightsPx.push(painted)
+    }
   }
-  const sheetHeightPx = Math.max(...pageHeightsPx)
-  if (opts.namePages) {
-    /*
-     * Chromium sizes each PDF page from its named @page rule. Name every element by
-     * the segment it starts in, descending into containers that span break markers.
-     * An unnamed container would open a blank default-sized page.
-     */
-    const segmentOf = (el: Element) => {
-      const top = Math.round(el.getBoundingClientRect().top + window.scrollY)
-      return breakTops.filter(breakTop => breakTop <= top).length
-    }
-    const assign = (parent: Element) => {
-      for (const child of Array.from(parent.children)) {
-        if (!(child instanceof HTMLElement || child instanceof SVGElement)) {
-          continue
+  if (opts.uniformPageHeight && pageHeightsPx.length) {
+    const uniform = Math.max(...pageHeightsPx)
+    pageHeightsPx = pageHeightsPx.map(() => uniform)
+  }
+  const host = document.getElementById('root') ?? document.body
+  const tree: Array<{
+    depth: number;
+    page: number;
+    tag: string;
+    name: string;
+    title: string;
+    w: number;
+    h: number;
+    innerBelow: number;
+    position?: 'fixed' | 'sticky';
+    overlapSibling?: number;
+    sectionScope?: string
+  }> = []
+  let treeOmitted = 0
+  const treeLimit = opts.maxTreeNodes ?? 120
+  const ibThreshold = opts.outlineThreshold ?? 80
+  if (opts.mode === 'outline') {
+    const walk = (el: Element, depth: number, parent: Element | null) => {
+      if (tree.length >= treeLimit) {
+        treeOmitted += 1
+        return
+      }
+      if (depth > 14) {
+        return
+      }
+      if (el instanceof SVGElement && !(el instanceof HTMLElement)) {
+        return
+      }
+      if (!(el instanceof HTMLElement)) {
+        return
+      }
+      if (skipOutlineSubtree(el)) {
+        return
+      }
+      const r = el.getBoundingClientRect()
+      const tag = el.tagName.toLowerCase()
+      if (skipOutlineRecord(el)) {
+        for (const child of el.children) {
+          walk(child, depth, el)
         }
-        const spansBreak = breakEls.some(el => el !== child && child.contains(el))
-        child.style.setProperty('page', `oc-page-${segmentOf(child)}`)
-        if (spansBreak) {
-          assign(child)
+        return
+      }
+      const h = Math.ceil(r.height)
+      const w = Math.ceil(r.width)
+      const ib = measureInnerBelow(el)
+      const landmark = isLandmark(el, tag, h, w)
+      const interactive =
+        tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'button' || tag === 'a'
+      const record =
+        landmark
+        || ib >= ibThreshold
+        || (interactive && h >= 16)
+        || ((tag === 'code' || tag === 'pre') && h >= 12)
+      const nextDepth = record ? depth + 1 : depth
+      if (record) {
+        const top = Math.round(r.top + window.scrollY)
+        const position = getComputedStyle(el).position
+        const posHint = position === 'fixed' || position === 'sticky' ? position : undefined
+        let overlapSibling = 0
+        if (parent instanceof HTMLElement) {
+          for (const sib of parent.children) {
+            if (sib === el || !(sib instanceof HTMLElement)) {
+              continue
+            }
+            if (skipOutlineSubtree(sib)) {
+              continue
+            }
+            overlapSibling = Math.max(overlapSibling, rectIntersectArea(r, sib.getBoundingClientRect()))
+          }
+        }
+        tree.push({
+          depth,
+          page: pageIndexForTop(bounds, top) + 1,
+          tag,
+          name: elementName(el),
+          title: elementTitle(el, tag),
+          w,
+          h,
+          innerBelow: ib,
+          position: posHint,
+          overlapSibling: overlapSibling >= 64 ? overlapSibling : undefined,
+          sectionScope: outlineSectionScope(el),
+        })
+        if ([...el.classList].some(c => c.includes('recharts-responsive-container'))) {
+          return
+        }
+        if (tag === 'svg' && h >= 48) {
+          return
         }
       }
+      for (const child of el.children) {
+        walk(child, nextDepth, el)
+      }
     }
-    document.body.style.setProperty('page', 'oc-page-0')
-    assign(document.body)
-    const style = document.createElement('style')
-    style.textContent = [
-      `@page { size: ${widthPx}px ${sheetHeightPx}px; margin: 0 }`,
-      ...pageHeightsPx.map(
-        (height, i) => `@page oc-page-${i} { size: ${widthPx}px ${height}px; margin: 0 }`,
-      ),
-    ].join('\n')
-    document.head.appendChild(style)
+    for (const child of host.children) {
+      walk(child, 0, host)
+    }
   }
-  return { paginate, scrollHeight, sheetHeightPx, pageHeightsPx }
+  const sheetHeightPx = Math.max(...pageHeightsPx)
+  if (opts.mode === 'pdf') {
+    if (opts.namePages && paginate) {
+      namePdfPages(pageHeightsPx)
+    }
+    return { paginate, scrollHeight, sheetHeightPx, pageHeightsPx }
+  }
+  return {
+    widthPx,
+    scrollHeight,
+    paginate,
+    pageHeightsPx,
+    segmentHeightsPx,
+    tree,
+    treeOmitted,
+  }
 }
 
 async function writePdf(
@@ -286,12 +640,18 @@ async function writePdf(
   const pdf = { ...ctx.options.pdf }
   const uniform = ctx.options.page.minHeight === 'max'
   const namePages = !uniform && !pdf.width && !pdf.height && !pdf.format
-  const layout = await page.evaluate(preparePdfLayout, {
+  const layout = await page.evaluate(canvasPrintEval, {
+    mode: 'pdf' as const,
     widthPx,
     bodyPaddingFallback: 48,
     minHeightPx: minHeightPx(ctx),
     namePages,
-  })
+  }) as {
+    paginate: boolean;
+    scrollHeight: number;
+    sheetHeightPx: number;
+    pageHeightsPx: number[]
+  }
   if (namePages && layout.paginate) {
     pdf.preferCSSPageSize = true
   } else {

@@ -18,21 +18,7 @@ function shimVersion(): string {
 
 export type SkillInstallResult = {
   skillPath: string;
-  status: string;
-  legacyWarnings: string[]
-}
-
-function legacyLayoutWarnings(targetDir: string): string[] {
-  const warnings: string[] = []
-  for (const name of ['assets', 'references']) {
-    const legacy = path.join(targetDir, name)
-    if (fs.existsSync(legacy)) {
-      warnings.push(
-        `Stale ${name}/ in skill dir (removed in open-canvas@${version}); delete it and use \`open-canvas vendor-path\`.`,
-      )
-    }
-  }
-  return warnings
+  status: string
 }
 
 export function runSkill(targetPath?: string): string | SkillInstallResult {
@@ -48,10 +34,20 @@ export function runSkill(targetPath?: string): string | SkillInstallResult {
   fs.mkdirSync(targetDir, { recursive: true })
   const installed = path.join(targetDir, 'SKILL.md')
   fs.copyFileSync(skillPath, installed)
+  const refsSrc = path.join(bundleRoot, 'references')
+  if (fs.existsSync(refsSrc)) {
+    const refsDst = path.join(targetDir, 'references')
+    fs.mkdirSync(refsDst, { recursive: true })
+    for (const name of fs.readdirSync(refsSrc)) {
+      const src = path.join(refsSrc, name)
+      if (fs.statSync(src).isFile()) {
+        fs.copyFileSync(src, path.join(refsDst, name))
+      }
+    }
+  }
 
   return {
     skillPath: installed,
     status: `Installed -> ${installed} (open-canvas@${version}, cursor-canvas-web@${shimVersion()})`,
-    legacyWarnings: legacyLayoutWarnings(targetDir),
   }
 }

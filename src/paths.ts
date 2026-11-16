@@ -9,6 +9,11 @@ export function pathInPkg(...segments: string[]): string {
   return path.join(pkgRoot, ...segments)
 }
 
+/** Bundled `references/outline.md` (also copied by `open-canvas skill <dir>`). */
+export function outlineReferenceDocPath(): string {
+  return pathInPkg('src', 'vendor', 'skill-bundle', 'references', 'outline.md')
+}
+
 /** `@flesler/cursor-canvas-web` install dir (hoisting-safe). */
 export function cursorCanvasDir(): string {
   const entry = require.resolve('@flesler/cursor-canvas-web')

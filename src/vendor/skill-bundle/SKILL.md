@@ -10,66 +10,36 @@ VENDOR=$(open-canvas vendor-path)
 SUPERSET="$(cd "$(dirname "$VENDOR")/superset" && pwd)"
 ```
 
-1. Read `$VENDOR/canvas/SKILL.md`
-2. Read `$VENDOR/canvas-sdk/index.d.ts` and sibling `.d.ts` — **IDE authoring contract** (what Cursor typechecks in the panel).
-3. Read `$SUPERSET/index.d.ts` and `$SUPERSET/shim-props.d.ts` — **web contract** for `open-canvas verify` / `generate` (component **prop types**; `verify` resolves `cursor/canvas` here, not `canvas-sdk` alone).
-4. Read `$SUPERSET/chart-extra.d.ts` when the canvas uses `extra` on `BarChart` / `LineChart`.
-
-**Superset overrides SDK for the same export names** (`StackProps`, `BarChartProps`, …). `index.d.ts` re-exports the SDK then replaces those shapes.
-
-|Web-only on components|Where|
-|---|---|
-|Chart knobs beyond IDE (`valueAxis`, `stacked`, …)|`extra` on `BarChart` / `LineChart` only — see `chart-extra.d.ts`|
-|Native host attrs (`aria-*`, `data-*`, `id`, …)|`DomForwardProps` in `shim-props.d.ts`; IDE ignores unknown props|
-
-Do **not** treat `canvas-sdk` alone as the typing source for export work. For prop literals use **named** types from `$SUPERSET/index.d.ts` (not `import type * as …` namespaces — those can still resolve to SDK shapes).
+Types and `extra`: [typing](references/typing.md) when authoring props or charts.
 
 ## Where open-canvas differs from the vendor reference
 
 |Topic|open-canvas|
 |---|---|
 |Canvas file path|Any `*.canvas.tsx` — not only IDE `…/canvases/`|
-|Data|Sibling `./data/*` imports (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json` beside the canvas|
+|Data|Sibling `./data/*` (json, yaml, tsv, csv, txt, md); optional `<stem>.canvas.data.json`|
 |Typecheck|`open-canvas verify <file>`|
-|Export / preview|`open-canvas generate <file>` → `./out` (flags below)|
-|Page margins|Same as a **published** Cursor canvas (**24px / 32px**), not the tighter **IDE panel**. Not a CLI flag — add inset inside the canvas if you need more. **PDF:** print colors follow `--theme` (dark PDF keeps dark surfaces).|
-
-When not in the Cursor IDE, skip **Location**, **Introducing the canvas**, and **Troubleshooting** (managed `canvases/` path) in `$VENDOR/canvas/SKILL.md`.
+|Layout map|`open-canvas outline <file>` — stdout (path to [outline](references/outline.md) on line 2 if needed)|
+|Export|`open-canvas generate <file>` → `./out`|
 
 ```bash
 open-canvas verify path/to/x.canvas.tsx
+open-canvas outline path/to/x.canvas.tsx
 open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 ```
 
 |Flag|Default|
 |---|---|
-|`-o`, `--out`|`./out` next to canvas|
-|`-n`, `--name`|Output basename without extension (default: canvas stem, else slug of `--title`)|
+|`-o`, `--out`|`./out` beside the canvas|
+|`-n`, `--name`|Output basename (stem or title slug)|
 |`-f`, `--formats`|`html,png,pdf` (+ `jpg`, `cursor`)|
 |`-t`, `--theme`|`light`|
 |`--brand`|`cursor`|
+|`-w`, `--width`|Viewport width (`1280`)|
+|`-q`, `--quiet`|No stdout on success|
 
-|`-w`, `--width`|Playwright viewport width (default `1280`)|
-|`--min-height`|Optional minimum page height: px, width ratio up to 10 (`1.5`), `a4`, or `max` (every PDF page matches the tallest). Without it, each PDF page fits its content|
-|`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
-|`--selector`|Export matched nodes only|
-|`-q`, `--quiet`|No stdout on success; writes `{--out}/{--name or stem}.{ext}`|
+PDF breaks, `--min-height`, print-only UI: [pdf](references/pdf.md).
 
-`jpg` / `pdf` do not require `html` in `--formats`; `out/<stem>.html` is kept only when `html` is listed. IDE emit: `generate <canvas> --formats cursor` (use `-o` / `-n` when the file should not land in `./out`). Inlines `./data/*`; add `--inline-state` to embed `.canvas.data.json`.
+`--selector` export subset; `--render-options` Playwright JSON. `jpg`/`pdf` need not list `html`; `html` artifact kept only when `html` in `--formats`. Cursor IDE file: `--formats cursor` (inlines `./data/*`; `--inline-state` embeds `.canvas.data.json`).
 
-## PDF page breaks
-
-Between sections, add:
-
-```tsx
-<div aria-hidden style={{ breakBefore: "page" }} />
-```
-
-## Hide in PDF only
-
-PDF uses print styles. Add once; wrap links or toggles:
-
-```tsx
-<style>{`@media print { .hide-for-pdf { display: none !important; } }`}</style>
-<div className="hide-for-pdf">…</div>
-```
+## outline

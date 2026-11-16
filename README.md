@@ -63,6 +63,7 @@ open-canvas verify path/to/report.canvas.tsx
 |Command|Purpose|
 |---|---|
 |`generate <canvas>`|HTML, PNG, PDF (default) into `./out`|
+|`outline <canvas>`|Stdout: export layout map (segments, blocks, tree — no artifacts)|
 |`verify <canvas>`|Typecheck `cursor/canvas` and data imports|
 |`skill [dir]`|Print or install agent `SKILL.md`|
 |`vendor-path`|Print bundled `cursor/canvas` reference and SDK types|

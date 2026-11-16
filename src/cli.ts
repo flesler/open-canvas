@@ -1,5 +1,6 @@
 import { Command, Option } from 'commander'
 import { formatCanvasSdkContractLine } from './canvas-sdk-contract.js'
+import { DEFAULT_OUTLINE_MAX_LINES, DEFAULT_OUTLINE_THRESHOLD, runOutline, type OutlineOptions } from './commands/outline.js'
 import { runGenerate } from './commands/generate.js'
 import { runSkill } from './commands/skill.js'
 import { runVendorPath } from './commands/vendor-path.js'
@@ -32,19 +33,16 @@ program
 program
   .command('skill')
   .description('Print or install agent SKILL.md')
-  .argument('[dir]', 'install directory (writes SKILL.md only)')
+  .argument('[dir]', 'install directory (SKILL.md + references/)')
   .action((path?: string) => {
     try {
       const result = runSkill(path)
       if (typeof result === 'string') {
         console.error(
-          'Install with `open-canvas skill <dir>` (writes SKILL.md only). Resolve vendor docs with `open-canvas vendor-path`.\n',
+          'Install with `open-canvas skill <dir>`. Vendor docs: `open-canvas vendor-path`.\n',
         )
         process.stdout.write(result)
         return
-      }
-      for (const line of result.legacyWarnings) {
-        console.error(line)
       }
       console.error(result.status)
       console.error(formatCanvasSdkContractLine())
@@ -60,6 +58,61 @@ program
   .action((canvas: string) => {
     try {
       console.error(runVerify(canvas))
+    } catch (e) {
+      cliFail(e)
+    }
+  })
+
+program
+  .command('outline')
+  .description('Print export layout map for the canvas (stdout; same print prep as generate)')
+  .argument('<canvas>', 'path to *.canvas.tsx')
+  .option('-o, --out <dir>', 'vite staging directory parent (default ./out beside canvas)', 'out')
+  .option('--title <text>', 'HTML document title')
+  .option('-t, --theme <mode>', 'light or dark', 'light')
+  .option('--brand <name>', 'cursor or grok', 'cursor')
+  .option('-w, --width <px>', 'viewport width (default 1280)', Number, 1280)
+  .option('--min-height <value>', 'same as generate (px, ratio, a4, max)')
+  .option('--render-options <file|json>', 'Playwright options JSON')
+  .option(
+    '--selector <css>',
+    'limit export DOM (repeatable)',
+    (value, previous: string[]) => [...previous, value],
+    [],
+  )
+  .option(
+    '-T, --threshold <px>',
+    `warn with ! when slack or ib >= px (default ${DEFAULT_OUTLINE_THRESHOLD})`,
+    (v: string) => Number(v),
+  )
+  .option('--no-warn', 'metrics only (no ! threshold)')
+  .option(
+    '-m, --max-children <n>',
+    `max tree lines (default ${DEFAULT_OUTLINE_MAX_LINES})`,
+    (v: string) => Number(v),
+  )
+  .action(async (canvas: string, opts) => {
+    try {
+      const outlineOpts: OutlineOptions = {
+        canvas,
+        out: opts.out,
+        title: opts.title,
+        theme: opts.theme as 'light' | 'dark',
+        brand: opts.brand as 'cursor' | 'grok',
+        viewportWidth: opts.width,
+        minHeight: opts.minHeight,
+        renderOptions: opts.renderOptions,
+        selectors: opts.selector,
+        threshold:
+          opts.threshold !== undefined && !Number.isNaN(opts.threshold) ? opts.threshold : undefined,
+        maxChildren:
+          opts.maxChildren !== undefined && !Number.isNaN(opts.maxChildren) && opts.maxChildren > 0
+            ? Math.floor(opts.maxChildren)
+            : undefined,
+        warnSlack: opts.noWarn ? false : undefined,
+      }
+      process.stdout.write(await runOutline(outlineOpts))
+      process.stdout.write('\n')
     } catch (e) {
       cliFail(e)
     }
