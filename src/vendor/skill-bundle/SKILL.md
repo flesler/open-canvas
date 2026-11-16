@@ -7,12 +7,22 @@ description: Read when generating canvas visuals from .canvas.tsx files.
 
 ```bash
 VENDOR=$(open-canvas vendor-path)
-SUPERSET="$(cd "$(dirname "$VENDOR")/../superset" && pwd)"
+SUPERSET="$(cd "$(dirname "$VENDOR")/superset" && pwd)"
 ```
 
 1. Read **`$VENDOR/canvas/SKILL.md`**
-2. Read **`$VENDOR/canvas-sdk/index.d.ts`** and sibling **`.d.ts`** files
-3. Read **`$SUPERSET/index.d.ts`** and **`$SUPERSET/chart-extra.d.ts`**
+2. Read **`$VENDOR/canvas-sdk/index.d.ts`** and sibling **`.d.ts`** — **IDE authoring contract** (what Cursor typechecks in the panel).
+3. Read **`$SUPERSET/index.d.ts`** and **`$SUPERSET/shim-props.d.ts`** — **web contract** for `open-canvas verify` / `generate` (component **prop types**; `verify` resolves `cursor/canvas` here, not `canvas-sdk` alone).
+4. Read **`$SUPERSET/chart-extra.d.ts`** when the canvas uses **`extra`** on `BarChart` / `LineChart`.
+
+**Superset overrides SDK for the same export names** (`StackProps`, `BarChartProps`, …). `index.d.ts` re-exports the SDK then replaces those shapes.
+
+| Web-only on components | Where |
+| --- | --- |
+| Chart knobs beyond IDE (`valueAxis`, `stacked`, …) | `extra` on `BarChart` / `LineChart` only — see `chart-extra.d.ts` |
+| Native host attrs (`aria-*`, `data-*`, `id`, …) | `DomForwardProps` in `shim-props.d.ts`; IDE ignores unknown props |
+
+Do **not** treat `canvas-sdk` alone as the typing source for export work. For prop literals use **named** types from `$SUPERSET/index.d.ts` (not `import type * as …` namespaces — those can still resolve to SDK shapes).
 
 ## Where open-canvas differs from the vendor reference
 
