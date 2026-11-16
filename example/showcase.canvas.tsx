@@ -54,8 +54,6 @@ const OUTLIER_TABLE = {
   ]),
 }
 
-/* --------------------------------------------------------------- demo data */
-
 const LATENCY: ChartSeries[] = [
   { name: 'p50', data: [120, 110, 130, 105, 98, 112], tone: 'info' },
   { name: 'p95', data: [320, 410, 380, 350, 300, 290], tone: 'warning' },
@@ -215,24 +213,24 @@ const DAG = computeDAGLayout({
   padding: 32,
 })
 
-/* -------------------------------------------------------------- subsections */
-
 function Section({
   title,
   id,
+  'aria-label': ariaLabel,
   children,
 }: {
-  title: string;
+  title?: string;
   id?: string;
+  'aria-label'?: string;
   children: StackProps['children']
 }) {
   return (
-    <div id={id}>
+    <section id={id} aria-label={ariaLabel}>
       <Stack gap={10}>
-        <H2>{title}</H2>
+        {title ? <H2>{title}</H2> : null}
         {children}
       </Stack>
-    </div>
+    </section>
   )
 }
 
@@ -499,8 +497,6 @@ function SequenceDiagram() {
   )
 }
 
-/* --------------------------------------------------------------------- main */
-
 export default function ShowcaseCanvas() {
   const dispatch = useCanvasAction()
   const [env, setEnv] = useCanvasState('show.env', 'production')
@@ -570,23 +566,24 @@ export default function ShowcaseCanvas() {
   return (
     <Stack gap={20}>
       <style>{'@media print { .hide-for-pdf { display: none !important; } }'}</style>
-      {/* Header --------------------------------------------------------- */}
-      <Row gap={12} align="center">
-        <H1>Cursor Canvas SDK showcase</H1>
-        <Spacer />
-        <ExportThemeToggleLink />
-        <Link href={repoUrl}>open-canvas</Link>
-      </Row>
+      <Section id="section-intro">
+        <Stack gap={12}>
+          <Row gap={12} align="center">
+            <H1>Cursor Canvas SDK showcase</H1>
+            <Spacer />
+            <ExportThemeToggleLink />
+            <Link href={repoUrl}>open-canvas</Link>
+          </Row>
+          <Text tone="secondary">
+            <Code>cursor/canvas</Code> gallery — shim <Code>{shimDep}</Code>,{' '}
+            <Code>./data/*</Code> sidecars.
+          </Text>
+        </Stack>
+      </Section>
 
-      <Text tone="secondary">
-        Full <Code>cursor/canvas</Code> gallery — <Code>../package.json</Code>,{' '}
-        <Code>./data/*</Code> (JSON, YAML, TSV, CSV, JSONL).
-      </Text>
-
-      {/* How it works (stepped explanation, not a callout) -------------- */}
-      <Section title="How it works">
-        <Grid columns={3} gap={12}>
-          {STEPS.slice(0, 3).map(step => (
+      <Section id="section-how-it-works" title="How it works">
+        <Grid columns={2} gap={12}>
+          {STEPS.map(step => (
             <Card key={step.n}>
               <CardBody>
                 <Stack gap={6}>
@@ -602,31 +599,36 @@ export default function ShowcaseCanvas() {
         </Grid>
       </Section>
 
-      {/* Stats ---------------------------------------------------------- */}
-      <Grid columns={3} gap={12}>
-        <Card>
-          <CardBody>
-            <Stat value="35" label="Components" tone="info" />
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody>
-            <Stat value="3" label="Hooks" tone="success" />
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody>
-            <Stat value="1" label="Source of truth" />
-          </CardBody>
-        </Card>
-      </Grid>
-
-      {/* Charts, tables & context --------------------------------------- */}
+      <Section id="section-stats" aria-label="SDK surface counts">
+        <Grid columns={3} gap={12}>
+          <Card>
+            <CardBody>
+              <Stat value="35" label="Components" tone="info" />
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody>
+              <Stat value="3" label="Hooks" tone="success" />
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody>
+              <Stat value="1" label="Source of truth" />
+            </CardBody>
+          </Card>
+        </Grid>
+      </Section>
       <Section id="section-charts" title="Charts, tables & context">
         <Stack gap={12}>
-          <Row gap={8} wrap>
+          <Row gap={8} wrap className="section-charts-tabs">
             {(['charts', 'table', 'context'] as const).map(key => (
-              <Pill key={key} active={tab === key} onClick={() => setTab(key)}>
+              <Pill
+                key={key}
+                id={`section-charts-tab-${key}`}
+                className="section-charts-tab"
+                active={tab === key}
+                onClick={() => setTab(key)}
+              >
                 {key}
               </Pill>
             ))}
@@ -772,8 +774,7 @@ export default function ShowcaseCanvas() {
         </Stack>
       </Section>
 
-      {/* Chart axis / guides (exercises referenceLines, fill, normalized) */}
-      <Section title="Chart guides & axes">
+      <Section id="section-guides" title="Chart guides & axes">
         <Grid columns={2} gap={16}>
           <Card>
             <CardHeader>Uptime % (SLO line, fill, tight axis)</CardHeader>
@@ -903,8 +904,7 @@ export default function ShowcaseCanvas() {
 
       <div aria-hidden style={{ breakBefore: 'page' }} />
 
-      {/* Graph ---------------------------------------------------------- */}
-      <Section title="Graph layout (computeDAGLayout)">
+      <Section id="section-graph" title="Graph layout (computeDAGLayout)">
         <Card>
           <CardBody>
             <Stack gap={8}>
@@ -918,7 +918,7 @@ export default function ShowcaseCanvas() {
         </Card>
       </Section>
 
-      <Section title="Sequence diagram (SVG)">
+      <Section id="section-sequence" title="Sequence diagram (SVG)">
         <Card>
           <CardBody>
             <Stack gap={8}>
@@ -932,8 +932,7 @@ export default function ShowcaseCanvas() {
         </Card>
       </Section>
 
-      {/* Diff ----------------------------------------------------------- */}
-      <Section title="Diff">
+      <Section id="section-diff" title="Diff">
         <Card collapsible defaultOpen>
           <CardHeader trailing={<DiffStats additions={1} deletions={1} />}>
             showcase.canvas.tsx
@@ -948,8 +947,7 @@ export default function ShowcaseCanvas() {
         </Card>
       </Section>
 
-      {/* Disclosure & tasks -------------------------------------------- */}
-      <Section title="Disclosure & tasks">
+      <Section id="section-tasks" title="Disclosure & tasks">
         <Grid columns={2} gap={16} align="start">
           <Stack gap={8}>
             <CollapsibleSection
@@ -997,8 +995,7 @@ export default function ShowcaseCanvas() {
         </Grid>
       </Section>
 
-      {/* Typography + theme (half width each; stack on narrow viewports) ----- */}
-      <Section title="Typography & theme">
+      <Section id="section-typography" title="Typography & theme">
         <Grid
           columns="repeat(auto-fit, minmax(min(100%, 22rem), 1fr))"
           gap={16}
@@ -1146,7 +1143,7 @@ export default function ShowcaseCanvas() {
         </Grid>
       </Section>
 
-      <Section title="Host brand (Cursor vs Grok)">
+      <Section id="section-brand" title="Host brand (Cursor vs Grok)">
         <Stack gap={10}>
           <Row gap={8} wrap>
             <Pill active={theme.brand === 'cursor'}>brand: {theme.brand}</Pill>
@@ -1214,8 +1211,7 @@ export default function ShowcaseCanvas() {
 
       <div aria-hidden style={{ breakBefore: 'page' }} />
 
-      {/* Forms ---------------------------------------------------------- */}
-      <Section title="Forms (state persists via useCanvasState)">
+      <Section id="section-forms" title="Forms (state persists via useCanvasState)">
         <Card>
           <CardBody>
             <Stack gap={12}>
@@ -1309,7 +1305,7 @@ export default function ShowcaseCanvas() {
         </Card>
       </Section>
 
-      <Section title="Data imports (JSON, YAML, TSV, CSV, JSONL)">
+      <Section id="section-imports" title="Data imports (JSON, YAML, TSV, CSV, JSONL)">
         <Stack gap={12}>
           <Grid columns={3} gap={12}>
             <Card>
