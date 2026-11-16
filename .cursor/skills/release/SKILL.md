@@ -9,12 +9,12 @@ Coordinated shim + SDK rollout: [shim-rollout](../shim-rollout/SKILL.md).
 
 |Who|Does|
 |---|---|
-|**Agent**|Product commits, `npm run ci:local`, version bump commit, annotated tag, GitHub release, `git push origin main vX.Y.Z` (one push for branch + tag).|
-|**User**|`npm publish` only (npm 2FA). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`.|
+|**Agent**|Product commits, `npm run ci:local`, version bump commit, tag, GitHub release, push, **`bin/npm-publish-web.sh`** (npm web 2FA).|
+|**User**|Approve **browser** prompts when publish/login opens npm (security key). Shim publish to npm when the rollout needs a new `@flesler/cursor-canvas-web`.|
 
-- **Never** `npm publish` in the agent — user publishes to npm only.
-- On `/release` (or an explicit release request): run the full agent checklist below; do not stop after the version commit and wait for the user to tag or push.
-- Run `npm run ci:local` before the version commit when practical; pre-push hooks run again on push — do not chain `git push` and `npm publish` in one command (user publishes separately).
+- On `/release`: run the full agent checklist; do not stop after the version commit or defer publish to the user unless this script fails.
+- Run `npm run ci:local` before the version commit when practical; pre-push hooks run again on push.
+- Do **not** run bare `npm publish` in the agent shell (no TTY). Use **`bin/npm-publish-web.sh`** only.
 
 ## Commit shape
 
@@ -81,15 +81,27 @@ gh release create "v${VERSION}" --title "v${VERSION}" --notes-file "/tmp/open-ca
 
 Use `--latest` on the newest semver when backfilling older tags without bumping “Latest”. Fix shipped duplicates: `gh release edit "v${VERSION}" --notes-file "…"`.
 
-## Publish (user only)
+## Publish to npm (agent + browser)
+
+From repo root after push (on the tag commit you intend to ship):
 
 ```bash
-npm publish --access public --tag latest
+npm whoami   # if 401, user must complete one web login; agent can retry after
+./bin/npm-publish-web.sh
+# optional: NPM_PUBLISH_TIMEOUT=300 ./bin/npm-publish-web.sh
 ```
 
-`prepublishOnly` runs `build:cli`. Scoped package needs `--access public` and npm 2FA.
+`bin/npm-publish-web.sh` wraps `script` + `expect`: sends Enter, opens the browser for **web 2FA** (`auth-type=web` in user `~/.npmrc`). Tell the user **once** to watch for the npm auth tab and approve with their security key; do not ask them to run `npm publish` manually.
 
-After publish, user may confirm: `npm view @flesler/open-canvas version`.
+- Success: `+ <package.json name>@…` or “previously staged version” (upload already in flight).
+- `prepublishOnly` runs `build:cli`. Defaults: `--access public --tag latest`.
+- Registry **lags** minutes after success; do not treat immediate `npm view` as failure.
+
+```bash
+VERSION="$(node -p "require('./package.json').version")"
+PKG="$(node -p "require('./package.json').name")"
+~/.claude/skills/npm/scripts/wait-for.sh "$PKG" "$VERSION"
+```
 
 ## Checklist (agent)
 
@@ -98,10 +110,9 @@ After publish, user may confirm: `npm view @flesler/open-canvas version`.
 3. Version-only commit (`package.json`, `package-lock.json`, `CHANGELOG.md`) — subject `X.Y.Z`.
 4. `git tag -a vX.Y.Z -m vX.Y.Z` → `git push origin main vX.Y.Z`.
 5. `gh release create vX.Y.Z` with notes = that CHANGELOG section **without** the `## [X.Y.Z]` line.
-6. Tell the user to `npm publish --access public --tag latest` when git is on the tag they expect.
+6. `./bin/npm-publish-web.sh`; notify user if browser 2FA is required; `wait-for.sh` until the version appears on the registry.
 
 ## Checklist (user)
 
 1. Publish shim to npm when SDK / canvas skill reference changed.
-2. `npm publish --access public --tag latest` for `@flesler/open-canvas`.
-3. `npm view @flesler/open-canvas version`.
+2. Approve npm **browser** 2FA when the agent runs `bin/npm-publish-web.sh` (only if prompted).
