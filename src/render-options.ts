@@ -4,9 +4,12 @@ import type { LaunchOptions, Page, PageScreenshotOptions } from 'playwright'
 
 type PagePdfOptions = NonNullable<Parameters<Page['pdf']>[0]>
 
+/** Pixels, or `max` to give every PDF page the tallest page's height. */
+export type MinHeight = number | 'max'
+
 export type RenderPageOptions = {
   viewport: { width: number; height: number };
-  minHeight?: number;
+  minHeight?: MinHeight;
   deviceScaleFactor?: number;
   colorScheme?: 'light' | 'dark' | 'no-preference'
 }
@@ -20,7 +23,7 @@ export type RenderOptions = {
 
 export type RenderOptionsInput = {
   viewportWidth?: number;
-  minHeight?: number;
+  minHeight?: string | number;
   renderOptions?: string;
   theme?: 'light' | 'dark'
 }
@@ -40,6 +43,22 @@ const DEFAULTS: RenderOptions = {
     printBackground: true,
     margin: { top: 0, right: 0, bottom: 0, left: 0 },
   },
+}
+
+const MIN_HEIGHT_RATIO_ALIASES: Record<string, number> = { a4: 297 / 210 }
+/** Values at or below this are width multipliers; above it they are pixels. */
+const MAX_MIN_HEIGHT_RATIO = 10
+
+export function parseMinHeight(raw: string | number, widthPx: number): MinHeight {
+  const text = String(raw).trim().toLowerCase()
+  if (text === 'max') {
+    return 'max'
+  }
+  const value = MIN_HEIGHT_RATIO_ALIASES[text] ?? Number(text)
+  if (!text || !Number.isFinite(value) || value <= 0) {
+    throw new Error(`--min-height must be px, a width ratio, a4 or max (got ${JSON.stringify(raw)})`)
+  }
+  return value <= MAX_MIN_HEIGHT_RATIO ? Math.round(widthPx * value) : value
 }
 
 export function resolveRenderOptions(input: RenderOptionsInput): RenderOptions {
@@ -66,7 +85,7 @@ export function resolveRenderOptions(input: RenderOptionsInput): RenderOptions {
     colorScheme: input.theme ?? fileConfig.page?.colorScheme ?? DEFAULTS.page.colorScheme,
   }
   if (minHeight !== undefined) {
-    page.minHeight = minHeight
+    page.minHeight = parseMinHeight(minHeight, page.viewport.width)
   }
 
   return {

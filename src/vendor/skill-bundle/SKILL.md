@@ -50,7 +50,7 @@ open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 |`--brand`|`cursor`|
 
 |`-w`, `--width`|Playwright viewport width (default `1280`)|
-|`--min-height`|Optional minimum page height in px|
+|`--min-height`|Optional minimum page height: px, width ratio up to 10 (`1.5`), `a4`, or `max` (every PDF page matches the tallest). Without it, each PDF page fits its content|
 |`--render-options`|Playwright options JSON (`launch` / `page` / `screenshot` / `pdf`)|
 |`--selector`|Export matched nodes only|
 |`-q`, `--quiet`|No stdout on success; writes `{--out}/{--name or stem}.{ext}`|

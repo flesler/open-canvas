@@ -85,7 +85,7 @@ export async function render(
       await fitViewportToContent(
         page,
         ctx.options.page.viewport.width,
-        ctx.options.page.minHeight,
+        minHeightPx(ctx),
       )
     }
     const shot = {
@@ -118,6 +118,11 @@ export async function render(
   }
 }
 
+function minHeightPx(ctx: RenderContext): number | undefined {
+  const { minHeight } = ctx.options.page
+  return typeof minHeight === 'number' ? minHeight : undefined
+}
+
 async function fitViewportToContent(
   page: Page,
   width: number,
@@ -136,26 +141,26 @@ async function fitViewportToContent(
   await page.setViewportSize({ width, height })
 }
 
-/** A-series page height at a given width (same proportions as A4, not a fixed paper format). */
-const PDF_SHEET_HEIGHT_RATIO = 297 / 210
-
 function preparePdfLayout(opts: {
   widthPx: number;
-  sheetRatio: number;
   bodyPaddingFallback: number;
-  minHeightPx?: number
+  minHeightPx?: number;
+  namePages: boolean
 }): {
   paginate: boolean;
   scrollHeight: number;
-  sheetHeightPx: number
+  sheetHeightPx: number;
+  pageHeightsPx: number[]
 } {
-  const { widthPx, sheetRatio, bodyPaddingFallback } = opts
+  const { widthPx, bodyPaddingFallback } = opts
   let padTop = bodyPaddingFallback / 2
   let padBottom = bodyPaddingFallback / 2
   if (document.body instanceof HTMLElement) {
     const pad = getComputedStyle(document.body)
-    padTop = parseFloat(pad.paddingTop) || padTop
-    padBottom = parseFloat(pad.paddingBottom) || padBottom
+    const top = parseFloat(pad.paddingTop)
+    const bottom = parseFloat(pad.paddingBottom)
+    padTop = Number.isNaN(top) ? padTop : top
+    padBottom = Number.isNaN(bottom) ? padBottom : bottom
   }
   for (const el of document.querySelectorAll<HTMLElement>('[style]')) {
     if (el.style.minHeight.includes('vh')) {
@@ -186,9 +191,10 @@ function preparePdfLayout(opts: {
       opts.minHeightPx !== undefined
         ? Math.max(scrollHeight, opts.minHeightPx)
         : scrollHeight
-    return { paginate, scrollHeight, sheetHeightPx }
+    return { paginate, scrollHeight, sheetHeightPx, pageHeightsPx: [sheetHeightPx] }
   }
   const breakTops: number[] = []
+  const breakEls: HTMLElement[] = []
   for (const el of document.querySelectorAll('*')) {
     if (!(el instanceof HTMLElement)) {
       continue
@@ -202,19 +208,25 @@ function preparePdfLayout(opts: {
     if (!isBreak) {
       continue
     }
+    breakEls.push(el)
     breakTops.push(
       Math.round(el.getBoundingClientRect().top + window.scrollY),
     )
   }
   breakTops.sort((a, b) => a - b)
-  const bounds = [0, ...breakTops, scrollHeight]
+  const endMarker = document.createElement('div')
+  document.body.appendChild(endMarker)
+  const contentBottom = Math.ceil(endMarker.getBoundingClientRect().top + window.scrollY + padBottom)
+  endMarker.remove()
+  const bounds = [0, ...breakTops, Math.min(scrollHeight, contentBottom)]
   const pageCount = bounds.length - 1
   /*
    * Segment spans are continuous layout between breaks (first span already has
    * body padding-top; last includes padding-bottom). Clone padding per sheet
    * (body box-decoration-break): first +bottom only, last +top only, middle +both.
    */
-  let maxPrintPage = 0
+  const floor = opts.minHeightPx ?? 0
+  const pageHeightsPx: number[] = []
   for (let i = 0; i < pageCount; i++) {
     const seg = bounds[i + 1] - bounds[i]
     const isFirst = i === 0
@@ -225,15 +237,43 @@ function preparePdfLayout(opts: {
     } else if (isLast) {
       extraPad = padTop
     }
-    maxPrintPage = Math.max(maxPrintPage, seg + extraPad)
+    pageHeightsPx.push(Math.max(floor, Math.ceil(seg + extraPad)))
   }
-  const defaultSheet = Math.round(widthPx * sheetRatio)
-  const sheetFloor =
-    opts.minHeightPx !== undefined
-      ? Math.max(defaultSheet, opts.minHeightPx)
-      : defaultSheet
-  const sheetHeightPx = Math.max(sheetFloor, maxPrintPage)
-  return { paginate, scrollHeight, sheetHeightPx }
+  const sheetHeightPx = Math.max(...pageHeightsPx)
+  if (opts.namePages) {
+    /*
+     * Chromium sizes each PDF page from its named @page rule. Name every element by
+     * the segment it starts in, descending into containers that span break markers.
+     * An unnamed container would open a blank default-sized page.
+     */
+    const segmentOf = (el: Element) => {
+      const top = Math.round(el.getBoundingClientRect().top + window.scrollY)
+      return breakTops.filter(breakTop => breakTop <= top).length
+    }
+    const assign = (parent: Element) => {
+      for (const child of Array.from(parent.children)) {
+        if (!(child instanceof HTMLElement || child instanceof SVGElement)) {
+          continue
+        }
+        const spansBreak = breakEls.some(el => el !== child && child.contains(el))
+        child.style.setProperty('page', `oc-page-${segmentOf(child)}`)
+        if (spansBreak) {
+          assign(child)
+        }
+      }
+    }
+    document.body.style.setProperty('page', 'oc-page-0')
+    assign(document.body)
+    const style = document.createElement('style')
+    style.textContent = [
+      `@page { size: ${widthPx}px ${sheetHeightPx}px; margin: 0 }`,
+      ...pageHeightsPx.map(
+        (height, i) => `@page oc-page-${i} { size: ${widthPx}px ${height}px; margin: 0 }`,
+      ),
+    ].join('\n')
+    document.head.appendChild(style)
+  }
+  return { paginate, scrollHeight, sheetHeightPx, pageHeightsPx }
 }
 
 async function writePdf(
@@ -243,18 +283,24 @@ async function writePdf(
 ): Promise<void> {
   const widthPx = ctx.options.page.viewport.width
   await page.emulateMedia({ media: 'print' })
+  const pdf = { ...ctx.options.pdf }
+  const uniform = ctx.options.page.minHeight === 'max'
+  const namePages = !uniform && !pdf.width && !pdf.height && !pdf.format
   const layout = await page.evaluate(preparePdfLayout, {
     widthPx,
-    sheetRatio: PDF_SHEET_HEIGHT_RATIO,
     bodyPaddingFallback: 48,
-    minHeightPx: ctx.options.page.minHeight,
+    minHeightPx: minHeightPx(ctx),
+    namePages,
   })
-  const pdf = { ...ctx.options.pdf }
-  if (!pdf.width) {
-    pdf.width = `${widthPx}px`
-  }
-  if (!pdf.height) {
-    pdf.height = `${layout.sheetHeightPx}px`
+  if (namePages && layout.paginate) {
+    pdf.preferCSSPageSize = true
+  } else {
+    if (!pdf.width) {
+      pdf.width = `${widthPx}px`
+    }
+    if (!pdf.height) {
+      pdf.height = `${layout.sheetHeightPx}px`
+    }
   }
   await page.pdf({ ...pdf, path: outPath })
 }

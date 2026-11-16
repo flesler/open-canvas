@@ -68,9 +68,9 @@ describe('writePdf', () => {
     return Math.round((px * 72) / 96)
   }
 
-  it('uses A4-ratio sheet height for short multi-page canvases', async () => {
+  it('sizes short multi-page canvases to their content, not an A4 sheet', async () => {
     const widthPx = 1280
-    const defaultSheetPx = Math.round(widthPx * (297 / 210))
+    const a4SheetPx = Math.round(widthPx * (297 / 210))
     const breakHtml = '<div style="break-before:page;height:0"></div>'
     const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
     await page.setContent(`
@@ -93,9 +93,8 @@ describe('writePdf', () => {
     }, out)
     const heights = pdfPageMediaBoxHeights(fs.readFileSync(out))
     expect(pdfPageCount(fs.readFileSync(out))).toBe(5)
-    const targetPt = pxToPt(defaultSheetPx)
     for (const h of heights) {
-      expect(Math.round(h)).toBe(targetPt)
+      expect(h).toBeLessThan(pxToPt(a4SheetPx) / 4)
     }
     await page.close()
   })
@@ -158,10 +157,8 @@ describe('writePdf', () => {
     const sheetPx = block + pad + pad
     const expectedPt = pxToPt(sheetPx)
     const doubleCountPt = pxToPt(block + pad + pad + pad)
-    for (const h of heights) {
-      expect(Math.round(h)).toBe(expectedPt)
-      expect(Math.round(h)).not.toBe(doubleCountPt)
-    }
+    expect(Math.round(heights[0])).toBe(expectedPt)
+    expect(Math.round(heights[0])).not.toBe(doubleCountPt)
     await page.close()
   })
 
@@ -187,11 +184,69 @@ describe('writePdf', () => {
       },
     }, out)
     const bytes = fs.readFileSync(out)
-    expect(pdfPageCount(bytes)).toBeGreaterThanOrEqual(2)
-    const heights = pdfPageMediaBoxHeights(bytes)
-    const max = Math.max(...heights)
-    const min = Math.min(...heights)
-    expect(min / max).toBeGreaterThan(0.99)
+    expect(pdfPageCount(bytes)).toBe(2)
+    const heights = pdfPageMediaBoxHeights(bytes).map(Math.round)
+    expect(heights).toEqual([pxToPt(220), pxToPt(480)])
+    await page.close()
+  })
+
+  it('gives every page the tallest page height with min-height max', async () => {
+    const widthPx = 800
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <body style="margin:0">
+        <section style="height:220px">A</section>
+        <div style="break-before:page;height:0"></div>
+        <section style="height:480px">B</section>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'max.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'max',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 }, minHeight: 'max' },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const bytes = fs.readFileSync(out)
+    expect(pdfPageCount(bytes)).toBe(2)
+    const heights = pdfPageMediaBoxHeights(bytes).map(Math.round)
+    expect(heights).toEqual([pxToPt(480), pxToPt(480)])
+    await page.close()
+  })
+
+  it('sizes pages inside a wrapper with SVG children without blank pages', async () => {
+    const widthPx = 800
+    const page = await browser.newPage({ viewport: { width: widthPx, height: 600 } })
+    await page.setContent(`
+      <body style="margin:0">
+        <main style="display:flex;flex-direction:column">
+          <section style="height:120px">A</section>
+          <svg width="800" height="200" style="display:block"></svg>
+          <div style="break-before:page;height:0"></div>
+          <svg width="800" height="300" style="display:block"></svg>
+          <section style="height:100px">B</section>
+        </main>
+      </body>
+    `)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-pdf-'))
+    const out = path.join(dir, 'svg.pdf')
+    await writePdf(page, {
+      outDir: dir,
+      stem: 'svg',
+      options: {
+        page: { viewport: { width: widthPx, height: 600 } },
+        screenshot: {},
+        pdf: { printBackground: true },
+      },
+    }, out)
+    const bytes = fs.readFileSync(out)
+    expect(pdfPageCount(bytes)).toBe(2)
+    const heights = pdfPageMediaBoxHeights(bytes).map(Math.round)
+    expect(heights).toEqual([pxToPt(320), pxToPt(400)])
     await page.close()
   })
 

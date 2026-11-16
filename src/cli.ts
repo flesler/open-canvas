@@ -81,9 +81,8 @@ program
   )
   .option('-w, --width <px>', 'Playwright viewport width (default 1280)', Number, 1280)
   .option(
-    '--min-height <px>',
-    'optional minimum page height in px (PNG/JPG clamp; paginated PDF sheet floor)',
-    (v: string) => Number(v),
+    '--min-height <value>',
+    'minimum page height: px, width ratio (<= 10, e.g. 1.5), a4, or max (PDF pages all match the tallest)',
   )
   .option(
     '--render-options <file|json>',

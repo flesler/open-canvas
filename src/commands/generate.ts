@@ -22,7 +22,7 @@ export type GenerateOptions = {
   brand?: 'cursor' | 'grok';
   formats?: string[];
   viewportWidth?: number;
-  minHeight?: number;
+  minHeight?: string | number;
   renderOptions?: string;
   selectors?: string | string[];
   /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */

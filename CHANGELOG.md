@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [Unreleased]
+
+##### Changed
+- PDF pages between page breaks are sized to their own content instead of one shared sheet with an A4-ratio floor.
+- `--min-height` accepts a width ratio (values up to 10, e.g. `1.5`), `a4`, or `max` (all PDF pages take the tallest page height), besides px.
+
+##### Fixed
+- Zero body padding no longer falls back to 24px in PDF page math.
+
 ## [1.14.1]
 #### 2026-11-15
 

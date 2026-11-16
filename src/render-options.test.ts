@@ -1,6 +1,6 @@
 import { describe } from 'vitest'
-import { matchTestCases } from './test/utils.test.js'
-import { resolveRenderOptions } from './render-options.js'
+import { matchTestCases, runTestCases } from './test/utils.test.js'
+import { parseMinHeight, resolveRenderOptions } from './render-options.js'
 
 describe('resolveRenderOptions', () => {
   matchTestCases(resolveRenderOptions, [
@@ -38,5 +38,19 @@ describe('resolveRenderOptions', () => {
         pdf: { format: 'A4' },
       },
     },
+  ])
+})
+
+describe('parseMinHeight', () => {
+  runTestCases(parseMinHeight, [
+    { desc: 'pixels from CLI string', input: ['1200', 1280], expected: 1200 },
+    { desc: 'pixels from JSON number', input: [1200, 1280], expected: 1200 },
+    { desc: 'fractional width ratio', input: ['1.5', 1280], expected: 1920 },
+    { desc: 'whole width ratio', input: ['2', 1280], expected: 2560 },
+    { desc: 'ratio boundary', input: ['10', 100], expected: 1000 },
+    { desc: 'a4 alias', input: ['A4', 1280], expected: 1810 },
+    { desc: 'max keyword', input: ['max', 1280], expected: 'max' },
+    { desc: 'non-numeric value', input: ['tall', 1280], throws: '--min-height must be' },
+    { desc: 'zero', input: ['0', 1280], throws: '--min-height must be' },
   ])
 })
