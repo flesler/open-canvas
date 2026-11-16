@@ -4,9 +4,18 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ## [Unreleased]
 
+## [1.15.0]
+#### 2026-11-16
+
+##### Added
+- `open-canvas outline <canvas>`: stdout layout map after the same print prep as `generate` (viewport, segments, section spine, grouped structure, slice heights); programmatic `outline` on the default import.
+- Bundled skill `references/` (`outline.md`, `pdf.md`, `typing.md`); slim `SKILL.md` with short links.
+
 ##### Changed
-- PDF pages between page breaks are sized to their own content instead of one shared sheet with an A4-ratio floor.
-- `--min-height` accepts a width ratio (values up to 10, e.g. `1.5`), `a4`, or `max` (all PDF pages take the tallest page height), besides px.
+- PDF pages between CSS breaks use per-segment sheet height instead of one shared tallest sheet with an A4-ratio floor.
+- `--min-height`: px, width ratio up to 10 (e.g. `1.5`), `a4`, or `max` (uniform PDF page height).
+- Smoke test expects showcase paginated PDF MediaBox heights (pt) per page, not one uniform height.
+- Agent skill install copies `references/` beside `SKILL.md`.
 
 ##### Fixed
 - Zero body padding no longer falls back to 24px in PDF page math.
