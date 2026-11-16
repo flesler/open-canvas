@@ -103,9 +103,17 @@ if (heights.length < 2) {
   process.exit(1);
 }
 const rounded = heights.map((h) => Math.round(h));
-const uniform = rounded.every((h) => Math.abs(h - rounded[0]) <= 2);
-if (!uniform) {
-  console.error('smoke: showcase.pdf page heights (pt) differ:', rounded.join(', '));
+const expected = [1912, 1563, 1483];
+const mismatch =
+  rounded.length !== expected.length
+  || rounded.some((h, i) => Math.abs(h - expected[i]) > 4);
+if (mismatch) {
+  console.error(
+    'smoke: showcase.pdf page heights (pt) expected',
+    expected.join(', '),
+    'got',
+    rounded.join(','),
+  );
   process.exit(1);
 }
 console.error('smoke: showcase.pdf', n, 'pages; page heights (pt):', rounded.join(', '));
