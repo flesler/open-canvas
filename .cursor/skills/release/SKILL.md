@@ -66,7 +66,7 @@ git push origin main "v${VERSION}"
 
 One push for branch + tag (avoids running pre-push twice).
 
-Then create the GitHub release for that tag (tags alone are not enough). **`--title` is already the version** — notes must **not** repeat `## [X.Y.Z]` (body starts at `####` date or `#####` groups):
+Then create the GitHub release for that tag (tags alone are not enough). `--title` is already the version — notes must **not** repeat `## [X.Y.Z]` (body starts at `####` date or `#####` groups):
 
 ```bash
 VERSION=1.13.1
