@@ -1,13 +1,27 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
+import { z } from 'zod'
 import { formatCanvasSdkContractLine } from '../canvas-sdk-contract.js'
+import { defineCommand } from '../defineCommand.js'
 import { pathInPkg, verifyTypeScriptPaths } from '../paths.js'
 
 const ambientTypes = pathInPkg('src', 'types', 'ambient.d.ts')
 
-export function runVerify(canvasPath: string): string {
-  const abs = path.resolve(canvasPath)
+const verifyInput = z.object({
+  canvas: z.string().describe('path to *.canvas.tsx').meta({ positional: true }),
+})
+
+export default defineCommand({
+  meta: {
+    description: 'Typecheck a .canvas.tsx (cursor/canvas + data imports)',
+  },
+  input: verifyInput,
+  run: executeVerify,
+})
+
+function executeVerify(input: z.infer<typeof verifyInput>): string {
+  const abs = path.resolve(input.canvas)
   if (!fs.existsSync(abs)) {
     throw new Error(`canvas not found: ${abs}`)
   }

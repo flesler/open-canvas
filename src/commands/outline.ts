@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { z } from 'zod'
 import { build } from 'vite'
 import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
 import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export-css-purge.js'
@@ -10,29 +11,44 @@ import { outlineReferenceDocPath } from '../paths.js'
 import { version } from '../pkg.js'
 import { measureStagedExport } from '../render.js'
 import { canvasStem, parseSelectors, titleCaseFromStem } from '../util.js'
+import { defineCommand } from '../defineCommand.js'
+import { sharedCliExportOptionsSchema, sharedRuntimeExportFields } from './generate.js'
 
-export const DEFAULT_OUTLINE_THRESHOLD = 80
-/** Max lines printed under STRUCTURE (display cap). */
-export const DEFAULT_OUTLINE_MAX_LINES = 96
-/** Nodes collected in the browser when display cap is not raised. */
-export const DEFAULT_OUTLINE_MEASURE_NODES = 180
+const DEFAULT_OUTLINE_THRESHOLD = 80
+const DEFAULT_OUTLINE_MAX_LINES = 96
+const DEFAULT_OUTLINE_MEASURE_NODES = 180
 
-export type OutlineOptions = {
-  canvas: string;
-  out?: string;
-  title?: string;
-  theme?: 'light' | 'dark';
-  brand?: 'cursor' | 'grok';
-  viewportWidth?: number;
-  minHeight?: string | number;
-  renderOptions?: string;
-  selectors?: string | string[];
-  threshold?: number;
-  maxChildren?: number;
-  warnSlack?: boolean
+const outlineInput = sharedCliExportOptionsSchema.extend({
+  canvas: z.string().describe('path to *.canvas.tsx').meta({ positional: true }),
+  threshold: z.coerce.number().optional().describe(`warn with ! when slack or ib >= px (default ${DEFAULT_OUTLINE_THRESHOLD})`).meta({ alias: 'T' }),
+  maxChildren: z.coerce.number().optional().describe(`max tree lines (default ${DEFAULT_OUTLINE_MAX_LINES})`).meta({ alias: 'm' }),
+  warn: z.boolean().default(true).describe('warn on layout slack (use --no-warn for metrics only)').meta({ negatable: true }),
+  ...sharedRuntimeExportFields,
+})
+
+export const forTests = {
+  formatOutline,
+  structureTreeRows,
+  sectionContainsSummary,
+  prependOutlineHelp,
 }
 
-export async function runOutline(opts: OutlineOptions): Promise<string> {
+export default defineCommand({
+  meta: {
+    description: 'Print export layout map for the canvas (stdout; same print prep as generate)',
+  },
+  input: outlineInput,
+  run: executeOutline,
+})
+
+async function executeOutline(parsed: z.infer<typeof outlineInput>): Promise<string> {
+  const threshold =
+    parsed.threshold !== undefined && !Number.isNaN(parsed.threshold) ? parsed.threshold : undefined
+  const maxChildren =
+    parsed.maxChildren !== undefined && !Number.isNaN(parsed.maxChildren) && parsed.maxChildren > 0
+      ? Math.floor(parsed.maxChildren)
+      : undefined
+  const opts = { ...parsed, threshold, maxChildren }
   const canvasPath = path.resolve(opts.canvas)
   if (!fs.existsSync(canvasPath)) {
     throw new Error(`canvas not found: ${canvasPath}`)
@@ -40,30 +56,20 @@ export async function runOutline(opts: OutlineOptions): Promise<string> {
   const canvasDir = path.dirname(canvasPath)
   const title = opts.title ?? titleCaseFromStem(canvasStem(canvasPath))
   const outDir = path.resolve(canvasDir, opts.out ?? 'out')
-  const theme = opts.theme ?? 'light'
-  if (theme !== 'light' && theme !== 'dark') {
-    throw new Error(`--theme must be light or dark (got ${theme})`)
-  }
-  const brand = opts.brand ?? 'cursor'
-  if (brand !== 'cursor' && brand !== 'grok') {
-    throw new Error(`--brand must be cursor or grok (got ${brand})`)
-  }
+  const { theme, brand } = opts
   const options = resolveRenderOptions({
     theme,
-    viewportWidth: opts.viewportWidth,
+    width: opts.width,
     minHeight: opts.minHeight,
     renderOptions: opts.renderOptions,
   })
   const minHeight = options.page.minHeight
   const minHeightPx = typeof minHeight === 'number' ? minHeight : undefined
   const uniformPageHeight = minHeight === 'max'
-  const selectors = parseSelectors(opts.selectors)
-  const threshold =
-    opts.warnSlack === false
-      ? opts.threshold
-      : (opts.threshold ?? DEFAULT_OUTLINE_THRESHOLD)
-  const recordThreshold =
-    opts.warnSlack === false ? 999_999 : (opts.threshold ?? DEFAULT_OUTLINE_THRESHOLD)
+  const selectors = parseSelectors(opts.selector)
+  const warnEnabled = opts.warn !== false
+  const displayThreshold = warnEnabled ? (opts.threshold ?? DEFAULT_OUTLINE_THRESHOLD) : opts.threshold
+  const recordThreshold = warnEnabled ? (opts.threshold ?? DEFAULT_OUTLINE_THRESHOLD) : 999_999
   const maxLines = opts.maxChildren ?? DEFAULT_OUTLINE_MAX_LINES
   const maxTreeNodes = opts.maxChildren ?? DEFAULT_OUTLINE_MEASURE_NODES
   fs.mkdirSync(outDir, { recursive: true })
@@ -99,20 +105,13 @@ export async function runOutline(opts: OutlineOptions): Promise<string> {
     })
     return prependOutlineHelp(
       formatOutline(measure, {
-        threshold,
+        threshold: displayThreshold,
         maxLines,
       }),
     )
   } finally {
     fs.rmSync(path.join(outDir, '_build'), { recursive: true, force: true })
   }
-}
-
-export const forTests = {
-  formatOutline,
-  structureTreeRows,
-  sectionContainsSummary,
-  prependOutlineHelp,
 }
 
 function prependOutlineHelp(body: string): string {
@@ -124,107 +123,6 @@ function prependOutlineHelp(body: string): string {
     body,
   ]
   return lines.join('\n')
-}
-
-type TreeRow = CanvasOutlineMeasure['tree'][number]
-
-function sectionLandmarkKey(row: TreeRow): string | undefined {
-  return row.tag === 'section' && row.name ? row.name : undefined
-}
-
-/** Sections already listed under MAJOR BLOCKS are omitted from STRUCTURE. */
-export function structureTreeRows(
-  tree: TreeRow[],
-  landmarkSections: Set<string>,
-): TreeRow[] {
-  if (!landmarkSections.size) {
-    return tree
-  }
-  return tree.filter((row) => {
-    const key = sectionLandmarkKey(row)
-    return !(key && landmarkSections.has(key))
-  })
-}
-
-export function sectionContainsSummary(tree: TreeRow[], sectionKey: string): string {
-  const rows = tree.filter(
-    row => row.sectionScope === sectionKey && !(row.tag === 'section' && row.name === sectionKey),
-  )
-  if (!rows.length) {
-    return '(no outline nodes inside)'
-  }
-  const buckets = new Map<string, number>()
-  const bump = (kind: string, n = 1) => buckets.set(kind, (buckets.get(kind) ?? 0) + n)
-  for (const row of rows) {
-    const tag = row.tag
-    const name = row.name
-    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') {
-      bump('heading')
-    } else if (name.includes('recharts-responsive-container')) {
-      bump('chart')
-    } else if (tag === 'table') {
-      bump('table')
-    } else if (tag === 'svg') {
-      bump('svg')
-    } else if (tag === 'button') {
-      bump('button')
-    } else if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-      bump('field')
-    } else if (name.includes('tab-') || name.includes('[role=tab]')) {
-      bump('tab')
-    } else if (tag === 'a') {
-      bump('link')
-    } else if (tag === 'pre' || tag === 'code') {
-      bump('snippet')
-    }
-  }
-  return [...buckets.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([kind, count]) => `${count}×${kind}`)
-    .join(', ')
-}
-
-function shallowOutlineNote(summary: string, sectionHeight: number): string {
-  if (summary === '(no outline nodes inside)') {
-    return sectionHeight > 48 ? ' — shallow outline (omitted DOM may fill this section)' : ''
-  }
-  const shallow =
-    sectionHeight >= 120
-    && !summary.includes('chart')
-    && !summary.includes('table')
-    && !summary.includes('svg')
-    && !summary.includes('button')
-    && !summary.includes('snippet')
-    && !summary.includes('field')
-    && (summary === '1×heading' || /^1×heading, \d+×link$/.test(summary))
-  return shallow ? ' — shallow outline (most content not in tree)' : ''
-}
-
-function sectionDuplicateControls(rows: TreeRow[]): string | undefined {
-  const byLabel = new Map<string, Set<number>>()
-  for (const row of rows) {
-    if (row.tag !== 'button') {
-      continue
-    }
-    const match = row.name.match(/^"(.+)"$/)
-    if (!match) {
-      continue
-    }
-    const widths = byLabel.get(match[1]) ?? new Set()
-    widths.add(row.w)
-    byLabel.set(match[1], widths)
-  }
-  const dupes = [...byLabel.entries()].filter(([, widths]) => widths.size > 1)
-  if (!dupes.length) {
-    return undefined
-  }
-  return dupes
-    .map(([label, widths]) => {
-      const sizes = [...widths].sort((a, b) => a - b).join(', ')
-      const short = label.length > 44 ? `${label.slice(0, 44)}…` : label
-      return `"${short}" at ${sizes}px`
-    })
-    .join('; ')
 }
 
 function formatOutline(
@@ -319,6 +217,141 @@ function formatOutline(
   return lines.join('\n')
 }
 
+type TreeRow = CanvasOutlineMeasure['tree'][number]
+
+function structureTreeRows(
+  tree: TreeRow[],
+  landmarkSections: Set<string>,
+): TreeRow[] {
+  if (!landmarkSections.size) {
+    return tree
+  }
+  return tree.filter((row) => {
+    const key = sectionLandmarkKey(row)
+    return !(key && landmarkSections.has(key))
+  })
+}
+
+function sectionLandmarkKey(row: TreeRow): string | undefined {
+  return row.tag === 'section' && row.name ? row.name : undefined
+}
+
+function sectionContainsSummary(tree: TreeRow[], sectionKey: string): string {
+  const rows = tree.filter(
+    row => row.sectionScope === sectionKey && !(row.tag === 'section' && row.name === sectionKey),
+  )
+  if (!rows.length) {
+    return '(no outline nodes inside)'
+  }
+  const buckets = new Map<string, number>()
+  const bump = (kind: string, n = 1) => buckets.set(kind, (buckets.get(kind) ?? 0) + n)
+  for (const row of rows) {
+    const tag = row.tag
+    const name = row.name
+    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') {
+      bump('heading')
+    } else if (name.includes('recharts-responsive-container')) {
+      bump('chart')
+    } else if (tag === 'table') {
+      bump('table')
+    } else if (tag === 'svg') {
+      bump('svg')
+    } else if (tag === 'button') {
+      bump('button')
+    } else if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+      bump('field')
+    } else if (name.includes('tab-') || name.includes('[role=tab]')) {
+      bump('tab')
+    } else if (tag === 'a') {
+      bump('link')
+    } else if (tag === 'pre' || tag === 'code') {
+      bump('snippet')
+    }
+  }
+  return [...buckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([kind, count]) => `${count}×${kind}`)
+    .join(', ')
+}
+
+function shallowOutlineNote(summary: string, sectionHeight: number): string {
+  if (summary === '(no outline nodes inside)') {
+    return sectionHeight > 48 ? ' — shallow outline (omitted DOM may fill this section)' : ''
+  }
+  const shallow =
+    sectionHeight >= 120
+    && !summary.includes('chart')
+    && !summary.includes('table')
+    && !summary.includes('svg')
+    && !summary.includes('button')
+    && !summary.includes('snippet')
+    && !summary.includes('field')
+    && (summary === '1×heading' || /^1×heading, \d+×link$/.test(summary))
+  return shallow ? ' — shallow outline (most content not in tree)' : ''
+}
+
+function sectionDuplicateControls(rows: TreeRow[]): string | undefined {
+  const byLabel = new Map<string, Set<number>>()
+  for (const row of rows) {
+    if (row.tag !== 'button') {
+      continue
+    }
+    const match = row.name.match(/^"(.+)"$/)
+    if (!match) {
+      continue
+    }
+    const widths = byLabel.get(match[1]) ?? new Set()
+    widths.add(row.w)
+    byLabel.set(match[1], widths)
+  }
+  const dupes = [...byLabel.entries()].filter(([, widths]) => widths.size > 1)
+  if (!dupes.length) {
+    return undefined
+  }
+  return dupes
+    .map(([label, widths]) => {
+      const sizes = [...widths].sort((a, b) => a - b).join(', ')
+      const short = label.length > 44 ? `${label.slice(0, 44)}…` : label
+      return `"${short}" at ${sizes}px`
+    })
+    .join('; ')
+}
+
+function capTree(
+  rows: CanvasOutlineMeasure['tree'],
+  max: number,
+): { kept: typeof rows; omitted: number } {
+  if (rows.length <= max) {
+    return { kept: rows, omitted: 0 }
+  }
+  return { kept: rows.slice(0, max), omitted: rows.length - max }
+}
+
+type TreeRun = CanvasOutlineMeasure['tree'][number] & { run: number }
+
+function compressRuns(rows: CanvasOutlineMeasure['tree']): TreeRun[] {
+  const out: TreeRun[] = []
+  for (const row of rows) {
+    const key = rowRunKey(row)
+    const prev = out[out.length - 1]
+    const prevKey = prev ? rowRunKey(prev) : ''
+    if (prev && key === prevKey) {
+      prev.run += 1
+    } else {
+      out.push({ ...row, run: 1 })
+    }
+  }
+  return out
+}
+
+function rowRunKey(row: CanvasOutlineMeasure['tree'][number]): string {
+  const name = compactName(row)
+  if (row.tag === 'button' || row.tag === 'a' || row.tag === 'pre' || row.tag === 'code') {
+    return `${row.page}|${row.depth}|${row.tag}|${name}`
+  }
+  return `${row.page}|${row.depth}|${name}|${row.w}|${row.h}|${row.innerBelow}`
+}
+
 function compactName(row: CanvasOutlineMeasure['tree'][number]): string {
   if (row.name.includes('recharts-responsive-container')) {
     return 'chart-host.recharts-responsive-container'
@@ -342,39 +375,4 @@ function compactName(row: CanvasOutlineMeasure['tree'][number]): string {
     return `${row.tag}${row.name}`
   }
   return row.tag
-}
-
-function capTree(
-  rows: CanvasOutlineMeasure['tree'],
-  max: number,
-): { kept: typeof rows; omitted: number } {
-  if (rows.length <= max) {
-    return { kept: rows, omitted: 0 }
-  }
-  return { kept: rows.slice(0, max), omitted: rows.length - max }
-}
-
-type TreeRun = CanvasOutlineMeasure['tree'][number] & { run: number }
-
-function rowRunKey(row: CanvasOutlineMeasure['tree'][number]): string {
-  const name = compactName(row)
-  if (row.tag === 'button' || row.tag === 'a' || row.tag === 'pre' || row.tag === 'code') {
-    return `${row.page}|${row.depth}|${row.tag}|${name}`
-  }
-  return `${row.page}|${row.depth}|${name}|${row.w}|${row.h}|${row.innerBelow}`
-}
-
-function compressRuns(rows: CanvasOutlineMeasure['tree']): TreeRun[] {
-  const out: TreeRun[] = []
-  for (const row of rows) {
-    const key = rowRunKey(row)
-    const prev = out[out.length - 1]
-    const prevKey = prev ? rowRunKey(prev) : ''
-    if (prev && key === prevKey) {
-      prev.run += 1
-    } else {
-      out.push({ ...row, run: 1 })
-    }
-  }
-  return out
 }

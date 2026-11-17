@@ -1,27 +1,32 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { z } from 'zod'
+import { defineCommand } from '../defineCommand.js'
 import { cursorCanvasDir, pathInPkg } from '../paths.js'
 import { version } from '../pkg.js'
 
 const bundleRoot = pathInPkg('src', 'vendor', 'skill-bundle')
 const skillPath = path.join(bundleRoot, 'SKILL.md')
 
-function expandHome(p: string): string {
-  return p.replace(/^~(?=$|[\\/])/, process.env.HOME ?? '')
-}
-
-function shimVersion(): string {
-  const shimPkg = path.join(cursorCanvasDir(), 'package.json')
-  const json = JSON.parse(fs.readFileSync(shimPkg, 'utf8')) as { version?: string }
-  return json.version ?? 'unknown'
-}
-
 export type SkillInstallResult = {
   skillPath: string;
   status: string
 }
 
-export function runSkill(targetPath?: string): string | SkillInstallResult {
+const skillInput = z.object({
+  dir: z.string().optional().describe('install directory (SKILL.md + references/)').meta({ positional: true }),
+})
+
+export default defineCommand({
+  meta: {
+    description: 'Print or install agent SKILL.md',
+  },
+  input: skillInput,
+  run: executeSkill,
+})
+
+function executeSkill(input: z.infer<typeof skillInput>): string | SkillInstallResult {
+  const targetPath = input.dir
   if (!fs.existsSync(skillPath)) {
     throw new Error('SKILL.md not found in skill-bundle')
   }
@@ -50,4 +55,14 @@ export function runSkill(targetPath?: string): string | SkillInstallResult {
     skillPath: installed,
     status: `Installed -> ${installed} (open-canvas@${version}, cursor-canvas-web@${shimVersion()})`,
   }
+}
+
+function expandHome(p: string): string {
+  return p.replace(/^~(?=$|[\\/])/, process.env.HOME ?? '')
+}
+
+function shimVersion(): string {
+  const shimPkg = path.join(cursorCanvasDir(), 'package.json')
+  const json = JSON.parse(fs.readFileSync(shimPkg, 'utf8')) as { version?: string }
+  return json.version ?? 'unknown'
 }

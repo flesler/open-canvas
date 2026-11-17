@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { runVendorPath } from './commands/vendor-path.js'
+import vendorPathCommand from './commands/vendor-path.js'
 import { shimVendorDir } from './paths.js'
 
 describe('vendor-path', () => {
@@ -12,6 +12,6 @@ describe('vendor-path', () => {
   })
 
   it('returns vendor dir', () => {
-    expect(runVendorPath()).toBe(path.resolve(shimVendorDir()))
+    expect(vendorPathCommand.run(vendorPathCommand.input.parse({}))).toBe(path.resolve(shimVendorDir()))
   })
 })

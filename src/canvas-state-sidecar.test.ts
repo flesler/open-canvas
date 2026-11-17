@@ -3,7 +3,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { canvasStateSeedPreamble, canvasStateSidecarPath, readCanvasStateSidecar } from './canvas-state-sidecar.js'
-import { runGenerate } from './commands/generate.js'
+import generateCommand from './commands/generate.js'
+import { ExportTheme } from './exportEnums.js'
 import { pathInPkg } from './paths.js'
 
 describe('readCanvasStateSidecar', () => {
@@ -83,11 +84,13 @@ export default function Label() {
       path.join(dir, 'label.canvas.data.json'),
       '{ "label": "from-sidecar" }\n',
     )
-    await runGenerate({
-      canvas,
-      formats: ['html'],
-      theme: 'light',
-    })
+    await generateCommand.run(
+      generateCommand.input.parse({
+        canvas,
+        formats: ['html'],
+        theme: ExportTheme.Light,
+      }),
+    )
     const html = fs.readFileSync(path.join(dir, 'out', 'label.html'), 'utf8')
     expect(html).toContain('from-sidecar')
   }, 30_000)

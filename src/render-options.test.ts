@@ -18,7 +18,7 @@ describe('resolveRenderOptions', () => {
     },
     {
       desc: 'CLI width and min-height',
-      input: { viewportWidth: 1920, minHeight: 1200, theme: 'dark' },
+      input: { width: 1920, minHeight: 1200, theme: 'dark' },
       expected: {
         page: {
           viewport: { width: 1920, height: 1 },

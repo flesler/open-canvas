@@ -137,6 +137,6 @@ So either rename schema fields to match CLI (`width` in Zod) or keep `OPTION_CLI
 ## Layout on `main`
 
 - `src/cli.ts` — `createCli` entry, `prompts: false`
-- `src/commands/cliRouter.ts` — `t.procedure` per subcommand, `.input()` schemas
-- `src/commands/exportSchemas.ts` — shared export flags
+- `src/cli.ts` — `t.router` / `t.procedure` per subcommand, `.input()` schemas
+- `src/commands/generate.ts` — `sharedCliExportOptionsSchema` (outline imports the same)
 - `src/commands/generate.ts` / `outline.ts` — `*FieldsSchema` + `run*` (one `.parse()` when called outside CLI)
