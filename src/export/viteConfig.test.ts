@@ -13,7 +13,7 @@ const {
   escapeHtmlForExportTitle,
   htmlTitlePlugin,
 } = forTests
-import { pathInPkg } from '../paths.js'
+import { pathInPkg } from '../util/paths.js'
 
 const SHOWCASE = pathInPkg('example', 'showcase.canvas.tsx')
 

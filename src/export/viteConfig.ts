@@ -5,7 +5,7 @@ import type { Plugin, UserConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import type { CanvasStateSidecar } from '../canvas/stateSidecar.js'
 import { canvasStateSeedPreamble } from '../canvas/stateSidecar.js'
-import { pathInPkg, viteResolveForCanvas } from '../paths.js'
+import { pathInPkg, viteResolveForCanvas } from '../util/paths.js'
 import { viteDataModule } from '../util/index.js'
 
 export type ExportViteBuildInput = {

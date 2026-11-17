@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { defineCommand } from '../util/defineCommand.js'
-import { cursorCanvasDir, pathInPkg } from '../paths.js'
-import { version } from '../pkg.js'
+import { cursorCanvasDir, pathInPkg } from '../util/paths.js'
+import pkg from '../pkg.js'
 
 const bundleRoot = pathInPkg('src', 'vendor', 'skill-bundle')
 const skillPath = path.join(bundleRoot, 'SKILL.md')
@@ -53,7 +53,7 @@ function executeSkill(input: z.infer<typeof skillInput>): string | SkillInstallR
 
   return {
     skillPath: installed,
-    status: `Installed -> ${installed} (open-canvas@${version}, cursor-canvas-web@${shimVersion()})`,
+    status: `Installed -> ${installed} (open-canvas@${pkg.version}, cursor-canvas-web@${shimVersion()})`,
   }
 }
 

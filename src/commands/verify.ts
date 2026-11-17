@@ -4,7 +4,7 @@ import ts from 'typescript'
 import { z } from 'zod'
 import { formatCanvasSdkContractLine } from '../canvas/sdkContract.js'
 import { defineCommand } from '../util/defineCommand.js'
-import { pathInPkg, verifyTypeScriptPaths } from '../paths.js'
+import { pathInPkg, verifyTypeScriptPaths } from '../util/paths.js'
 
 const ambientTypes = pathInPkg('src', 'types', 'ambient.d.ts')
 

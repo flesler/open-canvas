@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { shimVendorDir } from '../paths.js'
+import { shimVendorDir } from '../util/paths.js'
 import vendorPathCommand from './vendor-path.js'
 
 describe('vendor-path', () => {

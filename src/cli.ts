@@ -5,7 +5,7 @@ import outlineCommand from './commands/outline.js'
 import skillCommand from './commands/skill.js'
 import vendorPathCommand from './commands/vendor-path.js'
 import verifyCommand from './commands/verify.js'
-import { cliName, description, version } from './pkg.js'
+import pkg from './pkg.js'
 
 const cliRouter = t.router({
   'vendor-path': t.procedure
@@ -59,9 +59,9 @@ const cliRouter = t.router({
 
 const cli = createCli({
   router: cliRouter,
-  name: cliName,
-  version,
-  description,
+  name: pkg.name,
+  version: pkg.version,
+  description: pkg.description,
 })
 
 function cliFail(e: unknown): never {

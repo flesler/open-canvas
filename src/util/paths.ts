@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
-import { pkgRoot } from './pkg.js'
+import { pkgRoot } from '../pkg.js'
 
 const require = createRequire(path.join(pkgRoot, 'package.json'))
 

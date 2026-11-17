@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { outlineReferenceDocPath } from '../paths.js'
+import { outlineReferenceDocPath } from '../util/paths.js'
 import { forTests } from './outline.js'
 import type { CanvasOutlineMeasure } from '../render/index.js'
 

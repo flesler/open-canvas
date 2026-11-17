@@ -7,8 +7,8 @@ import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export/cssPurge
 import { buildExportViteConfig } from '../export/viteConfig.js'
 import { resolveRenderOptions } from '../render/options.js'
 import type { CanvasOutlineMeasure } from '../render/index.js'
-import { outlineReferenceDocPath } from '../paths.js'
-import { version } from '../pkg.js'
+import { outlineReferenceDocPath } from '../util/paths.js'
+import pkg from '../pkg.js'
 import { measureStagedExport } from '../render/index.js'
 import { canvasStem, parseSelectors, titleCaseFromStem } from '../util/index.js'
 import { defineCommand } from '../util/defineCommand.js'
@@ -118,7 +118,7 @@ function prependOutlineHelp(body: string): string {
   const ref = outlineReferenceDocPath()
   const lines = [
     'Sections: VIEWPORT → LEGEND → MAJOR BLOCKS → STRUCTURE → VERTICAL SEGMENTS (read top to bottom; self-contained).',
-    `If a token is still unclear: ${ref}  (bundled with @flesler/open-canvas@${version})`,
+    `If a token is still unclear: ${ref}  (bundled with @flesler/open-canvas@${pkg.version})`,
     '',
     body,
   ]

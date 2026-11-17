@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import openCanvas from './index.js'
-import { pathInPkg, shimVendorDir } from './paths.js'
+import { pathInPkg, shimVendorDir } from './util/paths.js'
 
 const bundledSkill = pathInPkg('src', 'vendor', 'skill-bundle', 'SKILL.md')
 

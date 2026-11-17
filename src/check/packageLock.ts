@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 const SHIM_PKG = '@flesler/cursor-canvas-web'
 const ALLOWED_FILE_SHIM = 'file:../cursor-canvas-web'

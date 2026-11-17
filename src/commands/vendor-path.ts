@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { defineCommand } from '../util/defineCommand.js'
-import { shimVendorDir } from '../paths.js'
+import { shimVendorDir } from '../util/paths.js'
 
 const vendorPathInput = z.object({})
 

@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { ExportTheme } from '../export/enums.js'
-import { pathInPkg } from '../paths.js'
+import { pathInPkg } from '../util/paths.js'
 import generateCommand from './generate.js'
 
 describe('generate', () => {
