@@ -18,4 +18,4 @@ description: Read when the shim is updated and how to roll it out.
 
 **Scripts:** `sync-local-shim.sh`, `verify-showcase-visual.sh` (`.cache/showcase-charts-verify.jpg`).
 
-**npm release (this repo):** `.cursor/skills/release/SKILL.md`.
+**npm release (this repo):** `/release` (generic npm flow). **Before** the version commit: user publishes `@flesler/cursor-canvas-web` when this rollout applies; agent `npm update @flesler/cursor-canvas-web` in the same commit. `npm run check:lock` must pass — never install a local `.tgz` or `file:` path.
