@@ -113,21 +113,12 @@ export function titleCaseFromStem(stem: string): string {
     .join(' ')
 }
 
-export type OutputFormat = 'html' | 'png' | 'pdf' | 'jpg' | 'cursor'
-
-export const DEFAULT_FORMAT_LIST = ['html', 'png', 'pdf']
-export const DEFAULT_FORMATS = DEFAULT_FORMAT_LIST.join(',')
-
-export function parseFormats(raw: string | string[]): OutputFormat[] {
-  const allowed = new Set<OutputFormat>(['html', 'png', 'pdf', 'jpg', 'cursor'])
-  const list = (typeof raw === 'string' ? raw.split(',') : raw).map(s => s.trim().toLowerCase())
-  for (const f of list) {
-    if (!allowed.has(f as OutputFormat)) {
-      throw new Error(`unknown format: ${f}`)
-    }
-  }
-  return list as OutputFormat[]
-}
+export {
+  DEFAULT_FORMATS,
+  DEFAULT_OUTPUT_FORMATS as DEFAULT_FORMAT_LIST,
+  OutputFormat,
+  parseFormats,
+} from './exportEnums.js'
 
 export function parseSelectors(
   raw?: string | string[],

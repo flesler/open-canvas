@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { OutputFormat } from './exportEnums.js'
 import { runTestCases } from './test/utils.test.js'
 import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, outputSlug, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem, titleSlug } from './util.js'
 
@@ -49,7 +50,11 @@ describe('titleSlug', () => {
 
 describe('parseFormats', () => {
   runTestCases(parseFormats, [
-    { desc: 'comma list', input: 'html,png,cursor', expected: ['html', 'png', 'cursor'] },
+    {
+      desc: 'comma list',
+      input: 'html,png,cursor',
+      expected: [OutputFormat.Html, OutputFormat.Png, OutputFormat.Cursor],
+    },
     { desc: 'unknown format', input: 'gif', throws: 'unknown format' },
   ])
 })

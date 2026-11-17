@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { LaunchOptions, Page, PageScreenshotOptions } from 'playwright'
+import type { ExportTheme } from './exportEnums.js'
 
 type PagePdfOptions = NonNullable<Parameters<Page['pdf']>[0]>
 
@@ -25,7 +26,7 @@ export type RenderOptionsInput = {
   viewportWidth?: number;
   minHeight?: string | number;
   renderOptions?: string;
-  theme?: 'light' | 'dark'
+  theme?: ExportTheme
 }
 
 export const BOOTSTRAP_VIEWPORT_HEIGHT = 1

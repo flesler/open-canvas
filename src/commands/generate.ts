@@ -1,37 +1,35 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { z } from 'zod'
 import { build } from 'vite'
 import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
 import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export-css-purge.js'
 import { buildExportViteConfig } from '../export-vite-config.js'
 import { resolveRenderOptions } from '../render-options.js'
 import { render } from '../render.js'
-import { canvasStem, DEFAULT_FORMAT_LIST, emitCursorCanvas, outputSlug, parseFormats, parseSelectors, titleCaseFromStem } from '../util.js'
+import { DEFAULT_OUTPUT_FORMATS, normalizeFormatInput, OutputFormat, outputFormatListSchema } from '../exportEnums.js'
+import { canvasStem, emitCursorCanvas, outputSlug, parseSelectors, titleCaseFromStem } from '../util.js'
+import { sharedCliExportOptionsSchema, sharedRuntimeExportFields } from './exportSchemas.js'
 
 function generateDebug(): boolean {
   const v = process.env.OPEN_CANVAS_DEBUG
   return v === '1' || v === 'true'
 }
 
-export type GenerateOptions = {
-  canvas: string;
-  out?: string;
-  name?: string;
-  title?: string;
-  theme?: 'light' | 'dark';
-  brand?: 'cursor' | 'grok';
-  formats?: string[];
-  viewportWidth?: number;
-  minHeight?: string | number;
-  renderOptions?: string;
-  selectors?: string | string[];
-  /** With `--formats cursor`, prepend inlined sidecar + localStorage seed. */
-  inlineState?: boolean;
-  /** CLI only: skip printing artifact paths (library always returns them). */
-  quiet?: boolean
-}
+export const generateInputSchema = sharedCliExportOptionsSchema
+  .extend({
+    canvas: z.string(),
+    name: z.string().optional(),
+    formats: z.preprocess(normalizeFormatInput, outputFormatListSchema.optional()),
+    inlineState: z.boolean().default(false),
+    quiet: z.boolean().default(false),
+    ...sharedRuntimeExportFields,
+  })
 
-export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
+export type GenerateOptions = z.input<typeof generateInputSchema>
+
+export async function runGenerate(raw: GenerateOptions): Promise<string[]> {
+  const opts = generateInputSchema.parse(raw)
   const canvasPath = path.resolve(opts.canvas)
   if (!fs.existsSync(canvasPath)) {
     throw new Error(`canvas not found: ${canvasPath}`)
@@ -46,25 +44,17 @@ export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
     canvasStem: fileStem,
     title,
   })
-  const theme = opts.theme ?? 'light'
-  if (theme !== 'light' && theme !== 'dark') {
-    throw new Error(`--theme must be light or dark (got ${theme})`)
-  }
-  const brand = opts.brand ?? 'cursor'
-  if (brand !== 'cursor' && brand !== 'grok') {
-    throw new Error(`--brand must be cursor or grok (got ${brand})`)
-  }
-
-  const formats = parseFormats(opts.formats ?? DEFAULT_FORMAT_LIST)
+  const { theme, brand } = opts
+  const formats = opts.formats ?? [...DEFAULT_OUTPUT_FORMATS]
   const needsHtml = formats.some(
-    f => f === 'html' || f === 'png' || f === 'pdf' || f === 'jpg',
+    f => f === OutputFormat.Html || f === OutputFormat.Png || f === OutputFormat.Pdf || f === OutputFormat.Jpg,
   )
   const needsRender = formats.some(
-    f => f === 'png' || f === 'pdf' || f === 'jpg',
+    f => f === OutputFormat.Png || f === OutputFormat.Pdf || f === OutputFormat.Jpg,
   )
   const selectors = parseSelectors(opts.selectors)
   const needsBrowser =
-    needsRender || (Boolean(selectors) && formats.includes('html'))
+    needsRender || (Boolean(selectors) && formats.includes(OutputFormat.Html))
 
   fs.mkdirSync(outDir, { recursive: true })
 
@@ -82,7 +72,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
     artifacts.push(p)
   }
 
-  if (formats.includes('cursor')) {
+  if (formats.includes(OutputFormat.Cursor)) {
     const cursorPath = path.join(outDir, `${stem}.canvas.tsx`)
     emitCursorCanvas(canvasPath, cursorPath, {
       inlineState: opts.inlineState,
@@ -125,13 +115,13 @@ export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
     if (!viteFailed) {
       if (needsBrowser) {
         await render(renderCtx, {
-          png: formats.includes('png'),
-          pdf: formats.includes('pdf'),
-          jpg: formats.includes('jpg'),
-          html: Boolean(selectors) && formats.includes('html'),
+          png: formats.includes(OutputFormat.Png),
+          pdf: formats.includes(OutputFormat.Pdf),
+          jpg: formats.includes(OutputFormat.Jpg),
+          html: Boolean(selectors) && formats.includes(OutputFormat.Html),
         })
       }
-      if (formats.includes('html') && !selectors && fs.existsSync(stagedHtml)) {
+      if (formats.includes(OutputFormat.Html) && !selectors && fs.existsSync(stagedHtml)) {
         fs.renameSync(stagedHtml, deliveredHtml)
       }
     }
@@ -144,16 +134,16 @@ export async function runGenerate(opts: GenerateOptions): Promise<string[]> {
   }
 
   for (const f of formats) {
-    if (f === 'html') {
+    if (f === OutputFormat.Html) {
       noteArtifact(path.join(outDir, `${stem}.html`))
     }
-    if (f === 'png') {
+    if (f === OutputFormat.Png) {
       noteArtifact(path.join(outDir, `${stem}.png`))
     }
-    if (f === 'pdf') {
+    if (f === OutputFormat.Pdf) {
       noteArtifact(path.join(outDir, `${stem}.pdf`))
     }
-    if (f === 'jpg') {
+    if (f === OutputFormat.Jpg) {
       noteArtifact(path.join(outDir, `${stem}.jpg`))
     }
   }

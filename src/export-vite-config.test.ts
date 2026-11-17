@@ -5,6 +5,7 @@ import type { IndexHtmlTransformContext, Plugin, TransformResult, UserConfig } f
 import { describe, expect, it } from 'vitest'
 import { matchTestCases, runTestCases } from './test/utils.test.js'
 import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
+import { ExportBrand, ExportTheme } from './exportEnums.js'
 import { buildExportViteConfig, forTests, type ExportViteBuildInput } from './export-vite-config.js'
 
 const {
@@ -23,8 +24,8 @@ function defaultInput(
   return {
     canvasPath: SHOWCASE,
     outDir: path.join(os.tmpdir(), 'open-canvas-export-vite'),
-    theme: 'light',
-    brand: 'cursor',
+    theme: ExportTheme.Light,
+    brand: ExportBrand.Cursor,
     title: 'Test Canvas',
     canvasState: {},
     ...overrides,
@@ -182,12 +183,12 @@ describe('buildExportViteConfig', () => {
     [
       {
         desc: 'light cursor theme',
-        input: { theme: 'light', brand: 'cursor' },
+        input: { theme: ExportTheme.Light, brand: ExportBrand.Cursor },
         expected: { define: { __THEME__: '"light"', __BRAND__: '"cursor"' } },
       },
       {
         desc: 'dark grok theme',
-        input: { theme: 'dark', brand: 'grok' },
+        input: { theme: ExportTheme.Dark, brand: ExportBrand.Grok },
         expected: { define: { __THEME__: '"dark"', __BRAND__: '"grok"' } },
       },
     ],

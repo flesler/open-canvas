@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { z } from 'zod'
 import { build } from 'vite'
 import { readCanvasStateSidecar } from '../canvas-state-sidecar.js'
 import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export-css-purge.js'
@@ -10,29 +11,40 @@ import { outlineReferenceDocPath } from '../paths.js'
 import { version } from '../pkg.js'
 import { measureStagedExport } from '../render.js'
 import { canvasStem, parseSelectors, titleCaseFromStem } from '../util.js'
+import { sharedCliExportOptionsSchema, sharedRuntimeExportFields } from './exportSchemas.js'
 
 export const DEFAULT_OUTLINE_THRESHOLD = 80
 /** Max lines printed under STRUCTURE (display cap). */
 export const DEFAULT_OUTLINE_MAX_LINES = 96
 /** Nodes collected in the browser when display cap is not raised. */
-export const DEFAULT_OUTLINE_MEASURE_NODES = 180
+const DEFAULT_OUTLINE_MEASURE_NODES = 180
 
-export type OutlineOptions = {
-  canvas: string;
-  out?: string;
-  title?: string;
-  theme?: 'light' | 'dark';
-  brand?: 'cursor' | 'grok';
-  viewportWidth?: number;
-  minHeight?: string | number;
-  renderOptions?: string;
-  selectors?: string | string[];
-  threshold?: number;
-  maxChildren?: number;
-  warnSlack?: boolean
-}
+export const outlineInputSchema = sharedCliExportOptionsSchema
+  .extend({
+    canvas: z.string(),
+    threshold: z.coerce.number().optional(),
+    maxChildren: z.coerce.number().optional(),
+    warn: z.boolean().default(true),
+    warnSlack: z.boolean().optional(),
+    ...sharedRuntimeExportFields,
+  })
+  .transform((raw) => {
+    const { warn, warnSlack, threshold, maxChildren, ...rest } = raw
+    return {
+      ...rest,
+      threshold: threshold !== undefined && !Number.isNaN(threshold) ? threshold : undefined,
+      maxChildren:
+        maxChildren !== undefined && !Number.isNaN(maxChildren) && maxChildren > 0
+          ? Math.floor(maxChildren)
+          : undefined,
+      warnSlack: warnSlack ?? (warn === false ? false : undefined),
+    }
+  })
 
-export async function runOutline(opts: OutlineOptions): Promise<string> {
+export type OutlineOptions = z.input<typeof outlineInputSchema>
+
+export async function runOutline(raw: OutlineOptions): Promise<string> {
+  const opts = outlineInputSchema.parse(raw)
   const canvasPath = path.resolve(opts.canvas)
   if (!fs.existsSync(canvasPath)) {
     throw new Error(`canvas not found: ${canvasPath}`)
@@ -40,14 +52,7 @@ export async function runOutline(opts: OutlineOptions): Promise<string> {
   const canvasDir = path.dirname(canvasPath)
   const title = opts.title ?? titleCaseFromStem(canvasStem(canvasPath))
   const outDir = path.resolve(canvasDir, opts.out ?? 'out')
-  const theme = opts.theme ?? 'light'
-  if (theme !== 'light' && theme !== 'dark') {
-    throw new Error(`--theme must be light or dark (got ${theme})`)
-  }
-  const brand = opts.brand ?? 'cursor'
-  if (brand !== 'cursor' && brand !== 'grok') {
-    throw new Error(`--brand must be cursor or grok (got ${brand})`)
-  }
+  const { theme, brand } = opts
   const options = resolveRenderOptions({
     theme,
     viewportWidth: opts.viewportWidth,
@@ -133,7 +138,7 @@ function sectionLandmarkKey(row: TreeRow): string | undefined {
 }
 
 /** Sections already listed under MAJOR BLOCKS are omitted from STRUCTURE. */
-export function structureTreeRows(
+function structureTreeRows(
   tree: TreeRow[],
   landmarkSections: Set<string>,
 ): TreeRow[] {
@@ -146,7 +151,7 @@ export function structureTreeRows(
   })
 }
 
-export function sectionContainsSummary(tree: TreeRow[], sectionKey: string): string {
+function sectionContainsSummary(tree: TreeRow[], sectionKey: string): string {
   const rows = tree.filter(
     row => row.sectionScope === sectionKey && !(row.tag === 'section' && row.name === sectionKey),
   )

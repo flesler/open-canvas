@@ -1,4 +1,5 @@
 import { describe } from 'vitest'
+import { ExportTheme } from './exportEnums.js'
 import { matchTestCases, runTestCases } from './test/utils.test.js'
 import { parseMinHeight, resolveRenderOptions } from './render-options.js'
 
@@ -6,7 +7,7 @@ describe('resolveRenderOptions', () => {
   matchTestCases(resolveRenderOptions, [
     {
       desc: 'default viewport',
-      input: { theme: 'light' },
+      input: { theme: ExportTheme.Light },
       expected: {
         page: {
           viewport: { width: 1280, height: 1 },
@@ -18,7 +19,7 @@ describe('resolveRenderOptions', () => {
     },
     {
       desc: 'CLI width and min-height',
-      input: { viewportWidth: 1920, minHeight: 1200, theme: 'dark' },
+      input: { viewportWidth: 1920, minHeight: 1200, theme: ExportTheme.Dark },
       expected: {
         page: {
           viewport: { width: 1920, height: 1 },
@@ -30,7 +31,7 @@ describe('resolveRenderOptions', () => {
     {
       desc: 'inline JSON overrides',
       input: {
-        theme: 'light',
+        theme: ExportTheme.Light,
         renderOptions: '{"screenshot":{"fullPage":false},"pdf":{"format":"A4"}}',
       },
       expected: {

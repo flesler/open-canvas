@@ -6,13 +6,14 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 import type { CanvasStateSidecar } from './canvas-state-sidecar.js'
 import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
 import { pathInPkg, viteResolveForCanvas } from './paths.js'
+import type { ExportBrand, ExportTheme } from './exportEnums.js'
 import { viteDataModule } from './util.js'
 
 export type ExportViteBuildInput = {
   canvasPath: string;
   outDir: string;
-  theme: 'light' | 'dark';
-  brand: 'cursor' | 'grok';
+  theme: ExportTheme;
+  brand: ExportBrand;
   title: string;
   canvasState: CanvasStateSidecar;
   basePath?: string
@@ -87,7 +88,7 @@ function htmlTitlePlugin(title: string): Plugin {
   }
 }
 
-function exportShellThemePlugin(theme: 'light' | 'dark'): Plugin {
+function exportShellThemePlugin(theme: ExportTheme): Plugin {
   return {
     name: 'export-shell-theme',
     transformIndexHtml(html) {
