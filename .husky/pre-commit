@@ -28,9 +28,18 @@ if ! command -v npm >/dev/null 2>&1 && [ -s "$HOME/.nvm/nvm.sh" ]; then
   nvm use
 fi
 
-# lint:full may rewrite working-tree files; re-stage everything that was going into this commit.
 staged_files=$(git diff --cached --name-only)
 
+case "$staged_files" in
+  *package.json*|*package-lock.json*)
+    if ! npm run verify:lockfile; then
+      echo "package-lock.json out of sync. Regenerate with: nvm use && npm install"
+      exit 1
+    fi
+    ;;
+esac
+
+# lint:full may rewrite working-tree files; re-stage everything that was going into this commit.
 if ! bin/parallel-run.sh lint:full test:unit; then
   echo "Checks failed; aborting commit."
   exit 1

@@ -53,6 +53,7 @@
     "example:cursor": "npm run build:cli && node dist/cli.js generate example/showcase.canvas.tsx --formats cursor",
     "test:pack": "bash bin/check-npm-pack.sh",
     "ci:local": "npm run build:cli && npm run lint:full && npm test && npm run test:pack && npm run test:contract && npm run test:smoke",
+    "verify:lockfile": "npm ci",
     "agent:stop": "npm run -s lint:full:silent",
     "changelog": "auto-changelog --commit-limit 100 --hide-credit"
   },
