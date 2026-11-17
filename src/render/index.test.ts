@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { forTests } from './render.js'
+import { forTests } from './index.js'
 
 const { isolateSelectors, writePdf } = forTests
 

@@ -2,13 +2,13 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { checkPackageLock } from './check-package-lock.js'
+import { checkPackageLock } from './packageLock.js'
 
 function writeJson(file: string, value: unknown): void {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`)
 }
 
-describe('checkPackageLock', () => {
+describe('packageLock', () => {
   it('accepts allowed file:../cursor-canvas-web shim lock', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'oc-lock-'))
     writeJson(path.join(dir, 'package.json'), {

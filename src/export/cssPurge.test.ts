@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { exportCssPurgeEnabled, purgeExportHtmlStyles } from './export-css-purge.js'
+import { exportCssPurgeEnabled, purgeExportHtmlStyles } from './cssPurge.js'
 
 describe('exportCssPurgeEnabled', () => {
   it('defaults to on', () => {

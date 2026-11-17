@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { runTestCases } from './test/utils.test.js'
-import { canvasStem, emitCursorCanvas, formatCursorCanvasEmit, outputSlug, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem, titleSlug } from './util.js'
+import { runTestCases } from '../test/utils.test.js'
+import { emitCursorCanvas, formatCursorCanvasEmit, outputSlug, parseDataContent, parseFormats, parseJsonl, parseSelectors, titleCaseFromStem, titleSlug } from './index.js'
 
 describe('parseJsonl', () => {
   runTestCases(parseJsonl, [
@@ -23,13 +23,6 @@ describe('parseDataContent', () => {
     expect(parseDataContent('.txt', 'hello')).toBe('hello')
     expect(parseDataContent('.md', '# Title\n\nbody')).toBe('# Title\n\nbody')
   })
-})
-
-describe('canvasStem', () => {
-  runTestCases(canvasStem, [
-    { desc: '.canvas.tsx stem', input: '/foo/my-report.canvas.tsx', expected: 'my-report' },
-    { desc: 'wrong extension', input: 'x.tsx', throws: 'canvas must end with .canvas.tsx' },
-  ])
 })
 
 describe('outputSlug', () => {

@@ -6,7 +6,7 @@ import { pathInPkg, shimVendorDir } from './paths.js'
 
 const bundledSkill = pathInPkg('src', 'vendor', 'skill-bundle', 'SKILL.md')
 
-describe('@flesler/open-canvas', () => {
+describe('index', () => {
   it('loads the published entry', () => {
     expect(openCanvas.verify(pathInPkg('example', 'showcase.canvas.tsx'))).toMatch(/^canvas-sdk contract:/)
     expect(openCanvas.skill()).toBe(fs.readFileSync(bundledSkill, 'utf8'))

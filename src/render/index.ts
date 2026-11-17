@@ -3,8 +3,8 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import type { Page } from 'playwright'
-import { pkgRoot } from './pkg.js'
-import type { RenderOptions } from './render-options.js'
+import { pkgRoot } from '../pkg.js'
+import type { RenderOptions } from './options.js'
 
 const require = createRequire(path.join(pkgRoot, 'package.json'))
 let chromiumReady = false

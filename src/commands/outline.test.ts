@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { outlineReferenceDocPath } from '../paths.js'
 import { forTests } from './outline.js'
-import type { CanvasOutlineMeasure } from '../render.js'
+import type { CanvasOutlineMeasure } from '../render/index.js'
 
 const { formatOutline, structureTreeRows, sectionContainsSummary, prependOutlineHelp } = forTests
 
@@ -18,7 +18,7 @@ function payload(partial: Partial<CanvasOutlineMeasure>): CanvasOutlineMeasure {
   }
 }
 
-describe('formatOutline', () => {
+describe('outline', () => {
   it('prints landmarks, compresses runs, caps lines', () => {
     const text = formatOutline(
       payload({

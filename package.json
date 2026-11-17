@@ -25,7 +25,7 @@
   },
   "scripts": {
     "build": "npm run build:cli",
-    "check:lock": "node --experimental-strip-types src/check-package-lock.ts",
+    "check:lock": "node --experimental-strip-types src/check/packageLock.ts",
     "build:cli": "tsup",
     "build:github-pages": "npm run build:cli && bash bin/build-github-pages.sh",
     "prepublishOnly": "npm run build:cli",

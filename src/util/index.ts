@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Project } from 'ts-morph'
 import { parse as parseYaml } from 'yaml'
-import { canvasStateSeedPreamble, readCanvasStateSidecar } from './canvas-state-sidecar.js'
+import { canvasStateSeedPreamble, readCanvasStateSidecar } from '../canvas/stateSidecar.js'
+export { canvasStem } from './canvasStem.js'
 
 /** Relative data imports beside a canvas (json handled by Vite natively). */
 export const DATA_FILE_EXT = /\.(jsonl|json|csv|tsv|ya?ml|txt|md)$/i
@@ -57,14 +58,6 @@ export function viteDataModule(filePath: string, raw: string): { code: string } 
   const ext = path.extname(file).toLowerCase()
   const data = parseDataContent(ext, raw)
   return { code: `export default ${JSON.stringify(data)}` }
-}
-
-export function canvasStem(canvasPath: string): string {
-  const base = path.basename(canvasPath)
-  if (!base.endsWith('.canvas.tsx')) {
-    throw new Error(`canvas must end with .canvas.tsx (got ${base})`)
-  }
-  return base.slice(0, -'.canvas.tsx'.length)
 }
 
 function assertOutputSlug(name: string): string {

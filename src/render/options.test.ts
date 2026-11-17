@@ -1,6 +1,6 @@
 import { describe } from 'vitest'
-import { matchTestCases, runTestCases } from './test/utils.test.js'
-import { parseMinHeight, resolveRenderOptions } from './render-options.js'
+import { matchTestCases, runTestCases } from '../test/utils.test.js'
+import { parseMinHeight, resolveRenderOptions } from './options.js'
 
 describe('resolveRenderOptions', () => {
   matchTestCases(resolveRenderOptions, [

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
-import { defineCommand } from '../defineCommand.js'
+import { defineCommand } from '../util/defineCommand.js'
 import { cursorCanvasDir, pathInPkg } from '../paths.js'
 import { version } from '../pkg.js'
 

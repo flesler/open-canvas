@@ -1,5 +1,5 @@
 import { createCli, t } from 'trpc-cli'
-import { formatCanvasSdkContractLine } from './canvas-sdk-contract.js'
+import { formatCanvasSdkContractLine } from './canvas/sdkContract.js'
 import generateCommand from './commands/generate.js'
 import outlineCommand from './commands/outline.js'
 import skillCommand from './commands/skill.js'

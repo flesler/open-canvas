@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { canvasStem } from './util.js'
+import { canvasStem } from '../util/canvasStem.js'
 
 /** Flat object written by the IDE beside `<stem>.canvas.tsx`. */
 export type CanvasStateSidecar = Record<string, unknown>

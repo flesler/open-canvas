@@ -64,7 +64,7 @@ export function checkPackageLock(root: string = pkgRoot): void {
 
   const resolved = entry.resolved ?? ''
   if (dep === ALLOWED_FILE_SHIM || resolved.startsWith('../cursor-canvas-web')) {
-    console.log('check-package-lock OK (local file:../cursor-canvas-web shim)')
+    console.log('packageLock OK (local file:../cursor-canvas-web shim)')
     return
   }
 
@@ -83,26 +83,26 @@ export function checkPackageLock(root: string = pkgRoot): void {
   const registryIntegrity = npmShimIntegrity(ver)
   if (registryIntegrity === undefined) {
     console.warn(
-      `check-package-lock: ${SHIM_PKG}@${ver} not on npm yet (skipping integrity check; npm ci will fail until publish)`,
+      `packageLock: ${SHIM_PKG}@${ver} not on npm yet (skipping integrity check; npm ci will fail until publish)`,
     )
     return
   }
 
   if (registryIntegrity !== lockIntegrity) {
     console.error(
-      `check-package-lock: lock integrity does not match npm for ${SHIM_PKG}@${ver}`,
+      `packageLock: lock integrity does not match npm for ${SHIM_PKG}@${ver}`,
     )
     console.error(`  lock:     ${lockIntegrity}`)
     console.error(`  registry: ${registryIntegrity}`)
     console.error('  fix: npm update @flesler/cursor-canvas-web')
-    throw new Error('check-package-lock: lock integrity mismatch')
+    throw new Error('packageLock: lock integrity mismatch')
   }
 
-  console.log('check-package-lock OK')
+  console.log('packageLock OK')
 }
 
 function fail(message: string): never {
-  throw new Error(`check-package-lock: ${message}`)
+  throw new Error(`packageLock: ${message}`)
 }
 
 function npmShimIntegrity(version: string): string | undefined {

@@ -3,9 +3,9 @@ import os from 'node:os'
 import path from 'node:path'
 import type { IndexHtmlTransformContext, Plugin, TransformResult, UserConfig } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { matchTestCases, runTestCases } from './test/utils.test.js'
-import { canvasStateSeedPreamble } from './canvas-state-sidecar.js'
-import { buildExportViteConfig, forTests, type ExportViteBuildInput } from './export-vite-config.js'
+import { matchTestCases, runTestCases } from '../test/utils.test.js'
+import { canvasStateSeedPreamble } from '../canvas/stateSidecar.js'
+import { buildExportViteConfig, forTests, type ExportViteBuildInput } from './viteConfig.js'
 
 const {
   canvasStateSeedPlugin,
@@ -13,7 +13,7 @@ const {
   escapeHtmlForExportTitle,
   htmlTitlePlugin,
 } = forTests
-import { pathInPkg } from './paths.js'
+import { pathInPkg } from '../paths.js'
 
 const SHOWCASE = pathInPkg('example', 'showcase.canvas.tsx')
 

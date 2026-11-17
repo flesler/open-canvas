@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { shimCanvasSdkDir } from './paths.js'
+import { shimCanvasSdkDir } from '../paths.js'
 
 export type CanvasSdkManifest = {
   syncedAt?: string;

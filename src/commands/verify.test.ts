@@ -7,7 +7,7 @@ import verifyCommand from './verify.js'
 
 const exampleCanvas = pathInPkg('example', 'showcase.canvas.tsx')
 
-describe('verify command', () => {
+describe('verify', () => {
   it('accepts the example canvas', () => {
     expect(verifyCommand.run(verifyCommand.input.parse({ canvas: exampleCanvas }))).toMatch(/^canvas-sdk contract:/)
   })
