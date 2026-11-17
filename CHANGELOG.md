@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ## [Unreleased]
 
+## [2.0.0]
+#### 2026-11-17
+
+##### Added
+- CLI built on `trpc-cli` with Zod schemas as the single source of truth (`defineCommand` for every subcommand; shared export flags on `generate`).
+- `docs/cli-migration.md` records the spike comparison and migration rationale.
+
+##### Changed
+- Programmatic API: `generate` / `outline` validate via each command’s Zod schema (`width`, `selector`, `warn`, etc.); `verify` still accepts a canvas path string; `skill` / `vendorPath` accept optional input objects.
+- Source layout: `src/pkg.ts`, `src/util/paths.ts`, domain folders (`commands/`, `export/`, `canvas/`, `check/`).
+- npm publish uses `bin/npm-publish-web.sh` (browser 2FA via `auth-type=web`).
+
+##### Breaking
+- CLI: `open-canvas <canvas>` no longer implies `generate` — use `open-canvas generate <canvas>`.
+- CLI: `--version` short flag is `-V` (Commander 14 / trpc-cli), not `-v`.
+- Library: removed `runGenerate` / `runOutline` and `viewportWidth` / `selectors` / `warnSlack` option names — use `openCanvas.generate({ … })` with `width` / `selector` / `warn`.
+
 ## [1.15.0]
 #### 2026-11-16
 
