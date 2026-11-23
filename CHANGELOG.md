@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ## [Unreleased]
 
+## [2.1.0]
+#### 2026-11-23
+
+##### Added
+- `generate --verify`: run `verify` on the canvas before export; contract line on stderr (CLI).
+
 ## [2.0.0]
 #### 2026-11-17
 
