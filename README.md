@@ -79,6 +79,7 @@ open-canvas verify path/to/report.canvas.tsx
 |`--selector`|Export only matched sections|
 |`--inline-state`|With `cursor`: embed `.canvas.data.json` in the emitted file|
 |`-q`, `--quiet`|No stdout on success (outputs at `{--out}/{--name or stem}.{ext}`)|
+|`--verify`|Typecheck before export (stderr: `canvas-sdk contract:` on success)|
 
 Exports read `.canvas.data.json` when present. Run a separate `generate` for the IDE file: `open-canvas generate path/to/x.canvas.tsx --formats cursor` (optionally `-o` / `-n` for `{dir}/{stem}.canvas.tsx`). `--formats cursor` inlines `./data/*`; add `--inline-state` to include saved UI state too.
 

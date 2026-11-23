@@ -23,9 +23,9 @@ Types and `extra`: [typing](references/typing.md) when authoring props or charts
 |Export|`open-canvas generate <file>` → `./out`|
 
 ```bash
-open-canvas verify path/to/x.canvas.tsx
+open-canvas generate path/to/x.canvas.tsx --verify --formats html,png,pdf --theme light
+open-canvas verify path/to/x.canvas.tsx          # typecheck only
 open-canvas outline path/to/x.canvas.tsx
-open-canvas generate path/to/x.canvas.tsx --formats html,png,pdf --theme light
 ```
 
 |Flag|Default|

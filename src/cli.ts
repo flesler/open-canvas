@@ -49,6 +49,9 @@ const cliRouter = t.router({
     .input(generateCommand.input)
     .handler(async ({ input }) => {
       const paths = await generateCommand.run(input)
+      if (input.verify) {
+        console.error(formatCanvasSdkContractLine())
+      }
       if (!input.quiet) {
         for (const p of paths) {
           console.log(`→ ${p}`)

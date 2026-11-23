@@ -10,6 +10,7 @@ import { resolveRenderOptions } from '../render/options.js'
 import { render } from '../render/index.js'
 import { defineCommand } from '../util/defineCommand.js'
 import { canvasStem, emitCursorCanvas, outputSlug, parseSelectors, titleCaseFromStem } from '../util/index.js'
+import verifyCommand from './verify.js'
 
 /** Shared generate/outline CLI flags (`trpc-cli` + Zod `.meta()` for aliases). */
 export const sharedCliExportOptionsSchema = z.object({
@@ -40,6 +41,7 @@ const generateInput = sharedCliExportOptionsSchema.extend({
   formats: z.preprocess(normalizeFormatInput, outputFormatListSchema.default([...DEFAULT_OUTPUT_FORMATS])).describe(`comma-separated: html,png,pdf,jpg,cursor (default ${DEFAULT_FORMATS})`).meta({ alias: 'f' }),
   inlineState: z.boolean().default(false).describe('with --formats cursor: inline .canvas.data.json and seed localStorage'),
   quiet: z.boolean().default(false).describe('no stdout on success').meta({ alias: 'q' }),
+  verify: z.boolean().default(false).describe('typecheck before export (same as open-canvas verify)'),
   ...sharedRuntimeExportFields,
 })
 
@@ -59,6 +61,9 @@ async function executeGenerate(opts: z.infer<typeof generateInput>): Promise<str
   const canvasPath = path.resolve(opts.canvas)
   if (!fs.existsSync(canvasPath)) {
     throw new Error(`canvas not found: ${canvasPath}`)
+  }
+  if (opts.verify) {
+    verifyCommand.run(verifyCommand.input.parse({ canvas: opts.canvas }))
   }
 
   const canvasDir = path.dirname(canvasPath)
