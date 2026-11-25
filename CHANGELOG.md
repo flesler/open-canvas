@@ -2,7 +2,8 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-## [Unreleased]
+## [2.2.0]
+#### 2026-11-25
 
 ##### Changed
 - `outline` output redesigned to need no legend: one indented block list per PDF page (`+Y` from the page top, `x=` from the parent, `W×H`), with components named by what they are (`card "title"`, `stat "value — label"`, `line chart "series"`, `table "headers" · N rows`, `callout`, `button`, `link → href`, inputs with their value, `code block`, `svg`) instead of tags and CSS classes. Sections fold into their heading and untitled wrappers into their only child.
