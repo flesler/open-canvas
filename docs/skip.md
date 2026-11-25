@@ -17,4 +17,6 @@ We run `npx playwright install chromium` in [`.github/workflows/ci.yml`](../.git
 - Restoring/uploading hundreds of MB often costs **similar or more** time than a fresh ~8s download on hosted runners, plus cache quota and key churn.
 - If we ever cache, key on **Playwright version from `package-lock.json`** (e.g. `node_modules/playwright` → `1.64.0`), not the whole repo or unrelated lock changes — not worth adding until installs are routinely **~30s+** or we multiply browser-heavy jobs per push.
 
-**Alternatives we keep instead:** one `playwright install` in CI; smoke already needs Chromium via `ensureChromium`. Optional future lean-up: fold selector coverage into smoke and drop browser unit tests — still one install, not a second cache strategy.
+**Local dev / agents:** Vitest `setupFiles` calls `ensureChromium()` (same helper as `generate`), so `npm test` and `ci:local` do not need a manual `playwright install` on a fresh clone. GitHub Actions still runs `playwright install chromium` explicitly.
+
+**Alternatives we keep instead:** optional future lean-up: fold selector coverage into smoke and drop browser unit tests — still one install, not a second cache strategy.

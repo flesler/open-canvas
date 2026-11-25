@@ -1,43 +1,10 @@
-import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
-import { createRequire } from 'node:module'
 import path from 'node:path'
 import type { Page } from 'playwright'
-import { pathInPkg } from '../util/paths.js'
+import { ensureChromium } from './ensureChromium.js'
 import type { RenderOptions } from './options.js'
 import { outlineEval, SMALL_TEXT_PX } from './outlineEval.js'
 import type { CanvasOutline } from './outlineEval.js'
-
-const pkgRoot = path.dirname(pathInPkg('package.json'))
-const require = createRequire(pathInPkg('package.json'))
-let chromiumReady = false
-
-function ensureChromium(): void {
-  if (chromiumReady) {
-    return
-  }
-  const { chromium } = require('playwright') as {
-    chromium: { executablePath: () => string }
-  }
-  const exe = chromium.executablePath()
-  if (fs.existsSync(exe)) {
-    chromiumReady = true
-    return
-  }
-  const playwrightPkg = require.resolve('playwright/package.json')
-  const cli = path.join(path.dirname(playwrightPkg), 'cli.js')
-  const install = spawnSync(process.execPath, [cli, 'install', 'chromium'], {
-    cwd: pkgRoot,
-    stdio: 'inherit',
-    env: process.env,
-  })
-  if (install.status !== 0) {
-    throw new Error(
-      'playwright install chromium failed (required for png/pdf/jpg)',
-    )
-  }
-  chromiumReady = true
-}
 
 export type RenderContext = {
   outDir: string;
@@ -429,6 +396,7 @@ async function isolateSelectors(
 }
 
 export const forTests = {
+  ensureChromium,
   isolateSelectors,
   writePdf,
 }
