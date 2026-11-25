@@ -41,7 +41,7 @@ open-canvas outline path/to/x.canvas.tsx
 
 PDF breaks, `--min-height`, print-only UI: [pdf](references/pdf.md).
 
-`--selector` export subset; `--render-options` Playwright JSON. `jpg`/`pdf` need not list `html`; `html` artifact kept only when `html` in `--formats`. Cursor IDE file: `--formats cursor` (inlines `./data/*`; `--inline-state` embeds `.canvas.data.json`).
+`--selector` export subset (repeatable; matches stack into one image). To show part of a canvas in chat, export those sections instead of cropping the full PNG: `generate x.canvas.tsx -f png -o /tmp/oc -n part --selector "section:nth-of-type(6)" --selector "section:nth-of-type(7)"`. `--render-options` Playwright JSON. `jpg`/`pdf` need not list `html`; `html` artifact kept only when `html` in `--formats`. Cursor IDE file: `--formats cursor` (inlines `./data/*`; `--inline-state` embeds `.canvas.data.json`).
 
 ## Check the layout before exporting
 
