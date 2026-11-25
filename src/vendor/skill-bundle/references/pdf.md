@@ -14,7 +14,7 @@ Between sections:
 <div aria-hidden style={{ breakBefore: "page" }} />
 ```
 
-Use `open-canvas outline` to see vertical **seg-N** slices before generating.
+Use `open-canvas outline` to see what lands on each PDF page, and its height, before generating.
 
 ## Minimum page height
 

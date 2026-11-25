@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { build } from 'vite'
-import { readCanvasStateSidecar } from '../canvas/stateSidecar.js'
+import { resolveCanvasState } from '../canvas/stateSidecar.js'
 import { exportCssPurgeEnabled, purgeExportHtmlStyles } from '../export/cssPurge.js'
 import { buildExportViteConfig } from '../export/viteConfig.js'
 import { DEFAULT_FORMATS, DEFAULT_OUTPUT_FORMATS, exportBrandSchema, exportThemeSchema, normalizeFormatInput, OutputFormat, outputFormatListSchema } from '../export/enums.js'
@@ -21,6 +21,7 @@ export const sharedCliExportOptionsSchema = z.object({
   width: z.coerce.number().default(1280).describe('Playwright viewport width (default 1280)').meta({ alias: 'w' }),
   renderOptions: z.string().optional().describe('Playwright options JSON (launch / page / screenshot / pdf)'),
   selector: z.array(z.string()).default([]).describe('export matched nodes only (repeatable; comma-separated ok)'),
+  state: z.array(z.string()).default([]).describe('useCanvasState override key=value over .canvas.data.json (repeatable; JSON values ok)'),
 })
 
 export const sharedRuntimeExportFields = {
@@ -89,7 +90,7 @@ async function executeGenerate(opts: z.infer<typeof generateInput>): Promise<str
 
   fs.mkdirSync(outDir, { recursive: true })
 
-  const canvasStateForBuild = readCanvasStateSidecar(canvasPath) ?? {}
+  const canvasStateForBuild = resolveCanvasState(canvasPath, opts.state)
 
   const options = resolveRenderOptions({
     theme,

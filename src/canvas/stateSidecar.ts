@@ -32,6 +32,31 @@ export function readCanvasStateSidecar(
   return parsed as CanvasStateSidecar
 }
 
+/** `key=value` CLI overrides; values parse as JSON when valid, else stay strings. */
+export function parseCanvasStateOverrides(pairs: string[] | undefined): CanvasStateSidecar {
+  const out: CanvasStateSidecar = {}
+  for (const pair of pairs ?? []) {
+    const eq = pair.indexOf('=')
+    if (eq <= 0) {
+      throw new Error(`--state expects key=value, got: ${pair}`)
+    }
+    const raw = pair.slice(eq + 1)
+    let value: unknown = raw
+    try {
+      value = JSON.parse(raw)
+    } catch {
+      // Plain string value.
+    }
+    out[pair.slice(0, eq)] = value
+  }
+  return out
+}
+
+/** Sidecar state with CLI overrides on top. */
+export function resolveCanvasState(canvasPath: string, overrides: string[] | undefined): CanvasStateSidecar {
+  return { ...readCanvasStateSidecar(canvasPath), ...parseCanvasStateOverrides(overrides) }
+}
+
 /** Prepended to the canvas module (export + optional `cursor` emit with --inline-state). */
 export function canvasStateSeedPreamble(state: CanvasStateSidecar): string {
   if (Object.keys(state).length === 0) {

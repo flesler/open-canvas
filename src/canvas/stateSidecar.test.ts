@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { canvasStateSeedPreamble, canvasStateSidecarPath, readCanvasStateSidecar } from './stateSidecar.js'
+import { canvasStateSeedPreamble, canvasStateSidecarPath, parseCanvasStateOverrides, readCanvasStateSidecar, resolveCanvasState } from './stateSidecar.js'
 
 describe('readCanvasStateSidecar', () => {
   it('returns undefined when the sidecar is missing', () => {
@@ -43,6 +43,27 @@ describe('readCanvasStateSidecar', () => {
     expect(() => readCanvasStateSidecar(canvas)).toThrow(
       /must be a JSON object/,
     )
+  })
+})
+
+describe('resolveCanvasState', () => {
+  it('parses JSON values, keeps plain strings, and overrides the sidecar', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'open-canvas-state-'))
+    const canvas = path.join(dir, 'demo.canvas.tsx')
+    fs.writeFileSync(path.join(dir, 'demo.canvas.data.json'), '{ "fleet": "publication", "keep": 1 }')
+    expect(resolveCanvasState(canvas, ['fleet=longRunning', 'n=3', 'live=true', 'q=a=b'])).toEqual({
+      fleet: 'longRunning',
+      keep: 1,
+      n: 3,
+      live: true,
+      q: 'a=b',
+    })
+    expect(parseCanvasStateOverrides(undefined)).toEqual({})
+  })
+
+  it('rejects pairs without a key', () => {
+    expect(() => parseCanvasStateOverrides(['=x'])).toThrow(/key=value/)
+    expect(() => parseCanvasStateOverrides(['novalue'])).toThrow(/key=value/)
   })
 })
 

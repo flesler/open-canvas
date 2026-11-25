@@ -5,5 +5,4 @@
 
 ## outline follow-ups
 
-- Optional `--sections-only` to skip per-page id lists on huge canvases.
 - Compare outline page heights to generated PDF MediaBox (smoke assertion).

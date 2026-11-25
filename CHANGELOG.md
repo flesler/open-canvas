@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. Dates are d
 
 ## [Unreleased]
 
+##### Changed
+- `outline` output redesigned to need no legend: one indented block list per PDF page (`+Y` from the page top, `x=` from the parent, `W×H`), with components named by what they are (`card "title"`, `stat "value — label"`, `line chart "series"`, `table "headers" · N rows`, `callout`, `button`, `link → href`, inputs with their value, `code block`, `svg`) instead of tags and CSS classes. Sections fold into their heading and untitled wrappers into their only child.
+- `outline` reports each page's height, content vs blank padding from `--min-height`, and a `PAGES` hint with the cost of `--min-height max` or where to add page breaks.
+- `outline` flags: `--slack <px>` (was `-T/--threshold`) and `--max-lines` (was `--max-children`); `--warn`/`--no-warn` removed.
+
+##### Added
+- `outline` `TEXT` section: overlapping text (HTML and SVG `<text>`), SVG labels cut off by a clipping ancestor, boxes whose content is wider than they are, and SVG text under 9px, each with page, position, and a suggested fix.
+- `--state key=value` on `generate` and `outline` overrides `useCanvasState` values over `.canvas.data.json`.
+
+##### Removed
+- `outline` legend, MAJOR BLOCKS, STRUCTURE, and segment-summary sections, and the empty-inside heuristics that fired on charts.
+
+##### Fixed
+- `outline` never recorded inline `<svg>` elements.
+
 ## [2.1.0]
 #### 2026-11-23
 
