@@ -1,12 +1,23 @@
 # outline reference
 
-The stdout explains itself. This page covers only what it leaves out and how its checks decide.
+The stdout explains itself. This page covers what a finished canvas looks like in it, what it leaves out, and how its checks decide.
+
+## What a finished canvas looks like
+
+|Aim|In the output|
+|---|---|
+|Lead with the takeaway|Page 1 opens with the `h1` and `stat`s that state the result; detail and appendix tables go on later pages.|
+|One idea per page|Each `PAGE` reads as one story: headline, evidence, caveat. Heights within ~15%, so `--min-height max` adds little blank.|
+|Readable at print size|`TEXT` is clean; charts show `smallest text` of 11px or more (9px is the floor).|
+|No dead space|No `⚠ Npx empty at the bottom`: size cards to their content, pair side-by-side cards of similar height.|
+|Every block identifiable|Cards have titles; hand-drawn `<svg role="img">` has an `aria-label` saying what it shows (named here and for screen readers).|
+|Every view checked|Rerun with `--state key=value` for each tab or toggle.|
 
 ## Not shown
 
 - Colors, fonts, images, chart data points, table cells. Use `generate --formats png` to see those.
 - Unnamed wrappers (layout `div`s with no id, heading, or problem), elements hidden with `display:none`, `visibility:hidden` or `opacity:0`, and icon SVGs under 48px with no text.
-- Only the current `useCanvasState` view. Rerun with `--state key=value` for each other tab or toggle.
+- Only the current `useCanvasState` view.
 
 ## How the checks decide
 

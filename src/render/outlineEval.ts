@@ -35,12 +35,15 @@ export type CanvasOutline = {
   text: TextChecks
 }
 
+/** SVG text painted smaller than this is reported as hard to read. */
+export const SMALL_TEXT_PX = 9
+
 /**
  * Runs in the page (Playwright `evaluate`), after print media and pagination are applied.
  * Must stay self-contained: no imports or outer references at runtime.
  */
-export function outlineEval(opts: { bounds: number[]; maxNodes: number; slackPx: number }) {
-  const { bounds, maxNodes, slackPx } = opts
+export function outlineEval(opts: { bounds: number[]; maxNodes: number; slackPx: number; smallTextPx: number }) {
+  const { bounds, maxNodes, slackPx, smallTextPx } = opts
   const LABEL_MAX = 60
   const LIST_MAX = 20
   const host = document.getElementById('root') ?? document.body
@@ -210,10 +213,12 @@ export function outlineEval(opts: { bounds: number[]; maxNodes: number; slackPx:
     if (el instanceof SVGSVGElement) {
       const r = el.getBoundingClientRect()
       const texts = Array.from(el.querySelectorAll('text'), svgTextOf).map(t => t.trim()).filter(Boolean)
-      if ((texts.length || (r.width >= 48 && r.height >= 48)) && r.width > 0 && !hidden(el)) {
+      const font = texts.length ? minFont(el) : undefined
+      const tooSmall = font !== undefined && font.px < smallTextPx
+      if ((tooSmall || (r.width >= 48 && r.height >= 48)) && r.width > 0 && !hidden(el)) {
         const title = el.getAttribute('aria-label') || el.querySelector(':scope > title')?.textContent
         const label = title ? clean(title) : texts.length ? clean(`text: ${texts.slice(0, 4).join(' · ')}${texts.length > 4 ? ` +${texts.length - 4}` : ''}`) : ''
-        push(r, depth, { kind: 'svg', label, minFont: minFont(el) })
+        push(r, depth, { kind: 'svg', label, minFont: font })
       }
       return
     }

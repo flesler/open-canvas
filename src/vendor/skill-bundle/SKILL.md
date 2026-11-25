@@ -45,12 +45,4 @@ PDF breaks, `--min-height`, print-only UI: [pdf](references/pdf.md).
 
 ## Check the layout before exporting
 
-`outline` renders the same print layout as `generate` and prints it as text, so you can check a canvas without opening a PNG:
-
-1. `verify`, then `outline` with the flags you will export with (`--width`, `--min-height`, `--state`).
-2. Fix every line under `TEXT` (each one names its page, position, and fix). Look for `⚠` on blocks: unreadable SVG text or a container with empty space at the bottom.
-3. Check that each `PAGE` holds what you meant. To move a block to the next page, put `<div style={{ breakBefore: 'page' }} />` before it; aim for pages of similar height.
-4. Follow the `PAGES` hint to choose `--min-height`: `max` gives every page the same size at the cost of blank space it reports; leave it unset to let each page keep its own height.
-5. `generate` with the same flags.
-
-Rerun `outline` with `--state key=value` to check other `useCanvasState` views (tabs, toggles). [outline](references/outline.md) covers what it cannot see.
+`outline` prints the same print layout as `generate`, as text. Run it with your export flags (`--width`, `--min-height`, `--state`), fix every `TEXT` line and `⚠`, move blocks with `<div style={{ breakBefore: 'page' }} />` until each `PAGE` is one story of similar height, pick `--min-height` from the `PAGES` hint, then `generate` with the same flags. Targets and limits: [outline](references/outline.md).

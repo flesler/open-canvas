@@ -8,14 +8,13 @@ import { buildExportViteConfig } from '../export/viteConfig.js'
 import { resolveRenderOptions } from '../render/options.js'
 import type { CanvasOutline, OutlineNode } from '../render/index.js'
 import { outlineReferenceDocPath } from '../util/paths.js'
-import { measureStagedExport } from '../render/index.js'
+import { measureStagedExport, SMALL_TEXT_PX } from '../render/index.js'
 import { canvasStem, parseSelectors, titleCaseFromStem } from '../util/index.js'
 import { defineCommand } from '../util/defineCommand.js'
 import { sharedCliExportOptionsSchema, sharedRuntimeExportFields } from './generate.js'
 
 const DEFAULT_SLACK_PX = 80
 const DEFAULT_MAX_LINES = 200
-const SMALL_TEXT_PX = 9
 
 const outlineInput = sharedCliExportOptionsSchema.extend({
   canvas: z.string().describe('path to *.canvas.tsx').meta({ positional: true }),

@@ -5,7 +5,7 @@ import path from 'node:path'
 import type { Page } from 'playwright'
 import { pathInPkg } from '../util/paths.js'
 import type { RenderOptions } from './options.js'
-import { outlineEval } from './outlineEval.js'
+import { outlineEval, SMALL_TEXT_PX } from './outlineEval.js'
 import type { CanvasOutline } from './outlineEval.js'
 
 const pkgRoot = path.dirname(pathInPkg('package.json'))
@@ -54,6 +54,7 @@ export type RenderFormats = {
 }
 
 export type { CanvasOutline, OutlineNode, TextChecks } from './outlineEval.js'
+export { SMALL_TEXT_PX } from './outlineEval.js'
 
 export type StagedMeasureInput = {
   htmlPath: string;
@@ -100,6 +101,7 @@ export async function measureStagedExport(input: StagedMeasureInput): Promise<Ca
       bounds: layout.bounds,
       maxNodes: input.maxNodes ?? 400,
       slackPx: input.slackPx ?? 80,
+      smallTextPx: SMALL_TEXT_PX,
     })
     return {
       widthPx,
